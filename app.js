@@ -1,0 +1,742 @@
+/* ==========================================================
+   BOBCAT SCOUT — app.js
+   Main application logic (vanilla JavaScript, no frameworks)
+   ========================================================== */
+
+// =====================================================================
+// STATE
+// =====================================================================
+
+let CONFIG = null;            // loaded from config.json
+let ALL_FIELDS = [];          // flat list of every field
+let FIELD_ORDER = [];         // ordered list of field codes for TSV
+let fields = {};              // current values
+let confidence = {};          // confidence map per field
+let sessionMatches = [];      // saved matches in this session
+let isRecording = false;
+let recognition = null;
+let baseTranscript = '';      // text before this recording started
+let activeTab = 'qr';
+
+const SAMPLE_TEXT = "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4 in the hub, missed 1, crossed the bump. Teleop they scored 18 made, 3 missed, picked from depot and hp. Endgame climbed level 2. Smooth driver. Got defended a bit but no issues.";
+
+// =====================================================================
+// HELPERS
+// =====================================================================
+
+function $(id) { return document.getElementById(id); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+function initialFieldState() {
+  const state = {};
+  ALL_FIELDS.forEach(f => {
+    if (f.default !== undefined) state[f.code] = f.default;
+    else if (f.type === 'boolean') state[f.code] = false;
+    else if (f.type === 'number' || f.type === 'range') state[f.code] = 0;
+    else state[f.code] = '';
+  });
+  return state;
+}
+
+function generateTSV(fieldVals, withHeader) {
+  const values = FIELD_ORDER.map(code => {
+    const val = fieldVals[code];
+    if (Array.isArray(val)) return val.join(',');
+    if (typeof val === 'boolean') return val ? 'true' : 'false';
+    return String(val == null ? '' : val);
+  });
+  if (withHeader) {
+    return FIELD_ORDER.join('\t') + '\n' + values.join('\t');
+  }
+  return values.join('\t');
+}
+
+// =====================================================================
+// PARSER — converts free-form transcript text into structured fields.
+// Same logic as the React prototype, ported to plain JS.
+// =====================================================================
+
+function parseTranscript(text, initialState) {
+  const original = text;
+  const t = text.toLowerCase();
+  const result = Object.assign({}, initialState);
+  const conf = {};
+
+  const titleCase = s => s.replace(/\b\w/g, c => c.toUpperCase());
+
+  // Helper: find a number near a keyword
+  const numNear = (patterns, window) => {
+    window = window || 40;
+    for (const pattern of patterns) {
+      const regex = new RegExp(pattern, 'i');
+      const m = t.match(regex);
+      if (m) {
+        const start = Math.max(0, m.index - window);
+        const end = Math.min(t.length, m.index + m[0].length + window);
+        const ctx = t.slice(start, end);
+        const numMatch = ctx.match(/\b(\d{1,2})\b/);
+        if (numMatch) return parseInt(numMatch[1]);
+      }
+    }
+    return null;
+  };
+
+  // ---- Scout name ----
+  const scoutPatterns = [
+    /(?:scouter|scout)\s*(?:name\s*)?(?:is|:|=)\s*([a-z][a-z\s'-]{1,30}?)(?=[,.]|\s+(?:and|event|match|team|alliance|station|for|at|preload|in auto|teleop|scouting|\d)|$)/i,
+    /my\s+name\s+is\s+([a-z][a-z\s'-]{1,30}?)(?=[,.]|\s+(?:and|event|match|team|alliance|station|for|at|preload|\d)|$)/i,
+    /this\s+is\s+([a-z][a-z'-]{1,20})\s+scouting/i,
+    /i\s*am\s+([a-z][a-z'-]{1,20})(?=[,.]|\s+(?:scouting|and|event|match|team)|$)/i,
+    /^([a-z][a-z'-]{1,20})\s+scouting\b/i,
+  ];
+  for (const p of scoutPatterns) {
+    const m = original.match(p);
+    if (m && m[1]) {
+      result.scoutName = titleCase(m[1].trim());
+      conf.scoutName = 'high';
+      break;
+    }
+  }
+
+  // ---- Event key ----
+  const eventPatterns = [
+    /event\s*(?:key\s*)?(?:is|:|=)?\s*(\d{4}[a-z]{3,10})/i,
+    /\b(20\d{2}[a-z]{3,10})\b/,
+  ];
+  for (const p of eventPatterns) {
+    const m = t.match(p);
+    if (m && m[1]) {
+      result.eventKey = m[1].toLowerCase();
+      conf.eventKey = 'high';
+      break;
+    }
+  }
+
+  // ---- Match number ----
+  const mn = t.match(/(?:match\s*(?:number|#)?\s*|qm\s*)(\d{1,3})\b/i);
+  if (mn) {
+    const n = parseInt(mn[1]);
+    if (n > 0 && n <= 200) {
+      result.matchNumber = n;
+      conf.matchNumber = 'high';
+    }
+  }
+
+  // ---- Match type ----
+  if (/\b(playoff|elim|elimination|finals|semifinal|bracket)\b/i.test(t)) {
+    result.matchType = 'sf'; conf.matchType = 'high';
+  } else if (/\bpractice\s+match\b/i.test(t) || /\bpm\s*\d/i.test(t)) {
+    result.matchType = 'pm'; conf.matchType = 'high';
+  } else if (/\b(qualification|qual|qm)\b/i.test(t)) {
+    result.matchType = 'qm'; conf.matchType = 'medium';
+  }
+
+  // ---- Team number ----
+  const teamPatterns = [
+    /team\s*(?:number|#)?\s*(\d{1,5})\b/i,
+    /\bscouting\s+(?:team\s+)?(\d{2,5})\b/i,
+  ];
+  for (const p of teamPatterns) {
+    const m = t.match(p);
+    if (m && m[1]) {
+      const n = parseInt(m[1]);
+      if (n >= 1 && n <= 99999) {
+        result.teamNumber = n;
+        conf.teamNumber = 'high';
+        break;
+      }
+    }
+  }
+
+  // ---- Alliance ----
+  const redMatch = t.match(/\b(?:red\s*(?:alliance|\d)|alliance\s*(?:is\s*)?red|on\s*red)\b/i);
+  const blueMatch = t.match(/\b(?:blue\s*(?:alliance|\d)|alliance\s*(?:is\s*)?blue|on\s*blue)\b/i);
+  if (redMatch && !blueMatch) {
+    result.alliance = 'red'; conf.alliance = 'high';
+  } else if (blueMatch && !redMatch) {
+    result.alliance = 'blue'; conf.alliance = 'high';
+  } else if (redMatch && blueMatch) {
+    result.alliance = redMatch.index < blueMatch.index ? 'red' : 'blue';
+    conf.alliance = 'medium';
+  }
+
+  // ---- Driver station ----
+  const stationPatterns = [
+    /driver\s*station\s*(\d)/i,
+    /station\s*(\d)/i,
+    /(?:red|blue)\s*(\d)\b/i,
+    /\bd\s*(\d)\b/i,
+  ];
+  for (const p of stationPatterns) {
+    const m = t.match(p);
+    if (m && m[1]) {
+      const n = m[1];
+      if (n === '1' || n === '2' || n === '3') {
+        result.driverStation = n;
+        conf.driverStation = 'high';
+        break;
+      }
+    }
+  }
+
+  // ---- Starting position ----
+  if (/\b(wall\s*side|on\s+the\s+wall|wall\s+start)\b/i.test(t)) {
+    result.startingPosition = 'wall'; conf.startingPosition = 'high';
+  } else if (/\bcenter\s*(?:start|position)?\b/i.test(t)) {
+    result.startingPosition = 'center'; conf.startingPosition = 'high';
+  } else if (/\b(field\s*side|far\s*side)\b/i.test(t)) {
+    result.startingPosition = 'field'; conf.startingPosition = 'high';
+  }
+
+  // ---- Preloaded fuel ----
+  // Look only RIGHT of "preload" to avoid grabbing earlier numbers (team #, station, etc.)
+  const preloadMatch = t.match(/preload(?:ed)?(?:\s*(?:with|of))?\s*(\d{1,2})\b/i);
+  if (preloadMatch) {
+    result.preloadedFuel = Math.min(parseInt(preloadMatch[1]), 8);
+    conf.preloadedFuel = 'high';
+  } else {
+    // Alt phrasing: "with 3 preloaded"
+    const preBeforeMatch = t.match(/(\d{1,2})\s*preload(?:ed)?/i);
+    if (preBeforeMatch) {
+      result.preloadedFuel = Math.min(parseInt(preBeforeMatch[1]), 8);
+      conf.preloadedFuel = 'high';
+    }
+  }
+
+  // ---- Auto scoring ----
+  const autoSection = t.match(/\b(auto|autonomous)\b[\s\S]{0,200}/i);
+  if (autoSection) {
+    const as = autoSection[0];
+    const autoMade = as.match(/(?:made|scored|put in|hit)\s*(\d+)/i) || as.match(/(\d+)\s*(?:in auto|made|scored)/i);
+    if (autoMade) { result.autoHubMade = parseInt(autoMade[1]); conf.autoHubMade = 'high'; }
+    const autoMiss = as.match(/miss(?:ed)?\s*(\d+)/i) || as.match(/(\d+)\s*miss/i);
+    if (autoMiss) { result.autoHubMissed = parseInt(autoMiss[1]); conf.autoHubMissed = 'high'; }
+    if (/\b(left|mobility|leave|exit)\b/i.test(as)) { result.autoLeft = true; conf.autoLeft = 'high'; }
+    if (/\bbump\b/i.test(as)) { result.autoObstacle = 'bump'; conf.autoObstacle = 'high'; }
+    if (/\btrench\b/i.test(as)) {
+      result.autoObstacle = result.autoObstacle === 'bump' ? 'both' : 'trench';
+      conf.autoObstacle = 'high';
+    }
+    if (/\bclimb(ed)?\s*(in\s*auto|level\s*1|l1)/i.test(as)) {
+      result.autoClimb = 'level1'; conf.autoClimb = 'high';
+    }
+  }
+
+  // ---- Teleop ----
+  const teleopIdx = t.search(/\b(teleop|tele op|teleoperated)\b/i);
+  if (teleopIdx >= 0) {
+    const ts = t.slice(teleopIdx, teleopIdx + 400);
+    // "made 18", "scored 18", "18 made", "got 18 in"
+    const teleMade = ts.match(/(?:made|scored|put in|hit)\s*(\d+)/i) || ts.match(/(\d+)\s*(?:made|scored|in the hub)/i);
+    if (teleMade) { result.teleopHubMade = parseInt(teleMade[1]); conf.teleopHubMade = 'high'; }
+    // "missed 3", "3 missed", "missed about 3"
+    const teleMiss = ts.match(/miss(?:ed)?\s*(?:\w+\s+)?(\d+)/i) || ts.match(/(\d+)\s*miss/i);
+    if (teleMiss) { result.teleopHubMissed = parseInt(teleMiss[1]); conf.teleopHubMissed = 'high'; }
+  }
+
+  // ---- Fallback ----
+  if (conf.teleopHubMade === undefined && conf.autoHubMade === undefined) {
+    const anyMade = t.match(/(?:made|scored)\s*(\d+)/i);
+    if (anyMade) { result.teleopHubMade = parseInt(anyMade[1]); conf.teleopHubMade = 'medium'; }
+  }
+
+  // ---- Pickup sources ----
+  if (/\bdepot\b/i.test(t)) { result.pickedFromDepot = true; conf.pickedFromDepot = 'high'; }
+  if (/\b(human player|hp|chute|outpost)\b/i.test(t)) { result.pickedFromHP = true; conf.pickedFromHP = 'high'; }
+  if (/\b(floor|ground|off the ground|loose fuel|scooped)\b/i.test(t)) { result.pickedFromFloor = true; conf.pickedFromFloor = 'high'; }
+
+  // ---- Endgame climb ----
+  if (/\blevel\s*3\b|\bl3\b|\bhigh rung\b/i.test(t)) { result.endgameClimb = 'level3'; conf.endgameClimb = 'high'; }
+  else if (/\blevel\s*2\b|\bl2\b|\bmid rung\b/i.test(t)) { result.endgameClimb = 'level2'; conf.endgameClimb = 'high'; }
+  else if (/\blevel\s*1\b|\bl1\b|\blow rung\b/i.test(t)) { result.endgameClimb = 'level1'; conf.endgameClimb = 'high'; }
+  else if (/\bparked\b/i.test(t)) { result.endgameClimb = 'parked'; conf.endgameClimb = 'high'; }
+  else if (/\b(tried to climb|attempted.*climb|climb.*fail|fell off)\b/i.test(t)) { result.endgameClimb = 'attempted_failed'; conf.endgameClimb = 'high'; }
+  else if (/\bno climb|didn't climb|did not climb\b/i.test(t)) { result.endgameClimb = 'none'; conf.endgameClimb = 'high'; }
+
+  // ---- Driver skill ----
+  if (/\b(elite|amazing|incredible|insane|fantastic driver)\b/i.test(t)) { result.driverSkill = 5; conf.driverSkill = 'high'; }
+  else if (/\b(great|really good|smooth|strong driver)\b/i.test(t)) { result.driverSkill = 4; conf.driverSkill = 'high'; }
+  else if (/\b(solid|decent|fine|okay|competent)\b/i.test(t)) { result.driverSkill = 3; conf.driverSkill = 'medium'; }
+  else if (/\b(rough|struggled|messy|shaky)\b/i.test(t)) { result.driverSkill = 2; conf.driverSkill = 'high'; }
+  else if (/\b(crashed|awful|terrible|could not drive)\b/i.test(t)) { result.driverSkill = 1; conf.driverSkill = 'high'; }
+
+  // ---- Defense ----
+  if (/\b(played\s*(great|strong|heavy)\s*defense|dominant defense|lockdown defense)\b/i.test(t)) { result.defenseRating = 5; conf.defenseRating = 'high'; }
+  else if (/\b(played.*defense.*well|good defense)\b/i.test(t)) { result.defenseRating = 4; conf.defenseRating = 'high'; }
+  else if (/\b(played some defense|some defense)\b/i.test(t)) { result.defenseRating = 3; conf.defenseRating = 'medium'; }
+  else if (/\b(tried.*defense|weak defense|bad defense)\b/i.test(t)) { result.defenseRating = 2; conf.defenseRating = 'medium'; }
+
+  // ---- Was defended ----
+  if (/\b(got defended|played defense on|defended against|smacked around|hit by)\b/i.test(t)) {
+    result.wasDefended = true; conf.wasDefended = 'high';
+  }
+
+  // ---- Tipped / disabled / cards ----
+  if (/\b(tipped|fell over|flipped)\b/i.test(t)) { result.tipped = true; conf.tipped = 'high'; }
+  if (/\b(broke|died|disabled|stopped working|went dead|bot died)\b/i.test(t)) { result.disabled = true; conf.disabled = 'high'; }
+  if (/\bred card\b/i.test(t)) { result.cardStatus = 'red'; conf.cardStatus = 'high'; }
+  else if (/\byellow card\b|\bcarded\b/i.test(t)) { result.cardStatus = 'yellow'; conf.cardStatus = 'high'; }
+
+  // Always copy the raw transcript into comments
+  result.comments = text.trim().slice(0, 500);
+  conf.comments = 'high';
+
+  return { fields: result, confidence: conf };
+}
+
+// =====================================================================
+// FIELD RENDERING
+// =====================================================================
+
+function confBadgeHTML(code) {
+  const c = confidence[code];
+  if (!c || c === 'user') return '';
+  const map = { high: ['conf-high', 'AI'], medium: ['conf-medium', '?'], low: ['conf-low', '!'] };
+  if (!map[c]) return '';
+  return `<span class="conf-badge ${map[c][0]}">${map[c][1]}</span>`;
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[c]));
+}
+
+function renderFieldHTML(f) {
+  const val = fields[f.code];
+  const reqMark = f.required ? '<span class="req">*</span>' : '';
+  const labelHTML = `<label class="field-label">${escapeHTML(f.title)}${reqMark} ${confBadgeHTML(f.code)}</label>`;
+
+  if (f.type === 'text') {
+    return `<div data-field="${f.code}">${labelHTML}<input type="text" data-input="${f.code}" value="${escapeHTML(val || '')}" placeholder="${escapeHTML(f.placeholder || '')}"></div>`;
+  }
+  if (f.type === 'number') {
+    const min = f.min !== undefined ? `min="${f.min}"` : '';
+    const max = f.max !== undefined ? `max="${f.max}"` : '';
+    return `<div data-field="${f.code}">${labelHTML}<input type="number" data-input="${f.code}" value="${val == null ? 0 : val}" ${min} ${max}></div>`;
+  }
+  if (f.type === 'select') {
+    const opts = f.options.map(o => `<option value="${o.k}" ${val === o.k ? 'selected' : ''}>${escapeHTML(o.v)}</option>`).join('');
+    return `<div data-field="${f.code}">${labelHTML}<select data-input="${f.code}">${opts}</select></div>`;
+  }
+  if (f.type === 'boolean') {
+    return `<div data-field="${f.code}">
+      <label class="toggle-wrap" data-toggle="${f.code}">
+        <div class="toggle ${val ? 'on' : ''}"></div>
+        <span class="toggle-label">${escapeHTML(f.title)} ${confBadgeHTML(f.code)}</span>
+      </label>
+    </div>`;
+  }
+  if (f.type === 'range') {
+    return `<div data-field="${f.code}">${labelHTML}
+      <div class="range-row">
+        <input type="range" data-input="${f.code}" value="${val == null ? f.default : val}" min="${f.min}" max="${f.max}" step="1">
+        <span class="range-value" data-range-value="${f.code}">${val == null ? f.default : val}</span>
+      </div>
+    </div>`;
+  }
+  return '';
+}
+
+function renderAllFields() {
+  const container = $('fields-container');
+  let html = '';
+  CONFIG.sections.forEach(sec => {
+    html += `<div class="section-header">${escapeHTML(sec.name.toUpperCase())}</div>`;
+    html += `<div class="field-grid">`;
+    sec.fields.forEach(f => { html += renderFieldHTML(f); });
+    html += `</div>`;
+  });
+  container.innerHTML = html;
+  attachFieldListeners();
+}
+
+function attachFieldListeners() {
+  // Inputs (text/number/select/range)
+  $$('[data-input]').forEach(el => {
+    el.addEventListener('input', e => {
+      const code = el.getAttribute('data-input');
+      const field = ALL_FIELDS.find(f => f.code === code);
+      let v = el.value;
+      if (field.type === 'number') v = parseInt(v) || 0;
+      if (field.type === 'range') {
+        v = parseInt(v) || field.default;
+        const valSpan = document.querySelector(`[data-range-value="${code}"]`);
+        if (valSpan) valSpan.textContent = v;
+      }
+      setField(code, v);
+    });
+  });
+
+  // Toggles
+  $$('[data-toggle]').forEach(el => {
+    el.addEventListener('click', e => {
+      const code = el.getAttribute('data-toggle');
+      setField(code, !fields[code]);
+      const toggleEl = el.querySelector('.toggle');
+      if (toggleEl) toggleEl.classList.toggle('on', fields[code]);
+    });
+  });
+}
+
+function setField(code, value) {
+  fields[code] = value;
+  confidence[code] = 'user';
+
+  // Re-render just the badge area (simplest: rerender all)
+  // But only if the badge was visible before — to avoid flicker, we just remove the badge from the DOM
+  const fieldEl = document.querySelector(`[data-field="${code}"]`);
+  if (fieldEl) {
+    const badge = fieldEl.querySelector('.conf-badge');
+    if (badge) badge.remove();
+  }
+
+  // Persist
+  if (code === 'scoutName' && value) {
+    try { localStorage.setItem('scout_name', value); } catch(e) {}
+  }
+  if (code === 'eventKey' && value) {
+    try { localStorage.setItem('event_key', value); } catch(e) {}
+  }
+}
+
+// =====================================================================
+// VOICE
+// =====================================================================
+
+function setupVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    $('mic-button').disabled = true;
+    showMicError('Voice input not supported in this browser. Type into the box instead.');
+    return;
+  }
+  $('mic-button').addEventListener('click', () => {
+    if (isRecording) stopRecording();
+    else startRecording();
+  });
+}
+
+function startRecording() {
+  hideMicError();
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  baseTranscript = $('transcript').value;
+  if (baseTranscript.length > 0 && !baseTranscript.endsWith(' ')) baseTranscript += ' ';
+
+  recognition.onresult = (event) => {
+    let interim = '';
+    let final = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const res = event.results[i];
+      if (res.isFinal) final += res[0].transcript + ' ';
+      else interim += res[0].transcript;
+    }
+    if (final) baseTranscript += final;
+    $('transcript').value = baseTranscript + interim;
+    updateProcessButton();
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed') {
+      showMicError('Microphone permission denied. Enable it in your browser settings.');
+    } else if (e.error === 'no-speech') {
+      // silent
+    } else {
+      showMicError('Voice error: ' + e.error + '. Type into the box instead.');
+    }
+    setRecordingState(false);
+  };
+
+  recognition.onend = () => setRecordingState(false);
+
+  try {
+    recognition.start();
+    setRecordingState(true);
+  } catch(e) {
+    showMicError('Could not start recording.');
+  }
+}
+
+function stopRecording() {
+  if (recognition) recognition.stop();
+  setRecordingState(false);
+}
+
+function setRecordingState(rec) {
+  isRecording = rec;
+  const btn = $('mic-button');
+  if (rec) {
+    btn.classList.add('recording');
+    btn.setAttribute('aria-label', 'Stop recording');
+  } else {
+    btn.classList.remove('recording');
+    btn.setAttribute('aria-label', 'Start recording');
+  }
+}
+
+function showMicError(msg) {
+  $('mic-error-text').textContent = msg;
+  $('mic-error').classList.remove('hidden');
+}
+
+function hideMicError() {
+  $('mic-error').classList.add('hidden');
+}
+
+// =====================================================================
+// PROCESS / GENERATE / OUTPUT
+// =====================================================================
+
+function processTranscript() {
+  const text = $('transcript').value.trim();
+  if (!text) return;
+  const result = parseTranscript(text, fields);
+  fields = result.fields;
+  confidence = result.confidence;
+  renderAllFields();
+}
+
+function generateOutput() {
+  $('generate-row').classList.add('hidden');
+  $('output-section').classList.remove('hidden');
+  showTab(activeTab);
+}
+
+function showTab(tab) {
+  activeTab = tab;
+  $$('.tab').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === tab));
+  $$('.tab-content').forEach(el => el.classList.add('hidden'));
+  $('tab-' + tab).classList.remove('hidden');
+
+  const tsv = generateTSV(fields);
+  if (tab === 'qr') {
+    renderQR(tsv);
+  } else if (tab === 'tsv') {
+    $('tsv-output').textContent = tsv;
+  } else if (tab === 'json') {
+    $('json-output').textContent = JSON.stringify(fields, null, 2);
+  }
+}
+
+function renderQR(text) {
+  const container = $('qrcode');
+  container.innerHTML = '';
+  if (typeof QRCode === 'undefined' || !QRCode.toCanvas) {
+    container.innerHTML = '<p style="padding:20px;color:var(--gray);font-size:13px;">QR code library failed to load. The TSV tab still works.</p>';
+    return;
+  }
+  const canvas = document.createElement('canvas');
+  container.appendChild(canvas);
+  QRCode.toCanvas(canvas, text, {
+    errorCorrectionLevel: 'M',
+    margin: 1,
+    width: 280,
+    color: { dark: '#1F1F1F', light: '#FFFFFF' }
+  }, err => {
+    if (err) {
+      container.innerHTML = '<p style="padding:20px;color:var(--error);font-size:13px;">QR generation failed. Use TSV tab instead.</p>';
+    }
+  });
+}
+
+function copyToClipboard(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> COPIED';
+    setTimeout(() => { btn.innerHTML = orig; }, 2000);
+  }).catch(() => {
+    alert('Could not copy. Select the text manually.');
+  });
+}
+
+// =====================================================================
+// SESSION (saved matches across the day)
+// =====================================================================
+
+function saveMatchAndNext() {
+  sessionMatches.push(Object.assign({}, fields, { _ts: Date.now() }));
+  try {
+    localStorage.setItem('session_matches', JSON.stringify(sessionMatches));
+  } catch(e) { console.warn('Storage save failed', e); }
+  updateSessionBar();
+  resetMatch();
+}
+
+function resetMatch() {
+  const fresh = initialFieldState();
+  fresh.scoutName = fields.scoutName;
+  fresh.eventKey = fields.eventKey;
+  fresh.matchNumber = (parseInt(fields.matchNumber) || 0) + 1;
+  fresh.teamNumber = fields.teamNumber;
+  fresh.matchType = fields.matchType;
+  fields = fresh;
+  confidence = {};
+  $('transcript').value = '';
+  $('output-section').classList.add('hidden');
+  $('generate-row').classList.remove('hidden');
+  renderAllFields();
+  updateProcessButton();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function clearAll() {
+  if (!confirm('Clear EVERYTHING — all fields, transcript, and saved scout name/event? This cannot be undone.')) return;
+  fields = initialFieldState();
+  confidence = {};
+  $('transcript').value = '';
+  $('output-section').classList.add('hidden');
+  $('generate-row').classList.remove('hidden');
+  hideMicError();
+  try {
+    localStorage.removeItem('scout_name');
+    localStorage.removeItem('event_key');
+  } catch(e) {}
+  renderAllFields();
+  updateProcessButton();
+}
+
+function clearSession() {
+  if (!confirm('Clear all saved matches from this session?')) return;
+  sessionMatches = [];
+  try { localStorage.removeItem('session_matches'); } catch(e) {}
+  updateSessionBar();
+}
+
+function exportSession() {
+  if (sessionMatches.length === 0) return;
+  const header = FIELD_ORDER.join('\t');
+  const rows = sessionMatches.map(m => generateTSV(m));
+  const tsv = [header].concat(rows).join('\n');
+  const blob = new Blob([tsv], { type: 'text/tab-separated-values' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bobcat_scout_${new Date().toISOString().slice(0,10)}.tsv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function updateSessionBar() {
+  const n = sessionMatches.length;
+  if (n > 0) {
+    $('btn-session').classList.remove('hidden');
+    $('session-count').textContent = n;
+  } else {
+    $('btn-session').classList.add('hidden');
+    $('session-card').classList.add('hidden');
+  }
+  // refresh list contents if visible
+  const list = $('session-list');
+  list.innerHTML = sessionMatches.map(m => `
+    <div class="row"><strong>Match ${escapeHTML(m.matchNumber)}</strong> · Team ${escapeHTML(m.teamNumber)} · ${escapeHTML(m.alliance)} ${escapeHTML(m.driverStation)} · Climb: ${escapeHTML(m.endgameClimb)} · Hub made: ${(parseInt(m.autoHubMade)||0) + (parseInt(m.teleopHubMade)||0)}</div>
+  `).join('');
+}
+
+function toggleSessionCard() {
+  const card = $('session-card');
+  const arrow = $('session-arrow');
+  if (card.classList.contains('hidden')) {
+    card.classList.remove('hidden');
+    arrow.textContent = '▲';
+  } else {
+    card.classList.add('hidden');
+    arrow.textContent = '▼';
+  }
+}
+
+// =====================================================================
+// UI WIRING
+// =====================================================================
+
+function updateProcessButton() {
+  const btn = $('btn-process');
+  const has = $('transcript').value.trim().length > 0;
+  btn.disabled = !has;
+}
+
+function wireUI() {
+  // Voice
+  setupVoice();
+
+  // Buttons
+  $('btn-process').addEventListener('click', processTranscript);
+  $('btn-sample').addEventListener('click', () => {
+    $('transcript').value = SAMPLE_TEXT;
+    updateProcessButton();
+  });
+  $('btn-clear-transcript').addEventListener('click', () => {
+    $('transcript').value = '';
+    updateProcessButton();
+  });
+  $('btn-clear-all').addEventListener('click', clearAll);
+  $('btn-generate').addEventListener('click', generateOutput);
+  $('btn-save-next').addEventListener('click', saveMatchAndNext);
+  $('btn-reset').addEventListener('click', resetMatch);
+  $('btn-export-session').addEventListener('click', exportSession);
+  $('btn-clear-session').addEventListener('click', clearSession);
+  $('btn-session').addEventListener('click', toggleSessionCard);
+  $('btn-copy-tsv').addEventListener('click', e => copyToClipboard(generateTSV(fields), e.currentTarget));
+  $('btn-copy-json').addEventListener('click', e => copyToClipboard(JSON.stringify(fields, null, 2), e.currentTarget));
+
+  // Tabs
+  $$('.tab').forEach(t => t.addEventListener('click', () => showTab(t.getAttribute('data-tab'))));
+
+  // Transcript
+  $('transcript').addEventListener('input', updateProcessButton);
+
+  // Reference toggle
+  $('ref-toggle').addEventListener('click', () => {
+    $('ref-content').classList.toggle('hidden');
+    $('ref-arrow').style.transform = $('ref-content').classList.contains('hidden') ? '' : 'rotate(180deg)';
+  });
+}
+
+// =====================================================================
+// INIT
+// =====================================================================
+
+async function init() {
+  // Load config
+  try {
+    const resp = await fetch('config.json');
+    if (!resp.ok) throw new Error('Failed to load config.json');
+    CONFIG = await resp.json();
+  } catch (e) {
+    document.body.innerHTML = `
+      <div style="padding:40px;text-align:center;font-family:sans-serif;">
+        <h2 style="color:#7B1F2B;">Failed to load config.json</h2>
+        <p style="color:#6B6B6B;margin-top:10px;">Make sure config.json is in the same folder as index.html.</p>
+        <p style="color:#6B6B6B;font-size:13px;margin-top:6px;">Error: ${escapeHTML(e.message)}</p>
+      </div>`;
+    return;
+  }
+
+  ALL_FIELDS = CONFIG.sections.flatMap(s => s.fields);
+  FIELD_ORDER = ALL_FIELDS.map(f => f.code);
+  fields = initialFieldState();
+
+  // Restore persisted preferences
+  try {
+    const sn = localStorage.getItem('scout_name');
+    if (sn) fields.scoutName = sn;
+    const ek = localStorage.getItem('event_key');
+    if (ek) fields.eventKey = ek;
+    const sm = localStorage.getItem('session_matches');
+    if (sm) sessionMatches = JSON.parse(sm);
+  } catch(e) { console.warn('Restore failed', e); }
+
+  renderAllFields();
+  wireUI();
+  updateProcessButton();
+  updateSessionBar();
+}
+
+document.addEventListener('DOMContentLoaded', init);

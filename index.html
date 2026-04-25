@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI-powered scouting app for FRC Team 177 Bobcat Robotics — REBUILT 2026" />
+  <meta name="theme-color" content="#7B1F2B" />
+  <title>Bobcat Scout — Team 177</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- QR code library: free, no API key, generates real scannable QR codes -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+
+  <div class="top-accent"></div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <div class="wordmark">BOBCAT <span class="accent">SCOUT</span></div>
+        <div class="tagline">TEAM 177 · REBUILT 2026 · VOICE SCOUTING</div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-session" class="btn-header-gold hidden">
+          <span id="session-count">0</span> SAVED <span id="session-arrow">▼</span>
+        </button>
+        <button id="btn-clear-all" class="btn-header-outline" title="Clear all fields and transcript">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>
+          CLEAR ALL
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Session card (hidden by default) -->
+    <div id="session-card" class="session-card hidden">
+      <div class="session-head">
+        <h3 class="session-title">SESSION MATCHES</h3>
+        <div class="session-actions">
+          <button id="btn-export-session" class="btn btn-primary" style="padding:8px 12px;font-size:11px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            EXPORT TSV
+          </button>
+          <button id="btn-clear-session" class="btn btn-danger" style="padding:8px 12px;font-size:11px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"></path></svg>
+            CLEAR
+          </button>
+        </div>
+      </div>
+      <div id="session-list" class="session-list"></div>
+    </div>
+
+    <!-- Step 1: voice / type input -->
+    <div class="card">
+      <div class="card-bar">STEP 1 · DESCRIBE THE MATCH</div>
+      <div class="card-body">
+        <div class="voice-row">
+          <button id="mic-button" class="mic-button" aria-label="Start recording">
+            <svg id="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </button>
+          <textarea id="transcript" placeholder='Tap mic and talk, or type. Example: "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4, missed 1, crossed the bump. Teleop 18 made, 3 missed. Climbed level 2. Smooth driver."'></textarea>
+        </div>
+        <div id="mic-error" class="error-banner hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <span id="mic-error-text"></span>
+        </div>
+        <div class="btn-row">
+          <button id="btn-process" class="btn btn-primary" disabled>AUTO-FILL FIELDS →</button>
+          <button id="btn-sample" class="btn btn-outline">LOAD SAMPLE TEXT</button>
+          <button id="btn-clear-transcript" class="btn btn-ghost">CLEAR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reference -->
+    <div class="card">
+      <button id="ref-toggle" class="ref-toggle">
+        <span>QRSCOUT FORM REFERENCE</span>
+        <svg id="ref-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+      <div id="ref-content" class="ref-content hidden">
+        <div class="ref-box">
+          <strong>About this section:</strong> the source of truth for what fields exist is the config — the form below stays in sync automatically.
+          <div style="margin-top:10px;font-size:12px;">
+            Visit <a href="https://bobcatrobotics.github.io/QRScout/" target="_blank" rel="noopener">bobcatrobotics.github.io/QRScout</a> to see the form this tool replaces.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: review fields -->
+    <div class="card">
+      <div class="card-bar">STEP 2 · REVIEW FIELDS</div>
+      <div id="fields-container"></div>
+    </div>
+
+    <!-- Step 3: output -->
+    <div class="card">
+      <div class="card-bar">STEP 3 · GENERATE OUTPUT</div>
+      <div class="card-body">
+
+        <div id="generate-row" class="generate-row">
+          <button id="btn-generate" class="btn btn-primary btn-big">GENERATE QR + TSV + JSON</button>
+          <div class="help-text">Review the fields above before generating. You can edit any field.</div>
+        </div>
+
+        <div id="output-section" class="hidden">
+          <div class="tabs">
+            <button class="tab active" data-tab="qr">QR</button>
+            <button class="tab" data-tab="tsv">TSV</button>
+            <button class="tab" data-tab="json">JSON</button>
+          </div>
+
+          <div id="tab-qr" class="tab-content qr-wrap">
+            <div class="qr-frame"><div id="qrcode"></div></div>
+            <div class="qr-help">Scan this QR code into your team's QRScout-compatible scanner, or use the TSV tab to paste directly into a spreadsheet.</div>
+          </div>
+
+          <div id="tab-tsv" class="tab-content hidden">
+            <div id="tsv-output" class="output-box"></div>
+            <button id="btn-copy-tsv" class="btn btn-primary" style="margin-top:12px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              COPY TO CLIPBOARD
+            </button>
+          </div>
+
+          <div id="tab-json" class="tab-content hidden">
+            <pre id="json-output" class="output-box"></pre>
+            <button id="btn-copy-json" class="btn btn-primary" style="margin-top:12px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              COPY TO CLIPBOARD
+            </button>
+          </div>
+
+          <div class="divider-line">
+            <button id="btn-save-next" class="btn btn-gold">SAVE & NEXT MATCH →</button>
+            <button id="btn-reset" class="btn btn-outline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+              RESET
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer>BOBCAT ROBOTICS · TEAM 177 · SOUTH WINDSOR HIGH</footer>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
