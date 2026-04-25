@@ -25,6 +25,10 @@
         <button id="btn-session" class="btn-header-gold hidden">
           <span id="session-count">0</span> SAVED <span id="session-arrow">▼</span>
         </button>
+        <button id="btn-help" class="btn-header-outline" title="Help & instructions">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          HELP
+        </button>
         <button id="btn-clear-all" class="btn-header-outline" title="Clear all fields and transcript">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>
           CLEAR ALL
@@ -66,7 +70,7 @@
               <line x1="8" y1="23" x2="16" y2="23"></line>
             </svg>
           </button>
-          <textarea id="transcript" placeholder='Tap mic and talk, or type. Example: "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4, missed 1, crossed the bump. Teleop 18 made, 3 missed. Climbed level 2. Smooth driver."'></textarea>
+          <textarea id="transcript" placeholder='Tap mic and talk, or type. Example: "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4, crossed the bump. Teleop 18 scored, pickup was pretty good, passing was amazing. Climbed level 2. Smooth driver."'></textarea>
         </div>
         <div id="mic-error" class="error-banner hidden">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -99,6 +103,9 @@
     <!-- Step 2: review fields -->
     <div class="card">
       <div class="card-bar">STEP 2 · REVIEW FIELDS</div>
+      <div class="field-legend">
+        Fields marked <span class="req">*</span> are required. All others are optional.
+      </div>
       <div id="fields-container"></div>
     </div>
 
@@ -155,6 +162,92 @@
     <footer>BOBCAT ROBOTICS · TEAM 177 · SOUTH WINDSOR HIGH</footer>
 
   </main>
+
+  <!-- Help modal -->
+  <div id="help-overlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="help-modal">
+      <div class="help-head">
+        <h2 id="help-title">HOW TO USE BOBCAT SCOUT</h2>
+        <button id="btn-help-close" class="btn-help-close" aria-label="Close help">×</button>
+      </div>
+      <div class="help-body">
+
+        <section class="help-section">
+          <h3>Video Walkthrough</h3>
+          <div class="video-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+            <div>YouTube tutorial coming soon — a video walkthrough will be embedded here.</div>
+          </div>
+        </section>
+
+        <section class="help-section">
+          <h3>Quick Start</h3>
+          <ol class="help-list">
+            <li>Tap the maroon mic button and describe the match in plain English. You can also type into the box.</li>
+            <li>Tap <strong>AUTO-FILL FIELDS</strong>. The app parses your description into the form.</li>
+            <li>Review the fields (Step 2) — anything with a green AI badge was auto-filled. Edit anything that's wrong.</li>
+            <li>Fill in any required fields marked with <span class="req">*</span>. The Generate button stays disabled until they're filled.</li>
+            <li>Tap <strong>GENERATE QR + TSV + JSON</strong>, then scan the QR code or copy the TSV.</li>
+            <li>Tap <strong>SAVE &amp; NEXT MATCH</strong> to keep going. Match number increments automatically.</li>
+          </ol>
+        </section>
+
+        <section class="help-section">
+          <h3>Microphone Troubleshooting</h3>
+          <p class="help-intro">Voice input uses your browser's built-in speech recognition. If the mic button doesn't work or no text appears, follow the directions for your device below.</p>
+
+          <div class="device-block">
+            <h4>📱 Android (Chrome)</h4>
+            <ol class="help-list">
+              <li>Tap the lock icon (🔒) to the left of the address bar.</li>
+              <li>Tap <strong>Permissions</strong> → <strong>Microphone</strong> → set to <strong>Allow</strong>.</li>
+              <li>Reload the page and tap the mic button again.</li>
+              <li>If still blocked: open Android <strong>Settings</strong> → <strong>Apps</strong> → <strong>Chrome</strong> → <strong>Permissions</strong> → <strong>Microphone</strong> → <strong>Allow</strong>.</li>
+              <li>Make sure no other app (Zoom, Meet, voice recorder) is using the mic.</li>
+            </ol>
+          </div>
+
+          <div class="device-block">
+            <h4>🍎 iPhone / iPad (Safari)</h4>
+            <ol class="help-list">
+              <li>Voice input requires <strong>Safari on iOS 14.5 or newer</strong>. Chrome on iOS does not support it — open this page in Safari.</li>
+              <li>When you tap the mic, iOS will ask for microphone permission. Tap <strong>Allow</strong>.</li>
+              <li>If you accidentally denied it: open <strong>Settings</strong> → <strong>Safari</strong> → <strong>Microphone</strong> → set this site to <strong>Allow</strong>.</li>
+              <li>Or: <strong>Settings</strong> → <strong>Privacy &amp; Security</strong> → <strong>Microphone</strong> → make sure Safari is toggled on.</li>
+              <li>Reload the page after changing the setting.</li>
+            </ol>
+          </div>
+
+          <div class="device-block">
+            <h4>💻 Computer (Chrome / Edge / Safari on macOS)</h4>
+            <ol class="help-list">
+              <li>Click the lock icon or tune icon (🔒 / ⚙️) to the left of the address bar.</li>
+              <li>Find <strong>Microphone</strong> and set it to <strong>Allow</strong>.</li>
+              <li>On macOS, also open <strong>System Settings</strong> → <strong>Privacy &amp; Security</strong> → <strong>Microphone</strong> and make sure your browser is enabled.</li>
+              <li>On Windows, open <strong>Settings</strong> → <strong>Privacy &amp; security</strong> → <strong>Microphone</strong> and confirm "Let apps access your microphone" is on.</li>
+              <li>Firefox: voice recognition is <em>not</em> supported. Use Chrome, Edge, or Safari instead — or just type into the box.</li>
+              <li>Reload the page after changing any permission.</li>
+            </ol>
+          </div>
+
+          <div class="help-note">
+            <strong>Still not working?</strong> You can always type the match description directly into the text box — every voice feature works the same way with typed text.
+          </div>
+        </section>
+
+        <section class="help-section">
+          <h3>Tips</h3>
+          <ul class="help-list">
+            <li><strong>Required fields</strong> are marked with <span class="req">*</span>. The rest are optional.</li>
+            <li>Quality words help the parser. Say "passing was good" → 5, "pickup was pretty good" → 4, "bad pickup" → 2.</li>
+            <li>If the team didn't show up, toggle <strong>No Show</strong> in the Prematch section.</li>
+            <li>Your scout name and event key are remembered between sessions.</li>
+          </ul>
+        </section>
+
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

@@ -18,7 +18,7 @@ let recognition = null;
 let baseTranscript = '';      // text before this recording started
 let activeTab = 'qr';
 
-const SAMPLE_TEXT = "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4 in the hub, missed 1, crossed the bump. Teleop they scored 18 made, 3 missed, picked from depot and hp. Endgame climbed level 2. Smooth driver. Got defended a bit but no issues.";
+const SAMPLE_TEXT = "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4 in the hub and crossed the bump. Teleop they scored 18, picked from depot and hp. Pickup was pretty good, passing was amazing. Endgame climbed level 2. Smooth driver. Got defended a bit but no issues.";
 
 // =====================================================================
 // HELPERS
@@ -209,8 +209,6 @@ function parseTranscript(text, initialState) {
     const as = autoSection[0];
     const autoMade = as.match(/(?:made|scored|put in|hit)\s*(\d+)/i) || as.match(/(\d+)\s*(?:in auto|made|scored)/i);
     if (autoMade) { result.autoHubMade = parseInt(autoMade[1]); conf.autoHubMade = 'high'; }
-    const autoMiss = as.match(/miss(?:ed)?\s*(\d+)/i) || as.match(/(\d+)\s*miss/i);
-    if (autoMiss) { result.autoHubMissed = parseInt(autoMiss[1]); conf.autoHubMissed = 'high'; }
     if (/\b(left|mobility|leave|exit)\b/i.test(as)) { result.autoLeft = true; conf.autoLeft = 'high'; }
     if (/\bbump\b/i.test(as)) { result.autoObstacle = 'bump'; conf.autoObstacle = 'high'; }
     if (/\btrench\b/i.test(as)) {
@@ -229,10 +227,37 @@ function parseTranscript(text, initialState) {
     // "made 18", "scored 18", "18 made", "got 18 in"
     const teleMade = ts.match(/(?:made|scored|put in|hit)\s*(\d+)/i) || ts.match(/(\d+)\s*(?:made|scored|in the hub)/i);
     if (teleMade) { result.teleopHubMade = parseInt(teleMade[1]); conf.teleopHubMade = 'high'; }
-    // "missed 3", "3 missed", "missed about 3"
-    const teleMiss = ts.match(/miss(?:ed)?\s*(?:\w+\s+)?(\d+)/i) || ts.match(/(\d+)\s*miss/i);
-    if (teleMiss) { result.teleopHubMissed = parseInt(teleMiss[1]); conf.teleopHubMissed = 'high'; }
   }
+
+  // ---- No show ----
+  if (/\b(no\s*show|did(n'?t| not)\s+show(?:\s+up)?|never\s+showed|absent|didn'?t\s+come\s+out)\b/i.test(t)) {
+    result.noShow = true; conf.noShow = 'high';
+  }
+
+  // ---- Passing & pickup effectiveness (1–5 from sentiment near keyword) ----
+  const rateAround = (keywords) => {
+    for (const kw of keywords) {
+      const re = new RegExp(kw, 'gi');
+      let m;
+      while ((m = re.exec(t)) !== null) {
+        const start = Math.max(0, m.index - 60);
+        const end = Math.min(t.length, m.index + m[0].length + 60);
+        const ctx = t.slice(start, end);
+        if (/\bpretty\s+good\b/i.test(ctx)) return 4;
+        if (/\b(amazing|incredible|elite|insane|fantastic|excellent|perfect|flawless|great|awesome)\b/i.test(ctx)) return 5;
+        if (/\bgood\b/i.test(ctx)) return 5;
+        if (/\b(solid|strong|really\s+good|very\s+good|nice|effective|consistent)\b/i.test(ctx)) return 4;
+        if (/\b(decent|okay|ok|alright|average|fine)\b/i.test(ctx)) return 3;
+        if (/\b(bad|poor|weak|rough|messy|struggled|maybe|kinda|few|barely)\b/i.test(ctx)) return 2;
+        if (/\b(awful|terrible|horrible|never|couldn'?t|could\s+not|failed|none)\b/i.test(ctx)) return 1;
+      }
+    }
+    return null;
+  };
+  const pickupRating = rateAround(['picking\\s+up', 'pickup', 'pick\\s+up', 'intake', 'intaking']);
+  if (pickupRating !== null) { result.pickupEffectiveness = pickupRating; conf.pickupEffectiveness = 'high'; }
+  const passRating = rateAround(['passing', 'passes', '\\bpass\\b']);
+  if (passRating !== null) { result.passingEffectiveness = passRating; conf.passingEffectiveness = 'high'; }
 
   // ---- Fallback ----
   if (conf.teleopHubMade === undefined && conf.autoHubMade === undefined) {
@@ -398,6 +423,43 @@ function setField(code, value) {
   if (code === 'eventKey' && value) {
     try { localStorage.setItem('event_key', value); } catch(e) {}
   }
+
+  updateGenerateButton();
+}
+
+// =====================================================================
+// VALIDATION
+// =====================================================================
+
+function getMissingRequired() {
+  const missing = [];
+  ALL_FIELDS.forEach(f => {
+    if (!f.required) return;
+    const v = fields[f.code];
+    if (f.type === 'text') {
+      if (!v || String(v).trim() === '') missing.push(f.title);
+    } else if (f.type === 'number') {
+      if (v === null || v === undefined || v === '' || isNaN(parseInt(v))) missing.push(f.title);
+    }
+  });
+  return missing;
+}
+
+function updateGenerateButton() {
+  const btn = $('btn-generate');
+  if (!btn) return;
+  const missing = getMissingRequired();
+  btn.disabled = missing.length > 0;
+  const help = btn.parentElement && btn.parentElement.querySelector('.help-text');
+  if (help) {
+    if (missing.length > 0) {
+      help.textContent = 'Fill required fields to enable: ' + missing.join(', ');
+      help.classList.add('help-text-warn');
+    } else {
+      help.textContent = 'Review the fields above before generating. You can edit any field.';
+      help.classList.remove('help-text-warn');
+    }
+  }
 }
 
 // =====================================================================
@@ -500,9 +562,15 @@ function processTranscript() {
   fields = result.fields;
   confidence = result.confidence;
   renderAllFields();
+  updateGenerateButton();
 }
 
 function generateOutput() {
+  const missing = getMissingRequired();
+  if (missing.length > 0) {
+    alert('Please fill required fields first:\n• ' + missing.join('\n• '));
+    return;
+  }
   $('generate-row').classList.add('hidden');
   $('output-section').classList.remove('hidden');
   showTab(activeTab);
@@ -582,6 +650,7 @@ function resetMatch() {
   $('generate-row').classList.remove('hidden');
   renderAllFields();
   updateProcessButton();
+  updateGenerateButton();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -599,6 +668,7 @@ function clearAll() {
   } catch(e) {}
   renderAllFields();
   updateProcessButton();
+  updateGenerateButton();
 }
 
 function clearSession() {
@@ -697,6 +767,25 @@ function wireUI() {
     $('ref-content').classList.toggle('hidden');
     $('ref-arrow').style.transform = $('ref-content').classList.contains('hidden') ? '' : 'rotate(180deg)';
   });
+
+  // Help modal
+  const helpOverlay = $('help-overlay');
+  const openHelp = () => {
+    helpOverlay.classList.remove('hidden');
+    document.body.classList.add('no-scroll');
+  };
+  const closeHelp = () => {
+    helpOverlay.classList.add('hidden');
+    document.body.classList.remove('no-scroll');
+  };
+  $('btn-help').addEventListener('click', openHelp);
+  $('btn-help-close').addEventListener('click', closeHelp);
+  helpOverlay.addEventListener('click', e => {
+    if (e.target === helpOverlay) closeHelp();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !helpOverlay.classList.contains('hidden')) closeHelp();
+  });
 }
 
 // =====================================================================
@@ -736,6 +825,7 @@ async function init() {
   renderAllFields();
   wireUI();
   updateProcessButton();
+  updateGenerateButton();
   updateSessionBar();
 }
 
