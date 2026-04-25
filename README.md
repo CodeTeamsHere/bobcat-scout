@@ -1,6 +1,6 @@
 # Bobcat Scout — REBUILT 2026
 
-AI-powered voice scouting app for FRC Team 177 (Bobcat Robotics).
+Voice scouting app for FRC Team 177 (Bobcat Robotics).
 
 ## What it does
 
