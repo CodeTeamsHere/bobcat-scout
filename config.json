@@ -11,7 +11,7 @@
         { "title": "Match Type", "type": "select", "code": "matchType", "default": "qm", "options": [{"k":"qm","v":"Qualification"},{"k":"pm","v":"Practice"},{"k":"sf","v":"Playoff"}] },
         { "title": "Team #", "type": "number", "code": "teamNumber", "required": true, "default": 177, "min": 1, "max": 99999 },
         { "title": "Alliance", "type": "select", "code": "alliance", "default": "red", "options": [{"k":"red","v":"Red"},{"k":"blue","v":"Blue"}] },
-        { "title": "Station", "type": "select", "code": "driverStation", "default": "1", "options": [{"k":"1","v":"1"},{"k":"2","v":"2"},{"k":"3","v":"3"}] },
+        { "title": "Driver Station", "type": "select", "code": "driverStation", "default": "1", "options": [{"k":"1","v":"1"},{"k":"2","v":"2"},{"k":"3","v":"3"}] },
         { "title": "No Show", "type": "boolean", "code": "noShow", "default": false },
         { "title": "Starting Position", "type": "select", "code": "startingPosition", "default": "unknown", "options": [{"k":"wall","v":"Wall side"},{"k":"center","v":"Center"},{"k":"field","v":"Field side"},{"k":"unknown","v":"Unknown"}] },
         { "title": "Preloaded Fuel", "type": "number", "code": "preloadedFuel", "default": 0, "min": 0, "max": 8 }
@@ -20,29 +20,26 @@
     {
       "name": "Auto",
       "fields": [
-        { "title": "Left Starting Zone", "type": "boolean", "code": "autoLeft", "default": false },
-        { "title": "Auto Hub Made", "type": "number", "code": "autoHubMade", "default": 0, "min": 0 },
-        { "title": "Auto Climb", "type": "select", "code": "autoClimb", "default": "none", "options": [{"k":"none","v":"No climb"},{"k":"level1","v":"Level 1"},{"k":"attempted_failed","v":"Attempted, failed"}] },
-        { "title": "Auto Obstacle", "type": "select", "code": "autoObstacle", "default": "none", "options": [{"k":"none","v":"Neither"},{"k":"bump","v":"Bump"},{"k":"trench","v":"Trench"},{"k":"both","v":"Both"}] },
-        { "title": "Auto Notes", "type": "text", "code": "autoNotes", "default": "" }
+        { "title": "Left Starting Line", "type": "boolean", "code": "autoLeft", "default": false },
+        { "title": "Auto Fuel Scored", "type": "number", "code": "autoHubMade", "default": 0, "min": 0 },
+        { "title": "Auto Climb", "type": "select", "code": "autoClimb", "default": "none", "options": [{"k":"none","v":"No climb"},{"k":"level1","v":"Low Rung (L1)"},{"k":"attempted_failed","v":"Attempted, failed"}] }
       ]
     },
     {
       "name": "Teleop",
       "fields": [
-        { "title": "Teleop Hub Made", "type": "number", "code": "teleopHubMade", "default": 0, "min": 0 },
-        { "title": "Obstacle Crossings", "type": "number", "code": "teleopCrossings", "default": 0, "min": 0 },
-        { "title": "Picked From Depot", "type": "boolean", "code": "pickedFromDepot", "default": false },
-        { "title": "Picked From HP", "type": "boolean", "code": "pickedFromHP", "default": false },
-        { "title": "Picked From Floor", "type": "boolean", "code": "pickedFromFloor", "default": false },
+        { "title": "Teleop Fuel Scored", "type": "number", "code": "teleopHubMade", "default": 0, "min": 0 },
+        { "title": "Intake: Depot", "type": "boolean", "code": "pickedFromDepot", "default": false },
+        { "title": "Intake: Outpost Chute (HP)", "type": "boolean", "code": "pickedFromHP", "default": false },
+        { "title": "Intake: Neutral Zone (floor)", "type": "boolean", "code": "pickedFromFloor", "default": false },
         { "title": "Pickup Effectiveness (1-5)", "type": "range", "code": "pickupEffectiveness", "default": 3, "min": 1, "max": 5 },
-        { "title": "Passing Effectiveness (1-5)", "type": "range", "code": "passingEffectiveness", "default": 3, "min": 1, "max": 5 }
+        { "title": "Passing / Feeding (1-5)", "type": "range", "code": "passingEffectiveness", "default": 3, "min": 1, "max": 5 }
       ]
     },
     {
       "name": "Endgame",
       "fields": [
-        { "title": "Endgame Climb", "type": "select", "code": "endgameClimb", "default": "none", "options": [{"k":"none","v":"No climb"},{"k":"parked","v":"Parked"},{"k":"level1","v":"Level 1"},{"k":"level2","v":"Level 2"},{"k":"level3","v":"Level 3"},{"k":"attempted_failed","v":"Attempted, failed"}] },
+        { "title": "Endgame Climb", "type": "select", "code": "endgameClimb", "default": "none", "options": [{"k":"none","v":"No climb"},{"k":"parked","v":"Parked"},{"k":"level1","v":"Low Rung (L1)"},{"k":"level2","v":"Mid Rung (L2)"},{"k":"level3","v":"High Rung (L3)"},{"k":"attempted_failed","v":"Attempted, failed"}] },
         { "title": "Climb Time (sec)", "type": "number", "code": "climbSeconds", "default": 0, "min": 0, "max": 120 }
       ]
     },
@@ -52,8 +49,8 @@
         { "title": "Driver Skill (1-5)", "type": "range", "code": "driverSkill", "default": 3, "min": 1, "max": 5 },
         { "title": "Defense Rating (1-5)", "type": "range", "code": "defenseRating", "default": 1, "min": 1, "max": 5 },
         { "title": "Was Defended", "type": "boolean", "code": "wasDefended", "default": false },
-        { "title": "Tipped", "type": "boolean", "code": "tipped", "default": false },
-        { "title": "Disabled", "type": "boolean", "code": "disabled", "default": false },
+        { "title": "Tipped / Fell Over", "type": "boolean", "code": "tipped", "default": false },
+        { "title": "Died / Disabled", "type": "boolean", "code": "disabled", "default": false },
         { "title": "Card Status", "type": "select", "code": "cardStatus", "default": "none", "options": [{"k":"none","v":"None"},{"k":"yellow","v":"Yellow"},{"k":"red","v":"Red"}] },
         { "title": "Comments", "type": "text", "code": "comments", "default": "" }
       ]

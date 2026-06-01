@@ -18,7 +18,7 @@ let recognition = null;
 let baseTranscript = '';      // text before this recording started
 let activeTab = 'qr';
 
-const SAMPLE_TEXT = "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4 in the hub and crossed the bump. Teleop they scored 18, picked from depot and hp. Pickup was pretty good, passing was amazing. Endgame climbed level 2. Smooth driver. Got defended a bit but no issues.";
+const SAMPLE_TEXT = "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4 in the hub and left the line. Teleop they scored 18, picked from the neutral zone and the outpost chute. Pickup was pretty good, passing was amazing. Endgame climbed the mid rung. Smooth driver. Got defended a bit but no issues.";
 
 // =====================================================================
 // HELPERS
@@ -210,12 +210,7 @@ function parseTranscript(text, initialState) {
     const autoMade = as.match(/(?:made|scored|put in|hit)\s*(\d+)/i) || as.match(/(\d+)\s*(?:in auto|made|scored)/i);
     if (autoMade) { result.autoHubMade = parseInt(autoMade[1]); conf.autoHubMade = 'high'; }
     if (/\b(left|mobility|leave|exit)\b/i.test(as)) { result.autoLeft = true; conf.autoLeft = 'high'; }
-    if (/\bbump\b/i.test(as)) { result.autoObstacle = 'bump'; conf.autoObstacle = 'high'; }
-    if (/\btrench\b/i.test(as)) {
-      result.autoObstacle = result.autoObstacle === 'bump' ? 'both' : 'trench';
-      conf.autoObstacle = 'high';
-    }
-    if (/\bclimb(ed)?\s*(in\s*auto|level\s*1|l1)/i.test(as)) {
+    if (/\bclimb(ed)?\s*(in\s*auto|level\s*1|l1|low\s*rung)/i.test(as)) {
       result.autoClimb = 'level1'; conf.autoClimb = 'high';
     }
   }
@@ -268,7 +263,7 @@ function parseTranscript(text, initialState) {
   // ---- Pickup sources ----
   if (/\bdepot\b/i.test(t)) { result.pickedFromDepot = true; conf.pickedFromDepot = 'high'; }
   if (/\b(human player|hp|chute|outpost)\b/i.test(t)) { result.pickedFromHP = true; conf.pickedFromHP = 'high'; }
-  if (/\b(floor|ground|off the ground|loose fuel|scooped)\b/i.test(t)) { result.pickedFromFloor = true; conf.pickedFromFloor = 'high'; }
+  if (/\b(floor|ground|off the ground|loose fuel|scooped|neutral zone)\b/i.test(t)) { result.pickedFromFloor = true; conf.pickedFromFloor = 'high'; }
 
   // ---- Endgame climb ----
   if (/\blevel\s*3\b|\bl3\b|\bhigh rung\b/i.test(t)) { result.endgameClimb = 'level3'; conf.endgameClimb = 'high'; }
@@ -723,6 +718,173 @@ function toggleSessionCard() {
 }
 
 // =====================================================================
+// INTERACTIVE WALKTHROUGH (guided tour built from the real page)
+// =====================================================================
+
+const TOUR_STEPS = [
+  {
+    selector: '.voice-row',
+    title: '1 · Describe the match',
+    body: 'Tap the maroon mic and just talk — or type — in plain English. Example: "Team 177, scored 4 in auto, climbed the mid rung." No special wording needed.'
+  },
+  {
+    selector: '#btn-process',
+    title: '2 · Auto-fill the fields',
+    body: 'Tap AUTO-FILL FIELDS. The app reads your description and fills in the scouting form for you automatically.'
+  },
+  {
+    selector: '#fields-container',
+    title: '3 · Review & fix',
+    body: 'Check the filled values. A green "AI" badge means it was auto-filled — tap any field to correct it. Fields marked with a red * are required.'
+  },
+  {
+    selector: '#btn-generate',
+    title: '4 · Generate output',
+    body: 'Once the required fields are set, tap GENERATE to get a scannable QR code plus TSV and JSON that drop straight into your QRScout pipeline.'
+  },
+  {
+    selector: '#btn-help',
+    title: '5 · Save & keep going',
+    body: 'After generating, use SAVE & NEXT MATCH — the match number bumps automatically. You can reopen this walkthrough anytime from the HELP button up here.'
+  }
+];
+
+let tourIndex = 0;
+let tourAutoplay = false;
+let tourTimer = null;
+const TOUR_AUTOPLAY_MS = 4500;
+
+function startTour() {
+  $('help-overlay').classList.add('hidden');
+  document.body.classList.remove('no-scroll'); // tour needs to scroll the page
+  tourIndex = 0;
+  tourAutoplay = false;
+  $('tour').classList.remove('hidden');
+  setTourAutoplayUI();
+  showTourStep(0);
+  window.addEventListener('resize', repositionTour);
+  window.addEventListener('scroll', repositionTour, { passive: true });
+  document.addEventListener('keydown', tourKeyHandler);
+}
+
+function endTour() {
+  stopTourTimer();
+  tourAutoplay = false;
+  $('tour').classList.add('hidden');
+  window.removeEventListener('resize', repositionTour);
+  window.removeEventListener('scroll', repositionTour);
+  document.removeEventListener('keydown', tourKeyHandler);
+}
+
+function showTourStep(i) {
+  tourIndex = Math.max(0, Math.min(i, TOUR_STEPS.length - 1));
+  const step = TOUR_STEPS[tourIndex];
+
+  $('tour-step-count').textContent = `Step ${tourIndex + 1} of ${TOUR_STEPS.length}`;
+  $('tour-title').textContent = step.title;
+  $('tour-body').textContent = step.body;
+  $('tour-progress-bar').style.width = ((tourIndex + 1) / TOUR_STEPS.length * 100) + '%';
+  $('tour-back').disabled = tourIndex === 0;
+  $('tour-next').textContent = tourIndex === TOUR_STEPS.length - 1 ? 'FINISH' : 'NEXT';
+
+  const target = document.querySelector(step.selector);
+  if (target) {
+    target.scrollIntoView({ block: 'center', inline: 'nearest' });
+    requestAnimationFrame(() => placeTour(target));
+  }
+}
+
+function placeTour(target) {
+  const margin = 8;
+  const r = target.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight;
+
+  // Clamp the highlighted box to the viewport so it's always visible.
+  const top = Math.max(r.top - 6, margin);
+  const left = Math.max(r.left - 6, margin);
+  const right = Math.min(r.right + 6, vw - margin);
+  const bottom = Math.min(r.bottom + 6, vh - margin);
+  const w = Math.max(right - left, 0);
+  const h = Math.max(bottom - top, 0);
+
+  const sp = $('tour-spotlight');
+  sp.style.top = top + 'px';
+  sp.style.left = left + 'px';
+  sp.style.width = w + 'px';
+  sp.style.height = h + 'px';
+
+  // Position the card below the spotlight if there's room, else above, else pinned.
+  const card = $('tour-card');
+  const cardH = card.offsetHeight || 200;
+  const cardW = card.offsetWidth || 360;
+  let cardTop;
+  if (vh - bottom > cardH + 16) cardTop = bottom + 12;
+  else if (top > cardH + 16) cardTop = top - cardH - 12;
+  else cardTop = vh - cardH - margin;
+
+  let cardLeft = (left + w / 2) - cardW / 2;
+  cardLeft = Math.max(margin, Math.min(cardLeft, vw - cardW - margin));
+  cardTop = Math.max(margin, Math.min(cardTop, vh - cardH - margin));
+  card.style.top = cardTop + 'px';
+  card.style.left = cardLeft + 'px';
+}
+
+function repositionTour() {
+  if ($('tour').classList.contains('hidden')) return;
+  const target = document.querySelector(TOUR_STEPS[tourIndex].selector);
+  if (target) placeTour(target);
+}
+
+function nextTourStep() {
+  if (tourIndex >= TOUR_STEPS.length - 1) { endTour(); return; }
+  showTourStep(tourIndex + 1);
+}
+
+function prevTourStep() {
+  if (tourIndex > 0) showTourStep(tourIndex - 1);
+}
+
+function setTourAutoplayUI() {
+  const b = $('tour-autoplay');
+  b.classList.toggle('tour-autoplay-on', tourAutoplay);
+  b.setAttribute('aria-pressed', tourAutoplay ? 'true' : 'false');
+  b.textContent = tourAutoplay ? '⏸ PAUSE' : '▶ AUTO-PLAY';
+}
+
+function toggleTourAutoplay() {
+  tourAutoplay = !tourAutoplay;
+  setTourAutoplayUI();
+  if (tourAutoplay) scheduleTourAdvance();
+  else stopTourTimer();
+}
+
+function scheduleTourAdvance() {
+  stopTourTimer();
+  tourTimer = setTimeout(() => {
+    if (!tourAutoplay) return;
+    if (tourIndex >= TOUR_STEPS.length - 1) { endTour(); return; }
+    showTourStep(tourIndex + 1);
+    scheduleTourAdvance();
+  }, TOUR_AUTOPLAY_MS);
+}
+
+function stopTourTimer() {
+  if (tourTimer) { clearTimeout(tourTimer); tourTimer = null; }
+}
+
+// Manual navigation pauses auto-play so the two never fight.
+function pauseTourAutoplay() {
+  if (tourAutoplay) { tourAutoplay = false; setTourAutoplayUI(); }
+  stopTourTimer();
+}
+
+function tourKeyHandler(e) {
+  if (e.key === 'Escape') endTour();
+  else if (e.key === 'ArrowRight') { pauseTourAutoplay(); nextTourStep(); }
+  else if (e.key === 'ArrowLeft') { pauseTourAutoplay(); prevTourStep(); }
+}
+
+// =====================================================================
 // UI WIRING
 // =====================================================================
 
@@ -786,6 +948,13 @@ function wireUI() {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !helpOverlay.classList.contains('hidden')) closeHelp();
   });
+
+  // Interactive walkthrough
+  $('btn-start-tour').addEventListener('click', startTour);
+  $('tour-next').addEventListener('click', () => { pauseTourAutoplay(); nextTourStep(); });
+  $('tour-back').addEventListener('click', () => { pauseTourAutoplay(); prevTourStep(); });
+  $('tour-close').addEventListener('click', endTour);
+  $('tour-autoplay').addEventListener('click', toggleTourAutoplay);
 }
 
 // =====================================================================

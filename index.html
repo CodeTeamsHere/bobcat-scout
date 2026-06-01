@@ -70,7 +70,7 @@
               <line x1="8" y1="23" x2="16" y2="23"></line>
             </svg>
           </button>
-          <textarea id="transcript" placeholder='Tap mic and talk, or type. Example: "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4, crossed the bump. Teleop 18 scored, pickup was pretty good, passing was amazing. Climbed level 2. Smooth driver."'></textarea>
+          <textarea id="transcript" placeholder='Tap mic and talk, or type. Example: "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4 in the hub and left the line. Teleop 18 scored, pickup was pretty good, passing was amazing. Climbed the mid rung. Smooth driver."'></textarea>
         </div>
         <div id="mic-error" class="error-banner hidden">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -173,10 +173,15 @@
       <div class="help-body">
 
         <section class="help-section">
-          <h3>Video Walkthrough</h3>
-          <div class="video-placeholder">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
-            <div>YouTube tutorial coming soon — a video walkthrough will be embedded here.</div>
+          <h3>Interactive Walkthrough</h3>
+          <div class="walkthrough-launch">
+            <div class="walkthrough-blurb">
+              <strong>Take the guided tour.</strong> Instead of a video, this walkthrough highlights each step right here on the real app. Click through it yourself, or hit <strong>Auto-Play</strong> and just watch.
+            </div>
+            <button id="btn-start-tour" class="btn btn-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              START WALKTHROUGH
+            </button>
           </div>
         </section>
 
@@ -245,6 +250,26 @@
           </ul>
         </section>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive walkthrough (guided tour) -->
+  <div id="tour" class="tour hidden" role="dialog" aria-modal="true" aria-label="App walkthrough">
+    <div id="tour-block" class="tour-block"></div>
+    <div id="tour-spotlight" class="tour-spotlight"></div>
+    <div id="tour-card" class="tour-card">
+      <div class="tour-card-top">
+        <span id="tour-step-count" class="tour-step-count">Step 1</span>
+        <button id="tour-close" class="tour-close" aria-label="Close walkthrough">×</button>
+      </div>
+      <h4 id="tour-title" class="tour-title"></h4>
+      <p id="tour-body" class="tour-body"></p>
+      <div class="tour-progress"><div id="tour-progress-bar" class="tour-progress-bar"></div></div>
+      <div class="tour-controls">
+        <button id="tour-back" class="btn btn-ghost tour-btn">BACK</button>
+        <button id="tour-autoplay" class="btn btn-outline tour-btn" aria-pressed="false">▶ AUTO-PLAY</button>
+        <button id="tour-next" class="btn btn-primary tour-btn">NEXT</button>
       </div>
     </div>
   </div>
