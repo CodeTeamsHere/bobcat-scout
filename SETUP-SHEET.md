@@ -59,6 +59,8 @@ Each scout does the tiny **Part C** (or just opens a link you send them).
 
 - Scout the match as normal → **GENERATE** → tap **SUBMIT TO SHEET** (or just **SAVE & NEXT**,
   which also submits when connected). A row lands in your Sheet instantly.
+- **Keep going — one scouter scouts many matches.** Tap **SAVE & NEXT** and the form clears and the
+  match number bumps up for the next match. There is **no per-scout limit**; every match is its own row.
 - **No signal?** The app saves the match on the phone and shows a small **SHEET (n)** counter.
   As soon as the phone is back online it sends everything automatically — nothing is lost.
 - **Still works without a Sheet at all:** the QR code is always there as the offline path.
@@ -70,7 +72,7 @@ Each scout does the tiny **Part C** (or just opens a link you send them).
 | Passcode | Only apps carrying your passcode can submit. |
 | Active Event / dates | Submissions outside your event (or its dates) are rejected. |
 | Validation | Blank required fields or impossible numbers (bad team #, out-of-range scores) are rejected. |
-| Duplicate-block | The same scout re-sending a match **updates** the row instead of adding junk. |
+| Duplicate-block | Only if the *same scout re-sends the same match & team* does it **update** that one row (prevents accidental doubles). Different matches/teams are always new rows — scouters report many matches each. |
 | Stamping | Every row records the scout name and the submit time, so bad data is traceable. |
 
 > **Note:** anyone who has both the link **and** passcode could still submit. For most teams

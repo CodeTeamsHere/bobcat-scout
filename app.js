@@ -763,7 +763,7 @@ const TOUR_STEPS = [
   {
     selector: '#btn-help',
     title: '6 · Save & keep going',
-    body: 'Use SAVE & NEXT MATCH — it saves, submits to the Sheet if connected, and bumps the match number automatically. Reopen this walkthrough anytime from HELP.'
+    body: 'Use SAVE & NEXT MATCH — it saves, submits to the Sheet if connected, and bumps the match number automatically. Scout as many matches as you want — there is no limit. Reopen this walkthrough anytime from HELP.'
   }
 ];
 
@@ -1122,7 +1122,7 @@ async function submitCurrentMatch() {
   if (!isSheetConnected()) { showSubmitStatus('No Sheet connected — scan the QR code, or tap ⚙ SHEET above to connect one.', 'warn'); return; }
   showSubmitStatus('Sending to Sheet…', 'info');
   const res = await submitMatch(Object.assign({}, fields, { _id: currentMatchId }));
-  if (res.status === 'sent') showSubmitStatus('✓ Saved to your Sheet (' + res.action + ').', 'ok');
+  if (res.status === 'sent') showSubmitStatus('✓ Saved to your Sheet (' + res.action + '). Tap SAVE & NEXT MATCH to scout your next one.', 'ok');
   else if (res.status === 'queued') showSubmitStatus('No connection right now — saved on this phone and queued. It sends automatically when you’re back online.', 'warn');
   else if (res.status === 'rejected') showSubmitStatus('The Sheet rejected it: ' + res.error, 'err');
   else showSubmitStatus('No Sheet connected.', 'warn');
