@@ -25,6 +25,10 @@
         <button id="btn-session" class="btn-header-gold hidden">
           <span id="session-count">0</span> SAVED <span id="session-arrow">▼</span>
         </button>
+        <button id="btn-sheet" class="btn-header-outline" title="Connect to your Google Sheet">
+          <span id="sheet-dot" class="sheet-dot dot-off"></span>
+          <span id="sheet-label">SHEET</span>
+        </button>
         <button id="btn-help" class="btn-header-outline" title="Help & instructions">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
           HELP
@@ -147,7 +151,10 @@
             </button>
           </div>
 
+          <div id="submit-status" class="submit-status hidden"></div>
+
           <div class="divider-line">
+            <button id="btn-submit-sheet" class="btn btn-primary">SUBMIT TO SHEET</button>
             <button id="btn-save-next" class="btn btn-gold">SAVE & NEXT MATCH →</button>
             <button id="btn-reset" class="btn btn-outline">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
@@ -250,6 +257,41 @@
           </ul>
         </section>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- Connect to Google Sheet -->
+  <div id="sheet-overlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="help-modal" style="max-width:560px;">
+      <div class="help-head">
+        <h2 id="sheet-title">CONNECT TO GOOGLE SHEET</h2>
+        <button id="btn-sheet-close" class="btn-help-close" aria-label="Close">×</button>
+      </div>
+      <div class="help-body">
+        <p class="help-intro">Send matches straight into your team's Google Sheet — no scanning. Paste the Web App URL and passcode from your scouting Sheet. These are stored only on this device. The QR code keeps working either way.</p>
+
+        <label class="field-label" for="sheet-url">Web App URL</label>
+        <input type="text" id="sheet-url" placeholder="https://script.google.com/macros/s/AKfy.../exec">
+
+        <label class="field-label" for="sheet-pass" style="margin-top:12px;">Passcode</label>
+        <input type="text" id="sheet-pass" placeholder="must match the Passcode in your Sheet's Config tab">
+
+        <div id="sheet-queue-note" class="sheet-queue-note hidden"></div>
+
+        <div class="btn-row" style="margin-top:16px;">
+          <button id="btn-sheet-save" class="btn btn-primary">SAVE</button>
+          <button id="btn-sheet-test" class="btn btn-outline">SEND TEST ROW</button>
+          <button id="btn-sheet-share" class="btn btn-ghost">COPY SCOUT LINK</button>
+          <button id="btn-sheet-retry" class="btn btn-gold hidden">RETRY QUEUED</button>
+          <button id="btn-sheet-disconnect" class="btn btn-danger">DISCONNECT</button>
+        </div>
+
+        <div id="sheet-msg" class="sheet-msg hidden"></div>
+
+        <div class="help-note" style="margin-top:16px;">
+          <strong>Don't have the URL yet?</strong> The Sheet owner sets this up once — see the <code>apps-script/Code.gs</code> file in the repo (it has click-by-click steps) or the <strong>SETUP-SHEET.md</strong> guide. Then use <strong>COPY SCOUT LINK</strong> to send every scout a single link that connects their app automatically.
+        </div>
       </div>
     </div>
   </div>

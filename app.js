@@ -623,11 +623,21 @@ function copyToClipboard(text, btn) {
 // =====================================================================
 
 function saveMatchAndNext() {
-  sessionMatches.push(Object.assign({}, fields, { _ts: Date.now() }));
+  const snap = Object.assign({}, fields, { _ts: Date.now(), _id: currentMatchId });
+  sessionMatches.push(snap);
   try {
     localStorage.setItem('session_matches', JSON.stringify(sessionMatches));
   } catch(e) { console.warn('Storage save failed', e); }
   updateSessionBar();
+  // If a Sheet is connected, also push this match online (queues if offline).
+  if (isSheetConnected()) {
+    submitMatch(snap).then(res => {
+      if (res.status === 'rejected') {
+        alert('Saved on this device, but the Sheet rejected it:\n' + res.error + '\n\nOpen ⚙ SHEET to check the passcode/settings.');
+      }
+      updateSheetStatus();
+    });
+  }
   resetMatch();
 }
 
@@ -640,9 +650,11 @@ function resetMatch() {
   fresh.matchType = fields.matchType;
   fields = fresh;
   confidence = {};
+  currentMatchId = newMatchId();
   $('transcript').value = '';
   $('output-section').classList.add('hidden');
   $('generate-row').classList.remove('hidden');
+  const ss = $('submit-status'); if (ss) ss.classList.add('hidden');
   renderAllFields();
   updateProcessButton();
   updateGenerateButton();
@@ -653,6 +665,7 @@ function clearAll() {
   if (!confirm('Clear EVERYTHING — all fields, transcript, and saved scout name/event? This cannot be undone.')) return;
   fields = initialFieldState();
   confidence = {};
+  currentMatchId = newMatchId();
   $('transcript').value = '';
   $('output-section').classList.add('hidden');
   $('generate-row').classList.remove('hidden');
@@ -885,6 +898,240 @@ function tourKeyHandler(e) {
 }
 
 // =====================================================================
+// GOOGLE SHEET SUBMISSION (optional online pipeline + offline queue)
+// QR always works offline; this adds one-tap auto-submit when there's signal.
+// =====================================================================
+
+let sheetEndpoint = '';      // Web App URL (from the team's Sheet)
+let sheetPasscode = '';      // shared passcode that must match the Config tab
+let pendingQueue = [];       // submissions saved while offline / on failure
+let currentMatchId = null;   // stable id for the match being scouted (idempotent re-sends)
+
+const SUBMIT_REQUIRED = ['scoutName', 'eventKey', 'matchNumber', 'teamNumber'];
+const SUBMIT_RANGES = {
+  matchNumber: [1, 200], teamNumber: [1, 99999], preloadedFuel: [0, 50],
+  autoHubMade: [0, 500], teleopHubMade: [0, 500], climbSeconds: [0, 160],
+  pickupEffectiveness: [1, 5], passingEffectiveness: [1, 5],
+  driverSkill: [1, 5], defenseRating: [1, 5]
+};
+
+function newMatchId() {
+  return 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function isSheetConnected() { return !!sheetEndpoint; }
+
+function loadSheetConfig() {
+  try {
+    sheetEndpoint = localStorage.getItem('sheet_endpoint') || '';
+    sheetPasscode = localStorage.getItem('sheet_passcode') || '';
+    pendingQueue = JSON.parse(localStorage.getItem('pending_submissions') || '[]');
+  } catch (e) { pendingQueue = []; }
+}
+
+// A lead can share a link like  ...?sheet=<webAppUrl>&key=<passcode>  to auto-connect a scout's phone.
+function applyUrlConfig() {
+  const p = new URLSearchParams(location.search);
+  const url = p.get('sheet'), key = p.get('key');
+  let changed = false;
+  if (url) { try { localStorage.setItem('sheet_endpoint', url); } catch (e) {} changed = true; }
+  if (key) { try { localStorage.setItem('sheet_passcode', key); } catch (e) {} changed = true; }
+  if (changed) history.replaceState(null, '', location.pathname); // don't leave the passcode in the address bar
+}
+
+function savePendingQueue() {
+  try { localStorage.setItem('pending_submissions', JSON.stringify(pendingQueue)); } catch (e) {}
+}
+
+// Same checks the server runs — gives instant feedback and avoids pointless sends.
+function validateForSubmit(d) {
+  for (const k of SUBMIT_REQUIRED) {
+    if (d[k] === undefined || d[k] === null || String(d[k]).trim() === '') {
+      return { ok: false, error: 'Missing required field: ' + k };
+    }
+  }
+  for (const k in SUBMIT_RANGES) {
+    const v = d[k];
+    if (v === undefined || v === null || v === '') continue;
+    const n = Number(v);
+    if (isNaN(n) || n < SUBMIT_RANGES[k][0] || n > SUBMIT_RANGES[k][1]) {
+      return { ok: false, error: 'Out of range: ' + k + ' = ' + v };
+    }
+  }
+  return { ok: true };
+}
+
+function buildPayload(data) {
+  const clean = Object.assign({}, data);
+  delete clean._ts;
+  return Object.assign(clean, {
+    passcode: sheetPasscode,
+    _order: FIELD_ORDER.slice(),
+    _id: data._id || currentMatchId || newMatchId()
+  });
+}
+
+// JSONP call: works around the cross-origin limits of Apps Script web apps,
+// and (unlike no-cors fetch) lets us actually READ the ok/error reply.
+function jsonpSubmit(payload, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const cb = 'bscb_' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+    let done = false;
+    const script = document.createElement('script');
+    const timer = setTimeout(() => finish(() => reject(new Error('timeout'))), timeoutMs || 12000);
+    function finish(fn) {
+      if (done) return; done = true;
+      clearTimeout(timer);
+      delete window[cb];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      fn();
+    }
+    window[cb] = (resp) => finish(() => resolve(resp));
+    script.onerror = () => finish(() => reject(new Error('network')));
+    script.src = sheetEndpoint + '?callback=' + cb + '&data=' + encodeURIComponent(JSON.stringify(payload));
+    document.body.appendChild(script);
+  });
+}
+
+// Submit one match. Resolves { status: 'sent'|'queued'|'rejected'|'notconfigured' }.
+async function submitMatch(data) {
+  if (!isSheetConnected()) return { status: 'notconfigured' };
+  const payload = buildPayload(data);
+  if (!navigator.onLine) { enqueue(payload); return { status: 'queued' }; }
+  try {
+    const resp = await jsonpSubmit(payload);
+    if (resp && resp.ok) return { status: 'sent', action: resp.action };
+    return { status: 'rejected', error: (resp && resp.error) || 'rejected' }; // config issue, don't queue
+  } catch (e) {
+    enqueue(payload); // network/timeout — keep it for auto-retry
+    return { status: 'queued' };
+  }
+}
+
+function enqueue(payload) {
+  pendingQueue = pendingQueue.filter(p => p._id !== payload._id); // de-dupe by match id
+  pendingQueue.push(payload);
+  savePendingQueue();
+  updateSheetStatus();
+}
+
+async function flushQueue() {
+  if (!isSheetConnected() || !navigator.onLine || pendingQueue.length === 0) return;
+  for (const payload of pendingQueue.slice()) {
+    try {
+      const resp = await jsonpSubmit(payload);
+      // Drop on success OR on a server rejection (config problem won't fix itself by retrying).
+      // The local session copy is always kept, so nothing is lost.
+      if (resp) { pendingQueue = pendingQueue.filter(p => p._id !== payload._id); savePendingQueue(); }
+    } catch (e) {
+      break; // still offline — stop, try again on the next 'online' event
+    }
+  }
+  updateSheetStatus();
+}
+
+function updateSheetStatus() {
+  const dot = $('sheet-dot'), label = $('sheet-label');
+  if (!dot || !label) return;
+  const n = pendingQueue.length;
+  if (!isSheetConnected()) { dot.className = 'sheet-dot dot-off'; label.textContent = 'SHEET'; }
+  else if (n > 0) { dot.className = 'sheet-dot dot-queued'; label.textContent = 'SHEET (' + n + ')'; }
+  else { dot.className = 'sheet-dot dot-on'; label.textContent = 'SHEET'; }
+  refreshSheetDialog();
+}
+
+// ---- Connect-to-Sheet dialog ----
+function openSheetDialog() {
+  $('sheet-url').value = sheetEndpoint;
+  $('sheet-pass').value = sheetPasscode;
+  $('sheet-msg').classList.add('hidden');
+  $('sheet-overlay').classList.remove('hidden');
+  document.body.classList.add('no-scroll');
+  refreshSheetDialog();
+}
+function closeSheetDialog() {
+  $('sheet-overlay').classList.add('hidden');
+  document.body.classList.remove('no-scroll');
+}
+function refreshSheetDialog() {
+  const note = $('sheet-queue-note');
+  if (!note) return;
+  const n = pendingQueue.length;
+  if (n > 0) { note.textContent = n + ' submission(s) waiting to send — they go automatically when you’re back online.'; note.classList.remove('hidden'); }
+  else note.classList.add('hidden');
+  const retry = $('btn-sheet-retry');
+  if (retry) retry.classList.toggle('hidden', n === 0);
+}
+function saveSheetConfig() {
+  sheetEndpoint = $('sheet-url').value.trim();
+  sheetPasscode = $('sheet-pass').value.trim();
+  try {
+    localStorage.setItem('sheet_endpoint', sheetEndpoint);
+    localStorage.setItem('sheet_passcode', sheetPasscode);
+  } catch (e) {}
+  updateSheetStatus();
+  showSheetMsg(sheetEndpoint ? 'Saved. Matches will now also go to your Sheet.' : 'Cleared.', 'ok');
+  flushQueue();
+}
+function disconnectSheet() {
+  sheetEndpoint = ''; sheetPasscode = '';
+  try { localStorage.removeItem('sheet_endpoint'); localStorage.removeItem('sheet_passcode'); } catch (e) {}
+  $('sheet-url').value = ''; $('sheet-pass').value = '';
+  updateSheetStatus();
+  showSheetMsg('Disconnected. The app is back to QR-only.', 'ok');
+}
+async function sendTestRow() {
+  sheetEndpoint = $('sheet-url').value.trim();
+  sheetPasscode = $('sheet-pass').value.trim();
+  if (!sheetEndpoint) { showSheetMsg('Paste the Web App URL first.', 'err'); return; }
+  showSheetMsg('Sending a test row…', 'ok');
+  const test = { scoutName: 'CONNECTION TEST', eventKey: fields.eventKey || 'test', matchType: 'pm', matchNumber: 1, teamNumber: 177, _id: 'test-' + Date.now().toString(36) };
+  try {
+    const resp = await jsonpSubmit(buildPayload(test));
+    if (resp && resp.ok) showSheetMsg('✓ Success! A "CONNECTION TEST" row was added to your Sheet — you can delete it. (' + resp.action + ')', 'ok');
+    else showSheetMsg('Reached the Sheet, but it replied: ' + ((resp && resp.error) || 'rejected') + '. Check the passcode matches the Config tab.', 'err');
+  } catch (e) {
+    showSheetMsg('Could not reach the Sheet. Check the URL is the /exec link and the deployment is set to "Anyone".', 'err');
+  }
+}
+function copyScoutLink() {
+  const url = $('sheet-url').value.trim(), pass = $('sheet-pass').value.trim();
+  if (!url) { showSheetMsg('Paste the Web App URL first.', 'err'); return; }
+  const link = location.origin + location.pathname + '?sheet=' + encodeURIComponent(url) + '&key=' + encodeURIComponent(pass);
+  navigator.clipboard.writeText(link).then(
+    () => showSheetMsg('Scout link copied! Send it to your scouts — opening it auto-connects their app.', 'ok'),
+    () => showSheetMsg('Copy failed. Here is the link:\n' + link, 'err')
+  );
+}
+function showSheetMsg(msg, kind) {
+  const el = $('sheet-msg');
+  el.textContent = msg;
+  el.className = 'sheet-msg ' + (kind === 'err' ? 'sheet-msg-err' : 'sheet-msg-ok');
+  el.classList.remove('hidden');
+}
+
+// ---- Explicit "Submit to Sheet" button in the output step ----
+async function submitCurrentMatch() {
+  const v = validateForSubmit(fields);
+  if (!v.ok) { showSubmitStatus(v.error, 'err'); return; }
+  if (!isSheetConnected()) { showSubmitStatus('No Sheet connected — scan the QR code, or tap ⚙ SHEET above to connect one.', 'warn'); return; }
+  showSubmitStatus('Sending to Sheet…', 'info');
+  const res = await submitMatch(Object.assign({}, fields, { _id: currentMatchId }));
+  if (res.status === 'sent') showSubmitStatus('✓ Saved to your Sheet (' + res.action + ').', 'ok');
+  else if (res.status === 'queued') showSubmitStatus('No connection right now — saved on this phone and queued. It sends automatically when you’re back online.', 'warn');
+  else if (res.status === 'rejected') showSubmitStatus('The Sheet rejected it: ' + res.error, 'err');
+  else showSubmitStatus('No Sheet connected.', 'warn');
+}
+function showSubmitStatus(msg, kind) {
+  const el = $('submit-status');
+  if (!el) return;
+  const map = { ok: 'submit-ok', err: 'submit-err', warn: 'submit-warn', info: 'submit-info' };
+  el.textContent = msg;
+  el.className = 'submit-status ' + (map[kind] || 'submit-info');
+  el.classList.remove('hidden');
+}
+
+// =====================================================================
 // UI WIRING
 // =====================================================================
 
@@ -955,6 +1202,18 @@ function wireUI() {
   $('tour-back').addEventListener('click', () => { pauseTourAutoplay(); prevTourStep(); });
   $('tour-close').addEventListener('click', endTour);
   $('tour-autoplay').addEventListener('click', toggleTourAutoplay);
+
+  // Google Sheet connection
+  $('btn-sheet').addEventListener('click', openSheetDialog);
+  $('btn-sheet-close').addEventListener('click', closeSheetDialog);
+  $('btn-sheet-save').addEventListener('click', saveSheetConfig);
+  $('btn-sheet-test').addEventListener('click', sendTestRow);
+  $('btn-sheet-share').addEventListener('click', copyScoutLink);
+  $('btn-sheet-disconnect').addEventListener('click', disconnectSheet);
+  $('btn-sheet-retry').addEventListener('click', () => flushQueue());
+  $('btn-submit-sheet').addEventListener('click', submitCurrentMatch);
+  $('sheet-overlay').addEventListener('click', e => { if (e.target === $('sheet-overlay')) closeSheetDialog(); });
+  window.addEventListener('online', flushQueue);
 }
 
 // =====================================================================
@@ -980,6 +1239,11 @@ async function init() {
   ALL_FIELDS = CONFIG.sections.flatMap(s => s.fields);
   FIELD_ORDER = ALL_FIELDS.map(f => f.code);
   fields = initialFieldState();
+  currentMatchId = newMatchId();
+
+  // Sheet connection: honor a shared ?sheet=&key= link, then load saved settings.
+  applyUrlConfig();
+  loadSheetConfig();
 
   // Restore persisted preferences
   try {
@@ -996,6 +1260,8 @@ async function init() {
   updateProcessButton();
   updateGenerateButton();
   updateSessionBar();
+  updateSheetStatus();
+  flushQueue();
 }
 
 document.addEventListener('DOMContentLoaded', init);

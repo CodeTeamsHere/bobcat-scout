@@ -728,3 +728,34 @@ footer {
   .tour-card { width: calc(100vw - 16px); padding: 14px; }
   .tour-title { font-size: 15px; }
 }
+
+/* ==========================================================
+   Google Sheet connection (status dot, submit status, dialog)
+   ========================================================== */
+.sheet-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  display: inline-block; flex-shrink: 0; background: var(--gray);
+}
+.sheet-dot.dot-on { background: #46d369; box-shadow: 0 0 0 2px rgba(70,211,105,0.3); }
+.sheet-dot.dot-off { background: #b9b9b9; }
+.sheet-dot.dot-queued { background: var(--gold-bright); box-shadow: 0 0 0 2px rgba(232,185,69,0.35); }
+
+.submit-status {
+  margin: 14px 0 0; padding: 10px 12px; border-radius: 2px;
+  font-size: 13px; line-height: 1.5; text-align: center;
+}
+.submit-ok { background: var(--success-bg); color: var(--success); }
+.submit-err { background: var(--error-bg); color: var(--error); }
+.submit-warn { background: var(--gold-soft); color: var(--warning); }
+.submit-info { background: var(--cream); color: var(--gray); }
+
+.sheet-msg {
+  margin-top: 14px; padding: 10px 12px; border-radius: 2px;
+  font-size: 13px; line-height: 1.5; word-break: break-word; white-space: pre-wrap;
+}
+.sheet-msg-ok { background: var(--success-bg); color: var(--success); }
+.sheet-msg-err { background: var(--error-bg); color: var(--error); }
+.sheet-queue-note {
+  margin-top: 12px; padding: 8px 12px; border-radius: 2px;
+  background: var(--gold-soft); color: var(--warning); font-size: 13px;
+}

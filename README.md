@@ -4,7 +4,10 @@ Voice scouting app for FRC Team 177 (Bobcat Robotics).
 
 ## What it does
 
-Scouts at a competition open this app on their phone, tap the mic, and describe a match in natural language ("Match 14, team 177 red 2, scored 4 in auto, climbed level 2..."). The app auto-fills 25+ scouting fields, generates a scannable QR code matching the team's existing QRScout pipeline, and saves match data to a session spreadsheet.
+Scouts at a competition open this app on their phone, tap the mic, and describe a match in natural language ("Match 14, team 177 red 2, scored 4 in auto, climbed the mid rung..."). The app auto-fills the scouting fields and gives two ways to get the data out:
+
+- **QR code** — the always-offline path (scan into the team's QRScout pipeline). Works with no internet.
+- **Submit to Sheet** — optional one-tap auto-submit straight into a team Google Sheet when the phone has signal. It queues offline and sends automatically when back online, and is protected by a passcode + server-side validation + event/date gating + duplicate-blocking. See **[SETUP-SHEET.md](SETUP-SHEET.md)**.
 
 ## Live URL
 
@@ -38,8 +41,10 @@ See the deployment guide. Short version:
 
 - `index.html` — the page structure
 - `styles.css` — all styling (Bobcat maroon/gold/white)
-- `app.js` — main logic (parser, voice, QR generation, session save)
+- `app.js` — main logic (parser, voice, QR generation, session save, Sheet submission + offline queue, walkthrough)
 - `config.json` — scouting field schema (edit to add or remove fields)
+- `apps-script/Code.gs` — the Google Apps Script that runs in the team Sheet (the submission endpoint)
+- `SETUP-SHEET.md` — click-by-click guide to connect the app to a Google Sheet
 - `README.md` — this file
 
 ## Credits
