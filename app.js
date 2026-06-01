@@ -753,12 +753,17 @@ const TOUR_STEPS = [
   {
     selector: '#btn-generate',
     title: '4 · Generate output',
-    body: 'Once the required fields are set, tap GENERATE to get a scannable QR code plus TSV and JSON that drop straight into your QRScout pipeline.'
+    body: 'Once the required fields are set, tap GENERATE to get a scannable QR code (works with no internet) plus TSV and JSON for your QRScout pipeline.'
+  },
+  {
+    selector: '#btn-sheet',
+    title: '5 · Send to the Sheet (optional)',
+    body: 'If your host connected a Google Sheet — tap ⚙ SHEET, or just open the link they shared — each match auto-submits here, no scanning. Offline, it queues and sends later. The dot shows the status.'
   },
   {
     selector: '#btn-help',
-    title: '5 · Save & keep going',
-    body: 'After generating, use SAVE & NEXT MATCH — the match number bumps automatically. You can reopen this walkthrough anytime from the HELP button up here.'
+    title: '6 · Save & keep going',
+    body: 'Use SAVE & NEXT MATCH — it saves, submits to the Sheet if connected, and bumps the match number automatically. Reopen this walkthrough anytime from HELP.'
   }
 ];
 

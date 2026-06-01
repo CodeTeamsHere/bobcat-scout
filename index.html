@@ -199,8 +199,29 @@
             <li>Tap <strong>AUTO-FILL FIELDS</strong>. The app parses your description into the form.</li>
             <li>Review the fields (Step 2) — anything with a green AI badge was auto-filled. Edit anything that's wrong.</li>
             <li>Fill in any required fields marked with <span class="req">*</span>. The Generate button stays disabled until they're filled.</li>
-            <li>Tap <strong>GENERATE QR + TSV + JSON</strong>, then scan the QR code or copy the TSV.</li>
-            <li>Tap <strong>SAVE &amp; NEXT MATCH</strong> to keep going. Match number increments automatically.</li>
+            <li>Tap <strong>GENERATE</strong>, then either scan the QR code, or — if a Sheet is connected — tap <strong>SUBMIT TO SHEET</strong>.</li>
+            <li>Tap <strong>SAVE &amp; NEXT MATCH</strong> to keep going (it also submits to the Sheet when connected). Match number increments automatically.</li>
+          </ol>
+        </section>
+
+        <section class="help-section">
+          <h3>For the Host (spreadsheet owner) — one-time setup</h3>
+          <p class="help-intro">The <strong>host</strong> is whoever owns the scouting Google Sheet. Do this once so scouters' matches flow straight into your Sheet.</p>
+          <ol class="help-list">
+            <li>Create a Google Sheet, add the script, and deploy it as a Web App — full click-by-click steps are in the project's <strong>SETUP-SHEET.md</strong> (and inside <code>apps-script/Code.gs</code>).</li>
+            <li>In the Sheet's <strong>Config</strong> tab, set a <strong>Passcode</strong> (and optionally an Active Event + dates, so it only accepts data during your event).</li>
+            <li>Open this app → <strong>⚙ SHEET</strong> → paste your Web App URL + passcode → <strong>SAVE</strong> → <strong>SEND TEST ROW</strong> to confirm it works.</li>
+            <li>Tap <strong>COPY SCOUT LINK</strong> and share that one link with your scouters — opening it connects their phones automatically.</li>
+          </ol>
+        </section>
+
+        <section class="help-section">
+          <h3>For Scouters (filling in matches)</h3>
+          <ol class="help-list">
+            <li><strong>Connect once:</strong> open the link your host sent (or tap <strong>⚙ SHEET</strong> and paste the URL + passcode they give you). The dot turns green when connected.</li>
+            <li>Scout each match: describe it → <strong>AUTO-FILL</strong> → fix anything → <strong>GENERATE</strong>.</li>
+            <li>Tap <strong>SUBMIT TO SHEET</strong> (or <strong>SAVE &amp; NEXT</strong>, which also submits). Your row appears in the host's Sheet right away.</li>
+            <li><strong>No signal?</strong> The app saves it and shows <strong>SHEET (n)</strong> — it sends automatically once you're back online. The QR code always works as a backup too.</li>
           </ol>
         </section>
 
