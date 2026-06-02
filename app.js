@@ -1098,7 +1098,7 @@ function openSheetDialog() {
   $('sheet-url').value = sheetEndpoint;
   $('sheet-pass').value = sheetPasscode;
   try { $('tba-key').value = localStorage.getItem('tba_key') || ''; } catch (e) {}
-  try { $('google-client-id').value = localStorage.getItem('google_client_id') || ''; } catch (e) {}
+  try { $('google-client-id').value = localStorage.getItem('google_client_id') || DEFAULT_GOOGLE_CLIENT_ID; } catch (e) {}
   $('sheet-msg').classList.add('hidden');
   if (scheduleCache && scheduleCache.count) showScheduleMsg('Schedule loaded: ' + scheduleCache.count + ' qual matches for ' + scheduleCache.event + '.', 'ok');
   else $('schedule-status').classList.add('hidden');
@@ -1196,6 +1196,12 @@ function showSubmitStatus(msg, kind) {
 // =====================================================================
 // GOOGLE SIGN-IN (optional max-security mode — enabled when a Client ID is set)
 // =====================================================================
+
+// Shared, published OAuth Client ID for this app (NOT a secret — OAuth client IDs are public
+// and this one only works from the app's own web origin). Any host can use it for Google
+// sign-in by tapping "Save & Enable" and setting their own allow-list; it never forces login
+// on passcode-only hosts. Hosts may also paste their own Client ID instead.
+const DEFAULT_GOOGLE_CLIENT_ID = '404429673783-0mue3sktcon2ca4v7fgjmn8iu8bqitpe.apps.googleusercontent.com';
 
 let googleClientId = '';
 let googleIdToken = '';

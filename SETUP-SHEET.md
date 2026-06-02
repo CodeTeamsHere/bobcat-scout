@@ -95,12 +95,16 @@ So scouters don't type team numbers (and can't fat-finger them):
 
 This requires scouters to sign in with Google, and only allowed accounts can submit. It's the most setup but the most secure.
 
-**A. Create a Google OAuth Client ID (host, one time):**
-1. Go to <https://console.cloud.google.com> → create a project (any name).
-2. **APIs & Services → OAuth consent screen** → choose **Internal** (if your school has Google Workspace) or **External** → fill the app name + your email → Save.
-3. **APIs & Services → Credentials → Create Credentials → OAuth client ID** → Application type **Web application**.
-4. Under **Authorized JavaScript origins**, add your site: `https://codeteamshere.github.io` (and `http://localhost:8000` if you test locally). **Create**.
-5. Copy the **Client ID** (ends in `.apps.googleusercontent.com`).
+**A. The Client ID — already done for you.**
+A shared, published Client ID already exists for this app and is **pre-filled** in the app's Google sign-in box:
+
+```
+404429673783-0mue3sktcon2ca4v7fgjmn8iu8bqitpe.apps.googleusercontent.com
+```
+
+Use it as-is — it isn't a secret, it only works from the app's web address, and each host's allow-list (step B) controls who can actually submit. **Most hosts skip straight to step B.**
+
+*(Advanced — want your own Client ID? In <https://console.cloud.google.com> → **Google Auth Platform → Clients → Create client → Web application**, add `https://codeteamshere.github.io` as an Authorized JavaScript origin, create it, then **Audience → Publish app**. Paste your Client ID in place of the shared one.)*
 
 **B. Configure the Sheet (Config tab):**
 - **Require Google Login** → `yes`
@@ -109,7 +113,7 @@ This requires scouters to sign in with Google, and only allowed accounts can sub
 - **Allowed Emails** → a comma-separated list of exact emails
 
 **C. Turn it on in the app:**
-1. **⚙ SHEET** → **Google sign-in** → paste the same **Client ID** → **Save & Enable**.
+1. **⚙ SHEET** → **Google sign-in** → the Client ID is **already pre-filled** → tap **Save & Enable** (or paste your own first).
 2. Use **Copy Scout Link** — it now also carries the Client ID, so every scouter's app shows the Google button.
 3. Each scouter taps **Sign in with Google** once (sign-ins last about an hour). Every saved row records the signed-in email.
 
