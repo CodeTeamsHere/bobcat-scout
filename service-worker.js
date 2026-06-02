@@ -3,7 +3,7 @@
    stale-while-revalidate (instant from cache, refreshed in the background).
    Cross-origin requests (e.g. the Google Apps Script submit) are left untouched. */
 
-const CACHE = 'bobcat-scout-v1';
+const CACHE = 'bobcat-scout-v2';
 const ASSETS = [
   '.',
   'index.html',
@@ -12,7 +12,10 @@ const ASSETS = [
   'config.json',
   'vendor/qrcode-generator.js',
   'manifest.webmanifest',
-  'icon.svg'
+  'icon.svg',
+  'icon-192.png',
+  'icon-512.png',
+  'icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (event) => {

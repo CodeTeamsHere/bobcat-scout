@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="icon.svg" />
-  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Bobcat Scout" />
@@ -54,6 +54,7 @@
       <div class="session-head">
         <h3 class="session-title">SESSION MATCHES</h3>
         <div class="session-actions">
+          <button id="btn-summary" class="btn btn-outline" style="padding:8px 12px;font-size:11px;">TEAM SUMMARY</button>
           <button id="btn-export-session" class="btn btn-primary" style="padding:8px 12px;font-size:11px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             EXPORT TSV
@@ -65,6 +66,7 @@
         </div>
       </div>
       <div id="session-list" class="session-list"></div>
+      <div id="summary-box" class="summary-box hidden"></div>
     </div>
 
     <!-- Step 1: voice / type input -->
@@ -322,6 +324,16 @@
         </div>
 
         <div id="sheet-msg" class="sheet-msg hidden"></div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
+        <h3 style="font-size:12px;letter-spacing:1.5px;color:var(--maroon);font-weight:800;text-transform:uppercase;margin-bottom:8px;">Auto team numbers (optional)</h3>
+        <p class="help-intro" style="margin-bottom:10px;">Load the event's match schedule so the team number auto-fills from match #, alliance, and station. Needs a free <a href="https://www.thebluealliance.com/account/login" target="_blank" rel="noopener">Blue Alliance API key</a> and the <strong>Event Key</strong> set in the form behind this dialog.</p>
+        <label class="field-label" for="tba-key">TBA API Key</label>
+        <input type="text" id="tba-key" placeholder="read API key from thebluealliance.com/account">
+        <div class="btn-row" style="margin-top:10px;">
+          <button id="btn-load-schedule" class="btn btn-outline">LOAD MATCH SCHEDULE</button>
+        </div>
+        <div id="schedule-status" class="sheet-msg hidden"></div>
 
         <div class="help-note" style="margin-top:16px;">
           <strong>Don't have the URL yet?</strong> The Sheet owner sets this up once — see the <code>apps-script/Code.gs</code> file in the repo (it has click-by-click steps) or the <strong>SETUP-SHEET.md</strong> guide. Then use <strong>COPY SCOUT LINK</strong> to send every scout a single link that connects their app automatically.

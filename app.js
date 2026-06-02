@@ -411,6 +411,9 @@ function setField(code, value) {
 
   updateGenerateButton();
   saveDraft();
+  if (code === 'matchNumber' || code === 'alliance' || code === 'driverStation' || code === 'matchType' || code === 'eventKey') {
+    maybeAutoFillTeam();
+  }
 }
 
 // =====================================================================
@@ -547,6 +550,7 @@ function processTranscript() {
   const result = parseTranscript(text, fields);
   fields = result.fields;
   confidence = result.confidence;
+  maybeAutoFillTeam();
   renderAllFields();
   updateGenerateButton();
   saveDraft();
@@ -747,6 +751,8 @@ function updateSessionBar() {
   list.innerHTML = sessionMatches.map(m => `
     <div class="row"><strong>Match ${escapeHTML(m.matchNumber)}</strong> · Team ${escapeHTML(m.teamNumber)} · ${escapeHTML(m.alliance)} ${escapeHTML(m.driverStation)} · Climb: ${escapeHTML(m.endgameClimb)} · Hub made: ${(parseInt(m.autoHubMade)||0) + (parseInt(m.teleopHubMade)||0)}</div>
   `).join('');
+  const sb = $('summary-box');
+  if (sb && !sb.classList.contains('hidden')) renderSummary();
 }
 
 function toggleSessionCard() {
@@ -968,10 +974,11 @@ function loadSheetConfig() {
 // A lead can share a link like  ...?sheet=<webAppUrl>&key=<passcode>  to auto-connect a scout's phone.
 function applyUrlConfig() {
   const p = new URLSearchParams(location.search);
-  const url = p.get('sheet'), key = p.get('key');
+  const url = p.get('sheet'), key = p.get('key'), tba = p.get('tba');
   let changed = false;
   if (url) { try { localStorage.setItem('sheet_endpoint', url); } catch (e) {} changed = true; }
   if (key) { try { localStorage.setItem('sheet_passcode', key); } catch (e) {} changed = true; }
+  if (tba) { try { localStorage.setItem('tba_key', tba); } catch (e) {} changed = true; }
   if (changed) history.replaceState(null, '', location.pathname); // don't leave the passcode in the address bar
 }
 
@@ -1080,7 +1087,10 @@ function updateSheetStatus() {
 function openSheetDialog() {
   $('sheet-url').value = sheetEndpoint;
   $('sheet-pass').value = sheetPasscode;
+  try { $('tba-key').value = localStorage.getItem('tba_key') || ''; } catch (e) {}
   $('sheet-msg').classList.add('hidden');
+  if (scheduleCache && scheduleCache.count) showScheduleMsg('Schedule loaded: ' + scheduleCache.count + ' qual matches for ' + scheduleCache.event + '.', 'ok');
+  else $('schedule-status').classList.add('hidden');
   $('sheet-overlay').classList.remove('hidden');
   document.body.classList.add('no-scroll');
   refreshSheetDialog();
@@ -1249,8 +1259,12 @@ function wireUI() {
   $('btn-sheet-disconnect').addEventListener('click', disconnectSheet);
   $('btn-sheet-retry').addEventListener('click', () => flushQueue());
   $('btn-submit-sheet').addEventListener('click', submitCurrentMatch);
+  $('btn-load-schedule').addEventListener('click', doLoadSchedule);
   $('sheet-overlay').addEventListener('click', e => { if (e.target === $('sheet-overlay')) closeSheetDialog(); });
   window.addEventListener('online', flushQueue);
+
+  // Session summary
+  $('btn-summary').addEventListener('click', toggleSummary);
 }
 
 // =====================================================================
@@ -1302,6 +1316,147 @@ function registerServiceWorker() {
 }
 
 // =====================================================================
+// SESSION SUMMARY — per-team averages computed on the phone (no internet)
+// =====================================================================
+
+const CLIMB_RANK = { none: 0, attempted_failed: 0, parked: 1, level1: 2, level2: 3, level3: 4 };
+const CLIMB_SHORT = { none: '—', attempted_failed: 'Fail', parked: 'Park', level1: 'L1', level2: 'L2', level3: 'L3' };
+
+function computeSummary() {
+  const byTeam = {};
+  sessionMatches.forEach(m => {
+    const t = (m.teamNumber == null || m.teamNumber === '') ? '?' : m.teamNumber;
+    (byTeam[t] = byTeam[t] || []).push(m);
+  });
+  const num = v => parseFloat(v) || 0;
+  const rows = Object.keys(byTeam).map(team => {
+    const ms = byTeam[team], n = ms.length;
+    const avg = key => ms.reduce((s, m) => s + num(m[key]), 0) / n;
+    const a = avg('autoHubMade'), te = avg('teleopHubMade');
+    let best = 'none';
+    ms.forEach(m => { if ((CLIMB_RANK[m.endgameClimb] || 0) > (CLIMB_RANK[best] || 0)) best = m.endgameClimb; });
+    const died = ms.filter(m => m.disabled).length;
+    const tip = ms.filter(m => m.tipped).length;
+    return {
+      team: team, n: n,
+      auto: a.toFixed(1), tele: te.toFixed(1), total: (a + te).toFixed(1),
+      climb: CLIMB_SHORT[best] || best,
+      driver: avg('driverSkill').toFixed(1),
+      defense: avg('defenseRating').toFixed(1),
+      issues: (died || tip) ? [died ? died + '✕died' : '', tip ? tip + '✕tip' : ''].filter(Boolean).join(' ') : '—'
+    };
+  });
+  rows.sort((x, y) => parseFloat(y.total) - parseFloat(x.total));
+  return rows;
+}
+
+function renderSummary() {
+  const box = $('summary-box');
+  if (!box) return;
+  const rows = computeSummary();
+  if (!rows.length) { box.innerHTML = '<div class="summary-empty">No saved matches yet this session.</div>'; return; }
+  let h = '<div class="summary-scroll"><table class="summary-table"><thead><tr>'
+    + '<th>Team</th><th>Mch</th><th>Auto</th><th>Tele</th><th>Total</th><th>Climb</th><th>Drv</th><th>Def</th><th>Issues</th>'
+    + '</tr></thead><tbody>';
+  rows.forEach(r => {
+    h += '<tr><td><strong>' + escapeHTML(r.team) + '</strong></td><td>' + r.n + '</td><td>' + r.auto + '</td><td>' + r.tele
+      + '</td><td><strong>' + r.total + '</strong></td><td>' + escapeHTML(r.climb) + '</td><td>' + r.driver + '</td><td>' + r.defense + '</td><td>' + escapeHTML(r.issues) + '</td></tr>';
+  });
+  h += '</tbody></table></div><div class="summary-note">Averages across matches saved this session, sorted by total fuel. Total = avg auto + avg teleop. "Climb" = best achieved.</div>';
+  box.innerHTML = h;
+}
+
+function toggleSummary() {
+  const box = $('summary-box');
+  if (!box) return;
+  if (box.classList.contains('hidden')) { renderSummary(); box.classList.remove('hidden'); }
+  else box.classList.add('hidden');
+}
+
+// =====================================================================
+// TBA MATCH SCHEDULE (optional) — auto-fill team # from match/alliance/station
+// =====================================================================
+
+let scheduleCache = null;  // { event, matches: { "14": {red:[...],blue:[...]} }, count }
+
+function loadCachedSchedule() {
+  try {
+    const ek = String(fields.eventKey || '').toLowerCase();
+    if (!ek) return;
+    const raw = localStorage.getItem('tba_sched_' + ek);
+    if (raw) scheduleCache = JSON.parse(raw);
+  } catch (e) {}
+}
+
+async function loadSchedule(tbaKey, eventKey) {
+  eventKey = String(eventKey || '').toLowerCase().trim();
+  if (!eventKey) throw new Error('set the Event Key first');
+  const resp = await fetch('https://www.thebluealliance.com/api/v3/event/' + eventKey + '/matches/simple', {
+    headers: { 'X-TBA-Auth-Key': tbaKey }
+  });
+  if (!resp.ok) throw new Error('TBA ' + resp.status + (resp.status === 401 ? ' (check the API key)' : ''));
+  const data = await resp.json();
+  const matches = {};
+  let count = 0;
+  data.forEach(mt => {
+    if (mt.comp_level !== 'qm') return;          // qualification matches
+    matches[String(mt.match_number)] = {
+      red: (mt.alliances.red.team_keys || []).map(k => k.replace('frc', '')),
+      blue: (mt.alliances.blue.team_keys || []).map(k => k.replace('frc', ''))
+    };
+    count++;
+  });
+  scheduleCache = { event: eventKey, matches: matches, count: count };
+  try {
+    localStorage.setItem('tba_sched_' + eventKey, JSON.stringify(scheduleCache));
+    localStorage.setItem('tba_key', tbaKey);
+  } catch (e) {}
+  return count;
+}
+
+// Fill the team number from the cached schedule whenever match/alliance/station changes.
+function maybeAutoFillTeam() {
+  if (!scheduleCache) return;
+  if (scheduleCache.event !== String(fields.eventKey || '').toLowerCase()) return;
+  if (fields.matchType !== 'qm') return;
+  const m = scheduleCache.matches[String(fields.matchNumber)];
+  if (!m) return;
+  const arr = m[fields.alliance];
+  if (!arr) return;
+  const team = arr[parseInt(fields.driverStation, 10) - 1];
+  if (!team || String(fields.teamNumber) === String(team)) return;
+  fields.teamNumber = parseInt(team, 10) || team;
+  confidence.teamNumber = 'high';
+  const input = document.querySelector('[data-input="teamNumber"]');
+  if (input) input.value = fields.teamNumber;
+  saveDraft();
+  updateGenerateButton();
+}
+
+async function doLoadSchedule() {
+  const key = $('tba-key').value.trim();
+  const ek = String(fields.eventKey || '').trim();
+  if (!key) { showScheduleMsg('Paste your free TBA API key first (thebluealliance.com/account/login).', 'err'); return; }
+  if (!ek) { showScheduleMsg('Set the Event Key field (e.g. 2026ctwat) first.', 'err'); return; }
+  showScheduleMsg('Loading schedule from The Blue Alliance…', 'ok');
+  try {
+    const n = await loadSchedule(key, ek);
+    showScheduleMsg('✓ Loaded ' + n + ' qual matches for ' + ek.toLowerCase() + '. Team # now auto-fills from match, alliance & station.', 'ok');
+    maybeAutoFillTeam();
+  } catch (e) {
+    showScheduleMsg('Could not load schedule: ' + e.message, 'err');
+  }
+}
+
+function showScheduleMsg(msg, kind) {
+  const el = $('schedule-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'sheet-msg ' + (kind === 'err' ? 'sheet-msg-err' : 'sheet-msg-ok');
+  el.classList.remove('hidden');
+}
+
+// =====================================================================
 // INIT
 // =====================================================================
 
@@ -1342,6 +1497,16 @@ async function init() {
 
   // Restore an in-progress match draft (survives a refresh or crash)
   const draft = loadDraft();
+
+  // Match schedule (optional) for team-number auto-fill
+  loadCachedSchedule();
+  try {
+    const tk = localStorage.getItem('tba_key');
+    const ek = String(fields.eventKey || '').toLowerCase();
+    if (tk && ek && navigator.onLine && (!scheduleCache || scheduleCache.event !== ek)) {
+      loadSchedule(tk, ek).then(maybeAutoFillTeam).catch(() => {});
+    }
+  } catch (e) {}
 
   renderAllFields();
   wireUI();
