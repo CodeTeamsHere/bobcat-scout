@@ -64,23 +64,6 @@ function parseTranscript(text, initialState) {
 
   const titleCase = s => s.replace(/\b\w/g, c => c.toUpperCase());
 
-  // Helper: find a number near a keyword
-  const numNear = (patterns, window) => {
-    window = window || 40;
-    for (const pattern of patterns) {
-      const regex = new RegExp(pattern, 'i');
-      const m = t.match(regex);
-      if (m) {
-        const start = Math.max(0, m.index - window);
-        const end = Math.min(t.length, m.index + m[0].length + window);
-        const ctx = t.slice(start, end);
-        const numMatch = ctx.match(/\b(\d{1,2})\b/);
-        if (numMatch) return parseInt(numMatch[1]);
-      }
-    }
-    return null;
-  };
-
   // ---- Scout name ----
   const scoutPatterns = [
     /(?:scouter|scout)\s*(?:name\s*)?(?:is|:|=)\s*([a-z][a-z\s'-]{1,30}?)(?=[,.]|\s+(?:and|event|match|team|alliance|station|for|at|preload|in auto|teleop|scouting|\d)|$)/i,
@@ -274,11 +257,18 @@ function parseTranscript(text, initialState) {
   else if (/\bno climb|didn't climb|did not climb\b/i.test(t)) { result.endgameClimb = 'none'; conf.endgameClimb = 'high'; }
 
   // ---- Driver skill ----
-  if (/\b(elite|amazing|incredible|insane|fantastic driver)\b/i.test(t)) { result.driverSkill = 5; conf.driverSkill = 'high'; }
-  else if (/\b(great|really good|smooth|strong driver)\b/i.test(t)) { result.driverSkill = 4; conf.driverSkill = 'high'; }
-  else if (/\b(solid|decent|fine|okay|competent)\b/i.test(t)) { result.driverSkill = 3; conf.driverSkill = 'medium'; }
-  else if (/\b(rough|struggled|messy|shaky)\b/i.test(t)) { result.driverSkill = 2; conf.driverSkill = 'high'; }
-  else if (/\b(crashed|awful|terrible|could not drive)\b/i.test(t)) { result.driverSkill = 1; conf.driverSkill = 'high'; }
+  // Only judge sentiment words that appear NEAR a "driver/driving/drove" mention,
+  // so unrelated praise (e.g. "passing was amazing") can't inflate the driver rating.
+  const driverMention = t.match(/\bdriv(?:er|ing|e)\b|\bdrove\b/i);
+  if (driverMention) {
+    const di = driverMention.index;
+    const dctx = t.slice(Math.max(0, di - 40), Math.min(t.length, di + driverMention[0].length + 40));
+    if (/\b(elite|amazing|incredible|insane|fantastic|flawless|phenomenal)\b/i.test(dctx)) { result.driverSkill = 5; conf.driverSkill = 'high'; }
+    else if (/\b(great|really good|very good|smooth|strong|excellent|clean)\b/i.test(dctx)) { result.driverSkill = 4; conf.driverSkill = 'high'; }
+    else if (/\b(solid|decent|fine|okay|ok|competent|average)\b/i.test(dctx)) { result.driverSkill = 3; conf.driverSkill = 'medium'; }
+    else if (/\b(rough|struggled|messy|shaky|sloppy|jerky)\b/i.test(dctx)) { result.driverSkill = 2; conf.driverSkill = 'high'; }
+    else if (/\b(crashed|awful|terrible|horrible|could ?n'?t drive|could not drive)\b/i.test(dctx)) { result.driverSkill = 1; conf.driverSkill = 'high'; }
+  }
 
   // ---- Defense ----
   if (/\b(played\s*(great|strong|heavy)\s*defense|dominant defense|lockdown defense)\b/i.test(t)) { result.defenseRating = 5; conf.defenseRating = 'high'; }
@@ -420,6 +410,7 @@ function setField(code, value) {
   }
 
   updateGenerateButton();
+  saveDraft();
 }
 
 // =====================================================================
@@ -558,6 +549,7 @@ function processTranscript() {
   confidence = result.confidence;
   renderAllFields();
   updateGenerateButton();
+  saveDraft();
 }
 
 function generateOutput() {
@@ -587,25 +579,59 @@ function showTab(tab) {
   }
 }
 
+let lastQRCanvas = null;
+
 function renderQR(text) {
   const container = $('qrcode');
   container.innerHTML = '';
-  if (typeof QRCode === 'undefined' || !QRCode.toCanvas) {
-    container.innerHTML = '<p style="padding:20px;color:var(--gray);font-size:13px;">QR code library failed to load. The TSV tab still works.</p>';
+  lastQRCanvas = null;
+  const dlBtn = $('btn-download-qr');
+  if (typeof qrcode !== 'function') {
+    container.innerHTML = '<p style="padding:20px;color:var(--gray);font-size:13px;">QR library not loaded. The TSV/JSON tabs and Submit to Sheet still work.</p>';
+    if (dlBtn) dlBtn.disabled = true;
     return;
   }
+  let qr;
+  try {
+    qr = qrcode(0, 'M');        // type 0 = auto-size to fit the data
+    qr.addData(text);
+    qr.make();
+  } catch (e) {
+    container.innerHTML = '<p style="padding:20px;color:var(--error);font-size:13px;">This match is too long for a single QR — use the TSV/JSON tab or Submit to Sheet.</p>';
+    if (dlBtn) dlBtn.disabled = true;
+    return;
+  }
+  const count = qr.getModuleCount();
+  const quiet = 4;             // 4-module quiet zone (QR spec) for reliable scanning
+  const target = 320;
+  const cell = Math.max(2, Math.floor(target / (count + quiet * 2)));
+  const dim = cell * (count + quiet * 2);
   const canvas = document.createElement('canvas');
-  container.appendChild(canvas);
-  QRCode.toCanvas(canvas, text, {
-    errorCorrectionLevel: 'M',
-    margin: 1,
-    width: 280,
-    color: { dark: '#1F1F1F', light: '#FFFFFF' }
-  }, err => {
-    if (err) {
-      container.innerHTML = '<p style="padding:20px;color:var(--error);font-size:13px;">QR generation failed. Use TSV tab instead.</p>';
+  canvas.width = dim;
+  canvas.height = dim;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, dim, dim);
+  ctx.fillStyle = '#1F1F1F';
+  for (let r = 0; r < count; r++) {
+    for (let c = 0; c < count; c++) {
+      if (qr.isDark(r, c)) ctx.fillRect((c + quiet) * cell, (r + quiet) * cell, cell, cell);
     }
-  });
+  }
+  canvas.style.cssText = 'width:100%;max-width:280px;height:auto;image-rendering:pixelated;';
+  container.appendChild(canvas);
+  lastQRCanvas = canvas;
+  if (dlBtn) dlBtn.disabled = false;
+}
+
+function downloadQR() {
+  if (!lastQRCanvas) return;
+  const a = document.createElement('a');
+  a.download = 'qr_match' + (fields.matchNumber || '') + '_team' + (fields.teamNumber || '') + '.png';
+  a.href = lastQRCanvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 function copyToClipboard(text, btn) {
@@ -623,6 +649,9 @@ function copyToClipboard(text, btn) {
 // =====================================================================
 
 function saveMatchAndNext() {
+  if (isDuplicateInSession(fields)) {
+    if (!confirm('You already saved Match ' + fields.matchNumber + ' for team ' + fields.teamNumber + ' this session.\n\nSave it again anyway?')) return;
+  }
   const snap = Object.assign({}, fields, { _ts: Date.now(), _id: currentMatchId });
   sessionMatches.push(snap);
   try {
@@ -658,6 +687,7 @@ function resetMatch() {
   renderAllFields();
   updateProcessButton();
   updateGenerateButton();
+  saveDraft();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -673,6 +703,7 @@ function clearAll() {
   try {
     localStorage.removeItem('scout_name');
     localStorage.removeItem('event_key');
+    localStorage.removeItem('bobcat_draft');
   } catch(e) {}
   renderAllFields();
   updateProcessButton();
@@ -1169,12 +1200,13 @@ function wireUI() {
   $('btn-session').addEventListener('click', toggleSessionCard);
   $('btn-copy-tsv').addEventListener('click', e => copyToClipboard(generateTSV(fields), e.currentTarget));
   $('btn-copy-json').addEventListener('click', e => copyToClipboard(JSON.stringify(fields, null, 2), e.currentTarget));
+  $('btn-download-qr').addEventListener('click', downloadQR);
 
   // Tabs
   $$('.tab').forEach(t => t.addEventListener('click', () => showTab(t.getAttribute('data-tab'))));
 
   // Transcript
-  $('transcript').addEventListener('input', updateProcessButton);
+  $('transcript').addEventListener('input', () => { updateProcessButton(); saveDraft(); });
 
   // Reference toggle
   $('ref-toggle').addEventListener('click', () => {
@@ -1222,6 +1254,54 @@ function wireUI() {
 }
 
 // =====================================================================
+// DRAFT AUTOSAVE — persist the in-progress match so a refresh/crash never loses it
+// =====================================================================
+
+function saveDraft() {
+  try {
+    localStorage.setItem('bobcat_draft', JSON.stringify({
+      fields: fields,
+      confidence: confidence,
+      matchId: currentMatchId,
+      transcript: $('transcript') ? $('transcript').value : ''
+    }));
+  } catch (e) {}
+}
+
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem('bobcat_draft');
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    if (!d || !d.fields) return null;
+    fields = Object.assign(initialFieldState(), d.fields);
+    confidence = d.confidence || {};
+    if (d.matchId) currentMatchId = d.matchId;
+    return d;
+  } catch (e) { return null; }
+}
+
+function clearDraft() {
+  try { localStorage.removeItem('bobcat_draft'); } catch (e) {}
+}
+
+// Warn before saving a match+team already logged this session (catches mistakes early).
+function isDuplicateInSession(d) {
+  return sessionMatches.some(m =>
+    String(m.matchNumber) === String(d.matchNumber) &&
+    String(m.teamNumber) === String(d.teamNumber) &&
+    String(m.matchType) === String(d.matchType) &&
+    String(m.eventKey) === String(d.eventKey)
+  );
+}
+
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  }
+}
+
+// =====================================================================
 // INIT
 // =====================================================================
 
@@ -1260,13 +1340,18 @@ async function init() {
     if (sm) sessionMatches = JSON.parse(sm);
   } catch(e) { console.warn('Restore failed', e); }
 
+  // Restore an in-progress match draft (survives a refresh or crash)
+  const draft = loadDraft();
+
   renderAllFields();
   wireUI();
+  if (draft && draft.transcript) $('transcript').value = draft.transcript;
   updateProcessButton();
   updateGenerateButton();
   updateSessionBar();
   updateSheetStatus();
   flushQueue();
+  registerServiceWorker();
 }
 
 document.addEventListener('DOMContentLoaded', init);

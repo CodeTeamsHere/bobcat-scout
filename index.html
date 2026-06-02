@@ -7,8 +7,14 @@
   <meta name="theme-color" content="#7B1F2B" />
   <title>Bobcat Scout — Team 177</title>
   <link rel="stylesheet" href="styles.css" />
-  <!-- QR code library: free, no API key, generates real scannable QR codes -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Bobcat Scout" />
+  <!-- QR code library (self-hosted so the app works fully offline) -->
+  <script src="vendor/qrcode-generator.js"></script>
 </head>
 <body>
 
@@ -133,6 +139,7 @@
           <div id="tab-qr" class="tab-content qr-wrap">
             <div class="qr-frame"><div id="qrcode"></div></div>
             <div class="qr-help">Scan this QR code into your team's QRScout-compatible scanner, or use the TSV tab to paste directly into a spreadsheet.</div>
+            <div><button id="btn-download-qr" class="btn btn-outline" style="margin-top:12px;">SAVE QR AS IMAGE</button></div>
           </div>
 
           <div id="tab-tsv" class="tab-content hidden">
@@ -279,6 +286,8 @@
             <li>Quality words help the parser. Say "passing was good" → 5, "pickup was pretty good" → 4, "bad pickup" → 2.</li>
             <li>If the team didn't show up, toggle <strong>No Show</strong> in the Prematch section.</li>
             <li>Your scout name and event key are remembered between sessions.</li>
+            <li><strong>Works offline.</strong> Open the app once with a connection, then it keeps working with no signal. On your phone, use the browser menu → <strong>Add to Home Screen</strong> to install it like an app.</li>
+            <li><strong>Auto-saved.</strong> If the page reloads mid-match, your entries come back. Use <strong>SAVE QR AS IMAGE</strong> (QR tab) to keep a backup of any match.</li>
           </ul>
         </section>
 

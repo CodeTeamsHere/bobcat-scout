@@ -1,0 +1,14 @@
+{
+  "name": "Bobcat Scout — Team 177",
+  "short_name": "Bobcat Scout",
+  "description": "Voice scouting app for FRC Team 177 (REBUILT 2026).",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF7F0",
+  "theme_color": "#7B1F2B",
+  "icons": [
+    { "src": "icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" }
+  ]
+}

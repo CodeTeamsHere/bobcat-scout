@@ -9,6 +9,8 @@ Scouts at a competition open this app on their phone, tap the mic, and describe 
 - **QR code** — the always-offline path (scan into the team's QRScout pipeline). Works with no internet.
 - **Submit to Sheet** — optional one-tap auto-submit straight into a team Google Sheet when the phone has signal. It queues offline and sends automatically when back online, and is protected by a passcode + server-side validation + event/date gating + duplicate-blocking. See **[SETUP-SHEET.md](SETUP-SHEET.md)**.
 
+It's an installable **PWA**: open it once and it runs fully offline (essential at venues — the QR library is bundled, not loaded from a CDN), the in-progress match auto-saves through refreshes, and you can **Add to Home Screen** to use it like an app.
+
 ## Live URL
 
 After deployment via GitHub Pages: `https://codeteamshere.github.io/bobcat-scout/`
@@ -43,6 +45,9 @@ See the deployment guide. Short version:
 - `styles.css` — all styling (Bobcat maroon/gold/white)
 - `app.js` — main logic (parser, voice, QR generation, session save, Sheet submission + offline queue, walkthrough)
 - `config.json` — scouting field schema (edit to add or remove fields)
+- `vendor/qrcode-generator.js` — self-hosted QR library (bundled for offline use)
+- `manifest.webmanifest` / `icon.svg` — PWA manifest + app icon (installable / Add to Home Screen)
+- `service-worker.js` — caches the app shell so it runs fully offline after first load
 - `apps-script/Code.gs` — the Google Apps Script that runs in the team Sheet (the submission endpoint)
 - `SETUP-SHEET.md` — click-by-click guide to connect the app to a Google Sheet
 - `README.md` — this file

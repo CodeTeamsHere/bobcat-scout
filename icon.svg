@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Bobcat Scout">
+  <rect width="512" height="512" rx="96" fill="#7B1F2B"/>
+  <rect x="40" y="40" width="432" height="432" rx="72" fill="none" stroke="#D4A537" stroke-width="14"/>
+  <text x="256" y="250" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="800" font-size="150" fill="#FFFFFF" letter-spacing="4">177</text>
+  <text x="256" y="340" text-anchor="middle" font-family="-apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="58" fill="#D4A537" letter-spacing="8">SCOUT</text>
+</svg>
