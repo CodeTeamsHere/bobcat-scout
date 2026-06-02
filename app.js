@@ -1019,8 +1019,9 @@ function buildPayload(data) {
 
 // JSONP call: works around the cross-origin limits of Apps Script web apps,
 // and (unlike no-cors fetch) lets us actually READ the ok/error reply.
-function jsonpSubmit(payload, timeoutMs) {
+function jsonpSubmit(payload, timeoutMs, url) {
   return new Promise((resolve, reject) => {
+    const target = url || sheetEndpoint;
     const cb = 'bscb_' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
     let done = false;
     const script = document.createElement('script');
@@ -1034,7 +1035,7 @@ function jsonpSubmit(payload, timeoutMs) {
     }
     window[cb] = (resp) => finish(() => resolve(resp));
     script.onerror = () => finish(() => reject(new Error('network')));
-    script.src = sheetEndpoint + '?callback=' + cb + '&data=' + encodeURIComponent(JSON.stringify(payload));
+    script.src = target + '?callback=' + cb + '&data=' + encodeURIComponent(JSON.stringify(payload));
     document.body.appendChild(script);
   });
 }
@@ -1043,32 +1044,38 @@ function jsonpSubmit(payload, timeoutMs) {
 async function submitMatch(data) {
   if (!isSheetConnected()) return { status: 'notconfigured' };
   const payload = buildPayload(data);
-  if (!navigator.onLine) { enqueue(payload); return { status: 'queued' }; }
+  if (!navigator.onLine) { enqueue(payload, sheetEndpoint); return { status: 'queued' }; }
   try {
-    const resp = await jsonpSubmit(payload);
+    const resp = await jsonpSubmit(payload, undefined, sheetEndpoint);
     if (resp && resp.ok) return { status: 'sent', action: resp.action };
     return { status: 'rejected', error: (resp && resp.error) || 'rejected' }; // config issue, don't queue
   } catch (e) {
-    enqueue(payload); // network/timeout — keep it for auto-retry
+    enqueue(payload, sheetEndpoint); // network/timeout — keep it for auto-retry
     return { status: 'queued' };
   }
 }
 
-function enqueue(payload) {
-  pendingQueue = pendingQueue.filter(p => p._id !== payload._id); // de-dupe by match id
-  pendingQueue.push(payload);
+// Each queued item remembers its OWN destination sheet, so switching hosts never misroutes data.
+function qid(item) { return (item && item.payload ? item.payload._id : (item ? item._id : undefined)); }
+
+function enqueue(payload, url) {
+  pendingQueue = pendingQueue.filter(p => qid(p) !== payload._id); // de-dupe by match id
+  pendingQueue.push({ url: url || sheetEndpoint, payload: payload });
   savePendingQueue();
   updateSheetStatus();
 }
 
 async function flushQueue() {
-  if (!isSheetConnected() || !navigator.onLine || pendingQueue.length === 0) return;
-  for (const payload of pendingQueue.slice()) {
+  if (!navigator.onLine || pendingQueue.length === 0) return;
+  for (const item of pendingQueue.slice()) {
+    const payload = item.payload || item;          // tolerate older bare-payload items
+    const url = item.url || sheetEndpoint;
+    if (!url) continue;
     try {
-      const resp = await jsonpSubmit(payload);
-      // Drop on success OR on a server rejection (config problem won't fix itself by retrying).
+      const resp = await jsonpSubmit(payload, undefined, url);
+      // Drop on success OR on a server rejection (a config problem won't fix itself by retrying).
       // The local session copy is always kept, so nothing is lost.
-      if (resp) { pendingQueue = pendingQueue.filter(p => p._id !== payload._id); savePendingQueue(); }
+      if (resp) { pendingQueue = pendingQueue.filter(p => qid(p) !== payload._id); savePendingQueue(); }
     } catch (e) {
       break; // still offline — stop, try again on the next 'online' event
     }
