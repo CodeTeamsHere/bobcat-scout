@@ -974,11 +974,12 @@ function loadSheetConfig() {
 // A lead can share a link like  ...?sheet=<webAppUrl>&key=<passcode>  to auto-connect a scout's phone.
 function applyUrlConfig() {
   const p = new URLSearchParams(location.search);
-  const url = p.get('sheet'), key = p.get('key'), tba = p.get('tba');
+  const url = p.get('sheet'), key = p.get('key'), tba = p.get('tba'), gid = p.get('gid');
   let changed = false;
   if (url) { try { localStorage.setItem('sheet_endpoint', url); } catch (e) {} changed = true; }
   if (key) { try { localStorage.setItem('sheet_passcode', key); } catch (e) {} changed = true; }
   if (tba) { try { localStorage.setItem('tba_key', tba); } catch (e) {} changed = true; }
+  if (gid) { try { localStorage.setItem('google_client_id', gid); } catch (e) {} changed = true; }
   if (changed) history.replaceState(null, '', location.pathname); // don't leave the passcode in the address bar
 }
 
@@ -1007,11 +1008,13 @@ function validateForSubmit(d) {
 function buildPayload(data) {
   const clean = Object.assign({}, data);
   delete clean._ts;
-  return Object.assign(clean, {
+  const extra = {
     passcode: sheetPasscode,
     _order: FIELD_ORDER.slice(),
     _id: data._id || currentMatchId || newMatchId()
-  });
+  };
+  if (googleTokenValid()) extra.idToken = googleIdToken;   // max-security mode
+  return Object.assign(clean, extra);
 }
 
 // JSONP call: works around the cross-origin limits of Apps Script web apps,
@@ -1088,9 +1091,12 @@ function openSheetDialog() {
   $('sheet-url').value = sheetEndpoint;
   $('sheet-pass').value = sheetPasscode;
   try { $('tba-key').value = localStorage.getItem('tba_key') || ''; } catch (e) {}
+  try { $('google-client-id').value = localStorage.getItem('google_client_id') || ''; } catch (e) {}
   $('sheet-msg').classList.add('hidden');
   if (scheduleCache && scheduleCache.count) showScheduleMsg('Schedule loaded: ' + scheduleCache.count + ' qual matches for ' + scheduleCache.event + '.', 'ok');
   else $('schedule-status').classList.add('hidden');
+  initGoogleSignIn();
+  updateGoogleStatus();
   $('sheet-overlay').classList.remove('hidden');
   document.body.classList.add('no-scroll');
   refreshSheetDialog();
@@ -1143,9 +1149,11 @@ async function sendTestRow() {
 function copyScoutLink() {
   const url = $('sheet-url').value.trim(), pass = $('sheet-pass').value.trim();
   if (!url) { showSheetMsg('Paste the Web App URL first.', 'err'); return; }
-  const link = location.origin + location.pathname + '?sheet=' + encodeURIComponent(url) + '&key=' + encodeURIComponent(pass);
+  let link = location.origin + location.pathname + '?sheet=' + encodeURIComponent(url) + '&key=' + encodeURIComponent(pass);
+  const tk = $('tba-key').value.trim(); if (tk) link += '&tba=' + encodeURIComponent(tk);
+  const gid = $('google-client-id').value.trim(); if (gid) link += '&gid=' + encodeURIComponent(gid);
   navigator.clipboard.writeText(link).then(
-    () => showSheetMsg('Scout link copied! Send it to your scouts — opening it auto-connects their app.', 'ok'),
+    () => showSheetMsg('Scout link copied! Send it to your scouts — opening it auto-connects their app (Sheet, schedule, and sign-in).', 'ok'),
     () => showSheetMsg('Copy failed. Here is the link:\n' + link, 'err')
   );
 }
@@ -1161,6 +1169,7 @@ async function submitCurrentMatch() {
   const v = validateForSubmit(fields);
   if (!v.ok) { showSubmitStatus(v.error, 'err'); return; }
   if (!isSheetConnected()) { showSubmitStatus('No Sheet connected — scan the QR code, or tap ⚙ SHEET above to connect one.', 'warn'); return; }
+  if (googleEnabled() && !googleTokenValid()) { showSubmitStatus('Sign in with Google first — open ⚙ SHEET and tap the Google button.', 'warn'); return; }
   showSubmitStatus('Sending to Sheet…', 'info');
   const res = await submitMatch(Object.assign({}, fields, { _id: currentMatchId }));
   if (res.status === 'sent') showSubmitStatus('✓ Saved to your Sheet (' + res.action + '). Tap SAVE & NEXT MATCH to scout your next one.', 'ok');
@@ -1175,6 +1184,91 @@ function showSubmitStatus(msg, kind) {
   el.textContent = msg;
   el.className = 'submit-status ' + (map[kind] || 'submit-info');
   el.classList.remove('hidden');
+}
+
+// =====================================================================
+// GOOGLE SIGN-IN (optional max-security mode — enabled when a Client ID is set)
+// =====================================================================
+
+let googleClientId = '';
+let googleIdToken = '';
+let googleEmail = '';
+
+function googleEnabled() { return !!googleClientId; }
+
+function loadGoogleConfig() {
+  try {
+    googleClientId = localStorage.getItem('google_client_id') || '';
+    googleIdToken = localStorage.getItem('google_token') || '';
+    googleEmail = localStorage.getItem('google_email') || '';
+  } catch (e) {}
+}
+
+function decodeJwt(t) {
+  try { return JSON.parse(atob(String(t).split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))); }
+  catch (e) { return null; }
+}
+
+function googleTokenValid() {
+  if (!googleIdToken) return false;
+  const p = decodeJwt(googleIdToken);
+  return !!(p && p.exp && (p.exp * 1000) > Date.now() + 10000);
+}
+
+function initGoogleSignIn() {
+  if (!googleEnabled()) return;
+  if (window.google && google.accounts && google.accounts.id) { setupGoogleButton(); return; }
+  if (document.getElementById('gis-script')) return;
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.async = true; s.defer = true; s.id = 'gis-script';
+  s.onload = setupGoogleButton;
+  document.head.appendChild(s);
+}
+
+function setupGoogleButton() {
+  if (!googleEnabled() || !window.google || !google.accounts || !google.accounts.id) return;
+  try {
+    google.accounts.id.initialize({ client_id: googleClientId, callback: onGoogleCredential });
+    const holder = $('google-btn');
+    if (holder) { holder.innerHTML = ''; google.accounts.id.renderButton(holder, { theme: 'filled_blue', size: 'large', text: 'signin_with', width: 240 }); }
+  } catch (e) {}
+  updateGoogleStatus();
+}
+
+function onGoogleCredential(resp) {
+  googleIdToken = (resp && resp.credential) || '';
+  const p = decodeJwt(googleIdToken);
+  googleEmail = (p && p.email) || '';
+  try { localStorage.setItem('google_token', googleIdToken); localStorage.setItem('google_email', googleEmail); } catch (e) {}
+  updateGoogleStatus();
+  flushQueue();
+}
+
+function updateGoogleStatus() {
+  const el = $('google-status');
+  if (!el) return;
+  if (!googleEnabled()) { el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  if (googleTokenValid()) { el.className = 'sheet-msg sheet-msg-ok'; el.innerHTML = 'Signed in as <strong>' + escapeHTML(googleEmail) + '</strong>'; }
+  else { el.className = 'sheet-msg'; el.textContent = 'Sign in with your team Google account to submit.'; }
+}
+
+function saveGoogleConfig() {
+  googleClientId = $('google-client-id').value.trim();
+  try { localStorage.setItem('google_client_id', googleClientId); } catch (e) {}
+  if (googleEnabled()) { showSheetMsg('Google sign-in enabled. Scouters tap the Google button to sign in.', 'ok'); initGoogleSignIn(); }
+  else { showSheetMsg('Google sign-in disabled (Client ID cleared).', 'ok'); }
+  updateGoogleStatus();
+}
+
+function googleSignOut() {
+  googleIdToken = ''; googleEmail = '';
+  try {
+    localStorage.removeItem('google_token'); localStorage.removeItem('google_email');
+    if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
+  } catch (e) {}
+  updateGoogleStatus();
 }
 
 // =====================================================================
@@ -1260,6 +1354,8 @@ function wireUI() {
   $('btn-sheet-retry').addEventListener('click', () => flushQueue());
   $('btn-submit-sheet').addEventListener('click', submitCurrentMatch);
   $('btn-load-schedule').addEventListener('click', doLoadSchedule);
+  $('btn-save-google').addEventListener('click', saveGoogleConfig);
+  $('btn-google-signout').addEventListener('click', googleSignOut);
   $('sheet-overlay').addEventListener('click', e => { if (e.target === $('sheet-overlay')) closeSheetDialog(); });
   window.addEventListener('online', flushQueue);
 
@@ -1481,9 +1577,10 @@ async function init() {
   fields = initialFieldState();
   currentMatchId = newMatchId();
 
-  // Sheet connection: honor a shared ?sheet=&key= link, then load saved settings.
+  // Sheet connection: honor a shared ?sheet=&key=&tba=&gid= link, then load saved settings.
   applyUrlConfig();
   loadSheetConfig();
+  loadGoogleConfig();
 
   // Restore persisted preferences
   try {
@@ -1516,6 +1613,7 @@ async function init() {
   updateSessionBar();
   updateSheetStatus();
   flushQueue();
+  initGoogleSignIn();
   registerServiceWorker();
 }
 

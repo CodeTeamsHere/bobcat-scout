@@ -335,6 +335,18 @@
         </div>
         <div id="schedule-status" class="sheet-msg hidden"></div>
 
+        <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
+        <h3 style="font-size:12px;letter-spacing:1.5px;color:var(--maroon);font-weight:800;text-transform:uppercase;margin-bottom:8px;">Google sign-in (max security, optional)</h3>
+        <p class="help-intro" style="margin-bottom:10px;">Locks submissions to your team's Google accounts. The host pastes an OAuth Client ID (steps in SETUP-SHEET.md) and sets the Sheet's Config tab; scouters then sign in below. Leave blank to use the passcode only.</p>
+        <label class="field-label" for="google-client-id">Google OAuth Client ID</label>
+        <input type="text" id="google-client-id" placeholder="…apps.googleusercontent.com">
+        <div class="btn-row" style="margin-top:10px;">
+          <button id="btn-save-google" class="btn btn-outline">SAVE &amp; ENABLE</button>
+          <button id="btn-google-signout" class="btn btn-ghost">SIGN OUT</button>
+        </div>
+        <div id="google-btn" style="margin-top:12px;"></div>
+        <div id="google-status" class="sheet-msg hidden"></div>
+
         <div class="help-note" style="margin-top:16px;">
           <strong>Don't have the URL yet?</strong> The Sheet owner sets this up once — see the <code>apps-script/Code.gs</code> file in the repo (it has click-by-click steps) or the <strong>SETUP-SHEET.md</strong> guide. Then use <strong>COPY SCOUT LINK</strong> to send every scout a single link that connects their app automatically.
         </div>

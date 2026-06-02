@@ -41,7 +41,7 @@
 
 var DATA_SHEET = 'Data';
 var CONFIG_SHEET = 'Config';
-var META_COLS = ['_id', '_submittedAt'];           // appended after the scouting fields
+var META_COLS = ['_id', '_submittedAt', '_scoutEmail'];   // appended after the scouting fields
 
 // Server-side validation ranges. Anything outside these is rejected as junk.
 var RANGES = {
@@ -110,19 +110,48 @@ function getConfig_() {
     passcode: String(map['passcode'] || '').trim(),
     activeEvent: String(map['active event'] || '').trim().toLowerCase(),
     startDate: map['start date'] instanceof Date ? map['start date'] : null,
-    endDate: map['end date'] instanceof Date ? map['end date'] : null
+    endDate: map['end date'] instanceof Date ? map['end date'] : null,
+    requireLogin: /^(yes|true|1)$/i.test(String(map['require google login'] || '').trim()),
+    clientId: String(map['google client id'] || '').trim(),
+    allowedDomain: String(map['allowed domain'] || '').trim().toLowerCase(),
+    allowedEmails: String(map['allowed emails'] || '').split(',').map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean)
   };
 }
 
 function checkGate_(d, cfg) {
-  if (!cfg.passcode) throw new Error('Server passcode not set (Config tab)');
-  if (String(d.passcode || '') !== cfg.passcode) throw new Error('Wrong passcode');
+  if (!cfg.passcode && !cfg.requireLogin) {
+    throw new Error('Set a Passcode or enable Google login in the Config tab');
+  }
+  if (cfg.requireLogin) verifyLogin_(d, cfg);                 // throws if token invalid / not allowed
+  if (cfg.passcode && String(d.passcode || '') !== cfg.passcode) throw new Error('Wrong passcode');
   if (cfg.activeEvent && String(d.eventKey || '').toLowerCase() !== cfg.activeEvent) {
     throw new Error('Submissions are not open for event "' + d.eventKey + '"');
   }
   var now = new Date();
   if (cfg.startDate && now < startOfDay_(cfg.startDate)) throw new Error('Event has not started yet');
   if (cfg.endDate && now > endOfDay_(cfg.endDate)) throw new Error('Event submissions are closed');
+}
+
+// Max-security mode: verify the Google ID token and that the account is allowed.
+function verifyLogin_(d, cfg) {
+  var token = String(d.idToken || '');
+  if (!token) throw new Error('Google sign-in required');
+  var resp = UrlFetchApp.fetch(
+    'https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(token),
+    { muteHttpExceptions: true }
+  );
+  if (resp.getResponseCode() !== 200) throw new Error('Sign-in expired — please sign in again');
+  var info = JSON.parse(resp.getContentText());
+  if (cfg.clientId && info.aud !== cfg.clientId) throw new Error('Sign-in is not for this app');
+  if (info.email_verified !== 'true' && info.email_verified !== true) throw new Error('Google email not verified');
+  var email = String(info.email || '').toLowerCase();
+  if (!email) throw new Error('No email on the sign-in');
+  var ok = false;
+  if (cfg.allowedDomain && email.slice(-(cfg.allowedDomain.length + 1)) === '@' + cfg.allowedDomain) ok = true;
+  if (cfg.allowedEmails.length && cfg.allowedEmails.indexOf(email) !== -1) ok = true;
+  if (!cfg.allowedDomain && !cfg.allowedEmails.length) ok = true;   // login required, but no allow-list → any Google account
+  if (!ok) throw new Error('Account ' + email + ' is not on the allow-list');
+  d.scoutEmail = email;                                   // stamped into the row for accountability
 }
 
 function checkData_(d) {
@@ -150,6 +179,7 @@ function upsertRow_(d) {
     var row = header.map(function (code) {
       if (code === '_submittedAt') return new Date();
       if (code === '_id') return d._id || '';
+      if (code === '_scoutEmail') return d.scoutEmail || '';
       return formatVal_(d[code]);
     });
 
@@ -222,15 +252,20 @@ function getConfigSheet_(ss) {
   if (sh) return sh;
   sh = ss.insertSheet(CONFIG_SHEET);
   sh.getRange('A1:B1').setValues([['Setting', 'Value']]).setFontWeight('bold');
-  sh.getRange('A2:B5').setValues([
+  sh.getRange('A2:B9').setValues([
     ['Passcode', 'changeme'],
     ['Active Event', ''],
     ['Start Date', ''],
-    ['End Date', '']
+    ['End Date', ''],
+    ['Require Google Login', 'no'],
+    ['Google Client ID', ''],
+    ['Allowed Domain', ''],
+    ['Allowed Emails', '']
   ]);
-  sh.getRange('A7').setValue(
-    'Tip: leave Active Event and the dates blank to allow any event/day. ' +
-    'The Passcode here must match the one entered in the Bobcat Scout app.'
+  sh.getRange('A11').setValue(
+    'Tips: leave Active Event and the dates blank to allow any event/day. The Passcode must match the app. ' +
+    'For max security, set "Require Google Login" to yes, paste your Google Client ID, and limit to an Allowed Domain ' +
+    '(e.g. team177.org) or a comma-separated Allowed Emails list. See SETUP-SHEET.md.'
   );
   sh.setColumnWidth(1, 130);
   sh.setColumnWidth(2, 220);

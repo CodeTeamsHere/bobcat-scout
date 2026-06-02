@@ -75,6 +75,42 @@ Each scout does the tiny **Part C** (or just opens a link you send them).
 | Duplicate-block | Only if the *same scout re-sends the same match & team* does it **update** that one row (prevents accidental doubles). Different matches/teams are always new rows — scouters report many matches each. |
 | Stamping | Every row records the scout name and the submit time, so bad data is traceable. |
 
-> **Note:** anyone who has both the link **and** passcode could still submit. For most teams
-> this is plenty. If you ever need it locked to team members only, we can switch to Google
-> sign-in restricted to your team.
+> **Note:** with passcode mode, anyone who has both the link **and** passcode could still submit.
+> For most teams that's plenty. For the strongest option, use Google sign-in below.
+
+---
+
+## Optional: Auto-fill team numbers (The Blue Alliance)
+
+So scouters don't type team numbers (and can't fat-finger them):
+
+1. Get a free **Read API key** at <https://www.thebluealliance.com/account> (sign in → "Read API Keys" → add one).
+2. In the app: **⚙ SHEET** → scroll to **Auto team numbers** → paste the key → make sure the **Event Key** in the form is set (e.g. `2026ctwat`) → **Load Match Schedule**.
+3. Now when a scouter sets the match #, alliance, and station, the team number fills in automatically. The schedule is cached, so it keeps working offline.
+4. The **Copy Scout Link** button includes the TBA key, so sharing one link sets this up for everyone.
+
+---
+
+## Optional: Maximum security — lock to your team's Google accounts
+
+This requires scouters to sign in with Google, and only allowed accounts can submit. It's the most setup but the most secure.
+
+**A. Create a Google OAuth Client ID (host, one time):**
+1. Go to <https://console.cloud.google.com> → create a project (any name).
+2. **APIs & Services → OAuth consent screen** → choose **Internal** (if your school has Google Workspace) or **External** → fill the app name + your email → Save.
+3. **APIs & Services → Credentials → Create Credentials → OAuth client ID** → Application type **Web application**.
+4. Under **Authorized JavaScript origins**, add your site: `https://codeteamshere.github.io` (and `http://localhost:8000` if you test locally). **Create**.
+5. Copy the **Client ID** (ends in `.apps.googleusercontent.com`).
+
+**B. Configure the Sheet (Config tab):**
+- **Require Google Login** → `yes`
+- **Google Client ID** → paste the Client ID
+- **Allowed Domain** → e.g. `team177.org` (only that email domain can submit) — *or* leave blank and use:
+- **Allowed Emails** → a comma-separated list of exact emails
+
+**C. Turn it on in the app:**
+1. **⚙ SHEET** → **Google sign-in** → paste the same **Client ID** → **Save & Enable**.
+2. Use **Copy Scout Link** — it now also carries the Client ID, so every scouter's app shows the Google button.
+3. Each scouter taps **Sign in with Google** once (sign-ins last about an hour). Every saved row records the signed-in email.
+
+> If both a passcode and Google login are set, the app uses both. Sign-ins expire ~hourly; scouters just tap the button again — queued matches send automatically afterward.
