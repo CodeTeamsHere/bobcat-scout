@@ -11,6 +11,8 @@ Scouts at a competition open this app on their phone, tap the mic, and describe 
 
 It's an installable **PWA**: open it once and it runs fully offline (essential at venues — the QR library is bundled, not loaded from a CDN), the in-progress match auto-saves through refreshes, and you can **Add to Home Screen** to use it like an app.
 
+Two modes (toggle at the top): **Match Scouting** (quantitative — auto/teleop/endgame) and **Pit Scouting** (qualitative — a robot's fixed capabilities, one row per team). Pit data routes to a separate **Pit** tab. The Sheet also auto-builds a live **Analytics** tab — a per-team info guide (matches, avg auto/teleop/total, climb %, avg driver/defense, reliability) that recomputes as data arrives; sort any column for a pick list.
+
 ## Live URL
 
 After deployment via GitHub Pages: `https://codeteamshere.github.io/bobcat-scout/`
