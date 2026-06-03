@@ -13,6 +13,8 @@ It's an installable **PWA**: open it once and it runs fully offline (essential a
 
 Two modes (toggle at the top): **Match Scouting** (quantitative — auto/teleop/endgame) and **Pit Scouting** (qualitative — a robot's fixed capabilities, one row per team). Pit data routes to a separate **Pit** tab. The Sheet also auto-builds a live **Analytics** tab — a per-team info guide (matches, avg auto/teleop/total, climb %, avg driver/defense, reliability) that recomputes as data arrives; sort any column for a pick list.
 
+The game changes every season, so the form is fully editable in-app: tap **🛠 FORM** to add/rename/reorder sections and fields (text, number, yes/no, dropdown, rating), then **Apply** — the boxes rebuild instantly, no code. The config is saved on the device; **Export JSON** to share the exact form with your scouts (they **Upload JSON**), or hand-edit/paste a config. `config.json` is just the built-in REBUILT 2026 default; a custom config in localStorage overrides it.
+
 ## Live URL
 
 After deployment via GitHub Pages: `https://codeteamshere.github.io/bobcat-scout/`
