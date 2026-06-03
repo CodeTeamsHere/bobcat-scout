@@ -784,3 +784,33 @@ footer {
   transition: background 0.15s, color 0.15s;
 }
 .mode-btn.mode-active { background: var(--maroon); color: var(--white); border-color: var(--maroon); }
+
+/* Form builder */
+.b-formsel { display: flex; gap: 8px; margin-bottom: 14px; }
+.b-formsel-btn {
+  flex: 1; padding: 10px; border: 1px solid var(--border); background: var(--white); color: var(--gray);
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; border-radius: 2px;
+}
+.b-formsel-btn.b-mode-active { background: var(--maroon); color: var(--white); border-color: var(--maroon); }
+.b-section { border: 1px solid var(--border); border-radius: 4px; padding: 12px; margin-bottom: 12px; background: var(--cream); }
+.b-sec-head { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+.b-sec-name { flex: 1; font-weight: 700; padding: 8px 10px; border: 1px solid var(--border); border-radius: 2px; font-size: 13px; }
+.b-field {
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+  padding: 8px; background: var(--white); border: 1px solid var(--border); border-radius: 2px; margin-bottom: 6px;
+}
+.b-field .b-title { flex: 2; min-width: 140px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 2px; font-size: 13px; }
+.b-field .b-type { flex: 1; min-width: 110px; padding: 7px; border: 1px solid var(--border); border-radius: 2px; font-size: 12px; }
+.b-field .b-opts { flex: 1 1 100%; min-height: 54px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 2px; font-size: 12px; resize: vertical; }
+.b-minmax { font-size: 11px; color: var(--gray); display: inline-flex; align-items: center; gap: 4px; }
+.b-mm { width: 56px; padding: 6px; border: 1px solid var(--border); border-radius: 2px; font-size: 12px; }
+.b-req { font-size: 11px; color: var(--gray); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.b-icon { width: 30px; height: 30px; border: 1px solid var(--border); background: var(--white); border-radius: 2px; color: var(--gray); font-size: 13px; flex-shrink: 0; }
+.b-icon:hover { background: var(--cream); }
+.b-icon.b-del { color: var(--error); border-color: var(--error); }
+.b-add { width: 100%; margin-top: 4px; }
+.b-add-sec { width: 100%; }
+.b-paste { margin-top: 14px; font-size: 13px; color: var(--gray); }
+.b-paste summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.b-paste textarea { width: 100%; min-height: 120px; margin-top: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 2px; font-family: "SF Mono", Consolas, monospace; font-size: 12px; }
+.builder-warn { margin-top: 14px; padding: 10px 12px; border-radius: 2px; background: var(--gold-soft); color: var(--warning); font-size: 13px; line-height: 1.5; }

@@ -35,6 +35,7 @@
           <span id="sheet-dot" class="sheet-dot dot-off"></span>
           <span id="sheet-label">SHEET</span>
         </button>
+        <button id="btn-builder" class="btn-header-outline" title="Edit the scouting form for this year's game">🛠 FORM</button>
         <button id="btn-help" class="btn-header-outline" title="Help & instructions">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
           HELP
@@ -354,6 +355,46 @@
 
         <div class="help-note" style="margin-top:16px;">
           <strong>Don't have the URL yet?</strong> The Sheet owner sets this up once — see the <code>apps-script/Code.gs</code> file in the repo (it has click-by-click steps) or the <strong>SETUP-SHEET.md</strong> guide. Then use <strong>COPY SCOUT LINK</strong> to send every scout a single link that connects their app automatically.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form builder (define this year's game fields) -->
+  <div id="builder-overlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="builder-title">
+    <div class="help-modal" style="max-width:780px;">
+      <div class="help-head">
+        <h2 id="builder-title">FORM BUILDER</h2>
+        <button id="btn-builder-close" class="btn-help-close" aria-label="Close">×</button>
+      </div>
+      <div class="help-body">
+        <p class="help-intro">Every season the game changes. Define this year's scouting fields here — the form rebuilds instantly, no code. Saved on this device; <strong>Export JSON</strong> to share the exact form with your scouts (they tap <strong>Upload JSON</strong>).</p>
+
+        <div class="b-formsel">
+          <button id="bf-match" class="b-formsel-btn b-mode-active">MATCH FORM</button>
+          <button id="bf-pit" class="b-formsel-btn">PIT FORM</button>
+        </div>
+
+        <div id="builder-body"></div>
+
+        <div id="builder-msg" class="sheet-msg hidden"></div>
+
+        <div class="btn-row" style="margin-top:16px;">
+          <button id="btn-builder-apply" class="btn btn-primary">APPLY &amp; SAVE</button>
+          <button id="btn-builder-export" class="btn btn-outline">EXPORT JSON</button>
+          <button id="btn-builder-upload" class="btn btn-outline">UPLOAD JSON</button>
+          <button id="btn-builder-reset" class="btn btn-ghost">RESET TO DEFAULT</button>
+        </div>
+        <input id="builder-file" type="file" accept="application/json,.json" class="hidden">
+
+        <details class="b-paste">
+          <summary>Advanced: paste / copy config JSON</summary>
+          <textarea id="builder-paste" placeholder='Paste a config JSON here, then tap LOAD PASTED'></textarea>
+          <button id="btn-builder-load" class="btn btn-outline" style="margin-top:8px;">LOAD PASTED</button>
+        </details>
+
+        <div class="help-note" style="margin-top:16px;">
+          <strong>Note:</strong> keep the Prematch identity fields (Scout Name, Event Key, Match Type, Match #, Team #) so the Google Sheet can de-duplicate and the Analytics tab can group by team. The Analytics tab's averages are tuned to the current game's scoring fields — ping for help re-tuning it to a new game.
         </div>
       </div>
     </div>

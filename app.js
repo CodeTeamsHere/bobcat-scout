@@ -1290,6 +1290,241 @@ function googleSignOut() {
 }
 
 // =====================================================================
+// CONFIG LOADING — built-in game (config.json) OR a custom one saved on this device
+// =====================================================================
+
+let defaultConfig = null;
+
+async function fetchDefaultConfig() {
+  if (defaultConfig) return defaultConfig;
+  const resp = await fetch('config.json');
+  if (!resp.ok) throw new Error('Failed to load config.json');
+  defaultConfig = await resp.json();
+  return defaultConfig;
+}
+
+async function loadConfig() {
+  const def = await fetchDefaultConfig();
+  try {
+    const custom = localStorage.getItem('custom_config');
+    if (custom) {
+      const c = JSON.parse(custom);
+      if (c && Array.isArray(c.sections)) return c;
+    }
+  } catch (e) {}
+  return def;
+}
+
+// =====================================================================
+// FORM BUILDER — define this year's game fields with no code; the boxes rebuild live
+// =====================================================================
+
+let builderConfig = null;
+let builderForm = 'match';
+
+const FIELD_TYPES = [['text', 'Text'], ['number', 'Number'], ['boolean', 'Yes/No toggle'], ['select', 'Dropdown'], ['range', 'Rating slider']];
+
+function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+function slug(title, existing) {
+  let base = String(title || 'field').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ')
+    .map((w, i) => i === 0 ? w : (w ? w.charAt(0).toUpperCase() + w.slice(1) : '')).join('');
+  if (!base) base = 'field';
+  if (!/^[a-z]/.test(base)) base = 'f' + base;
+  let code = base, n = 2;
+  while (existing && existing.indexOf(code) !== -1) { code = base + n; n++; }
+  return code;
+}
+
+function builderSections() {
+  const key = builderForm === 'pit' ? 'pitSections' : 'sections';
+  if (!Array.isArray(builderConfig[key])) builderConfig[key] = [];
+  return builderConfig[key];
+}
+
+function normalizeField(f) {
+  if (f.type === 'select') {
+    if (!Array.isArray(f.options) || !f.options.length) f.options = [{ k: 'option1', v: 'Option 1' }];
+    if (f.default == null) f.default = f.options[0].k;
+  } else if (f.type === 'range') {
+    if (f.min == null) f.min = 1; if (f.max == null) f.max = 5;
+    f.default = f.default != null ? f.default : Math.round((Number(f.min) + Number(f.max)) / 2);
+  } else if (f.type === 'number') {
+    if (f.default == null) f.default = 0;
+  } else if (f.type === 'boolean') {
+    f.default = !!f.default;
+  } else {
+    f.default = f.default != null ? f.default : '';
+  }
+}
+
+function openBuilder() {
+  builderConfig = deepClone(CONFIG);
+  if (!Array.isArray(builderConfig.sections)) builderConfig.sections = [];
+  if (!Array.isArray(builderConfig.pitSections)) builderConfig.pitSections = [];
+  builderForm = 'match';
+  $('builder-msg').classList.add('hidden');
+  if ($('builder-paste')) $('builder-paste').value = '';
+  renderBuilder();
+  $('builder-overlay').classList.remove('hidden');
+  document.body.classList.add('no-scroll');
+}
+function closeBuilder() {
+  $('builder-overlay').classList.add('hidden');
+  document.body.classList.remove('no-scroll');
+}
+
+function renderBuilder() {
+  $('bf-match').classList.toggle('b-mode-active', builderForm === 'match');
+  $('bf-pit').classList.toggle('b-mode-active', builderForm === 'pit');
+  const secs = builderSections();
+  let h = '';
+  secs.forEach((sec, i) => {
+    h += '<div class="b-section">';
+    h += '<div class="b-sec-head">'
+      + '<input class="b-sec-name" data-sec="' + i + '" data-prop="name" value="' + escapeHTML(sec.name || '') + '" placeholder="Section name (e.g. Auto)">'
+      + '<button class="b-icon" data-action="sec-up" data-sec="' + i + '" title="Move up">↑</button>'
+      + '<button class="b-icon" data-action="sec-down" data-sec="' + i + '" title="Move down">↓</button>'
+      + '<button class="b-icon b-del" data-action="del-section" data-sec="' + i + '" title="Delete section">✕</button>'
+      + '</div>';
+    (sec.fields || []).forEach((f, j) => {
+      h += '<div class="b-field">';
+      h += '<input class="b-title" data-sec="' + i + '" data-fld="' + j + '" data-prop="title" value="' + escapeHTML(f.title || '') + '" placeholder="Field label (e.g. Goals Scored)">';
+      h += '<select class="b-type" data-sec="' + i + '" data-fld="' + j + '" data-prop="type">'
+        + FIELD_TYPES.map(t => '<option value="' + t[0] + '"' + (f.type === t[0] ? ' selected' : '') + '>' + t[1] + '</option>').join('')
+        + '</select>';
+      if (f.type === 'select') {
+        const opts = (f.options || []).map(o => o.v).join('\n');
+        h += '<textarea class="b-opts" data-sec="' + i + '" data-fld="' + j + '" data-prop="options" placeholder="One choice per line">' + escapeHTML(opts) + '</textarea>';
+      } else if (f.type === 'number' || f.type === 'range') {
+        h += '<span class="b-minmax">min <input type="number" class="b-mm" data-sec="' + i + '" data-fld="' + j + '" data-prop="min" value="' + (f.min != null ? f.min : '') + '"> '
+          + 'max <input type="number" class="b-mm" data-sec="' + i + '" data-fld="' + j + '" data-prop="max" value="' + (f.max != null ? f.max : '') + '"></span>';
+      }
+      h += '<label class="b-req"><input type="checkbox" data-sec="' + i + '" data-fld="' + j + '" data-prop="required"' + (f.required ? ' checked' : '') + '> required</label>';
+      h += '<button class="b-icon" data-action="fld-up" data-sec="' + i + '" data-fld="' + j + '" title="Move up">↑</button>';
+      h += '<button class="b-icon" data-action="fld-down" data-sec="' + i + '" data-fld="' + j + '" title="Move down">↓</button>';
+      h += '<button class="b-icon b-del" data-action="del-field" data-sec="' + i + '" data-fld="' + j + '" title="Delete field">✕</button>';
+      h += '</div>';
+    });
+    h += '<button class="btn btn-ghost b-add" data-action="add-field" data-sec="' + i + '">+ Add field</button>';
+    h += '</div>';
+  });
+  h += '<button class="btn btn-outline b-add-sec" data-action="add-section">+ Add section</button>';
+  $('builder-body').innerHTML = h;
+}
+
+function onBuilderEdit(e) {
+  const el = e.target, prop = el.getAttribute('data-prop');
+  if (!prop) return;
+  const si = el.getAttribute('data-sec'), fi = el.getAttribute('data-fld');
+  const secs = builderSections();
+  if (!secs[si]) return;
+  if (prop === 'name') { secs[si].name = el.value; return; }
+  const f = secs[si].fields[fi];
+  if (!f) return;
+  if (prop === 'title') f.title = el.value;
+  else if (prop === 'type') { f.type = el.value; normalizeField(f); renderBuilder(); }
+  else if (prop === 'required') f.required = el.checked;
+  else if (prop === 'min') f.min = el.value === '' ? undefined : Number(el.value);
+  else if (prop === 'max') f.max = el.value === '' ? undefined : Number(el.value);
+  else if (prop === 'options') f.options = el.value.split('\n').map(s => s.trim()).filter(Boolean).map(v => ({ k: slug(v), v: v }));
+}
+
+function onBuilderClick(e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const action = btn.getAttribute('data-action');
+  const si = parseInt(btn.getAttribute('data-sec'), 10);
+  const fi = parseInt(btn.getAttribute('data-fld'), 10);
+  const secs = builderSections();
+  if (action === 'add-section') secs.push({ name: 'New Section', fields: [] });
+  else if (action === 'del-section') { if (!confirm('Delete this whole section?')) return; secs.splice(si, 1); }
+  else if (action === 'sec-up') { if (si > 0) { const t = secs[si]; secs[si] = secs[si - 1]; secs[si - 1] = t; } }
+  else if (action === 'sec-down') { if (si < secs.length - 1) { const t = secs[si]; secs[si] = secs[si + 1]; secs[si + 1] = t; } }
+  else if (action === 'add-field') { const f = { title: 'New Field', type: 'text' }; normalizeField(f); secs[si].fields = secs[si].fields || []; secs[si].fields.push(f); }
+  else if (action === 'del-field') secs[si].fields.splice(fi, 1);
+  else if (action === 'fld-up') { const a = secs[si].fields; if (fi > 0) { const t = a[fi]; a[fi] = a[fi - 1]; a[fi - 1] = t; } }
+  else if (action === 'fld-down') { const a = secs[si].fields; if (fi < a.length - 1) { const t = a[fi]; a[fi] = a[fi + 1]; a[fi + 1] = t; } }
+  else return;
+  renderBuilder();
+}
+
+function showBuilderMsg(msg, kind) {
+  const el = $('builder-msg');
+  el.textContent = msg;
+  el.className = 'sheet-msg ' + (kind === 'err' ? 'sheet-msg-err' : (kind === 'warn' ? 'builder-warn' : 'sheet-msg-ok'));
+  el.classList.remove('hidden');
+}
+
+function applyConfig() {
+  ['sections', 'pitSections'].forEach(key => {
+    if (!Array.isArray(builderConfig[key])) { builderConfig[key] = []; return; }
+    const used = [];
+    builderConfig[key].forEach(s => {
+      s.name = String(s.name || 'Section');
+      (s.fields || []).forEach(f => {
+        f.title = String(f.title || 'Field');
+        if (!f.type) f.type = 'text';
+        normalizeField(f);
+        if (!f.code) f.code = slug(f.title, used);     // existing fields keep their code; new ones derive from the label
+        used.push(f.code);
+      });
+    });
+  });
+  const matchCodes = (builderConfig.sections || []).flatMap(s => (s.fields || []).map(f => f.code));
+  const missing = ['scoutName', 'eventKey', 'matchType', 'matchNumber', 'teamNumber'].filter(c => matchCodes.indexOf(c) === -1);
+
+  CONFIG = deepClone(builderConfig);
+  try { localStorage.setItem('custom_config', JSON.stringify(CONFIG)); } catch (e) {}
+  clearDraft();
+  currentForm = 'match';
+  applyForm();
+  fields = initialFieldState();
+  confidence = {};
+  currentMatchId = newMatchId();
+  if ($('transcript')) $('transcript').value = '';
+  renderAllFields();
+  syncFormUI();
+  updateProcessButton();
+  updateGenerateButton();
+  if (missing.length) showBuilderMsg('Saved — but the match form no longer has the standard ' + missing.join(', ') + ' field(s). Those codes power Sheet de-duplication; keep fields titled "Scout Name", "Event Key", "Match Type", "Match #", "Team #" for full cloud support.', 'warn');
+  else showBuilderMsg('✓ Saved! The form behind this dialog has rebuilt to match. Export it to share with your scouts.', 'ok');
+}
+
+function exportConfig() {
+  const blob = new Blob([JSON.stringify(CONFIG, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bobcat-scout-config.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  showBuilderMsg('Config downloaded. Scouts can load it here via "Load pasted/uploaded".', 'ok');
+}
+
+function importConfigText(text) {
+  let c;
+  try { c = JSON.parse(text); } catch (e) { showBuilderMsg('That is not valid JSON — check for a missing bracket or comma.', 'err'); return; }
+  if (!c || !Array.isArray(c.sections)) { showBuilderMsg('A config must have a "sections" array.', 'err'); return; }
+  builderConfig = c;
+  if (!Array.isArray(builderConfig.pitSections)) builderConfig.pitSections = [];
+  builderForm = 'match';
+  renderBuilder();
+  showBuilderMsg('Loaded into the editor. Review the fields, then tap APPLY & SAVE.', 'ok');
+}
+
+async function resetConfig() {
+  if (!confirm('Reset to the built-in REBUILT 2026 form? Your custom fields will be removed from this device.')) return;
+  try { localStorage.removeItem('custom_config'); } catch (e) {}
+  const def = await fetchDefaultConfig();
+  builderConfig = deepClone(def);
+  CONFIG = deepClone(def);
+  currentForm = 'match'; applyForm(); fields = initialFieldState(); confidence = {}; currentMatchId = newMatchId(); clearDraft();
+  renderAllFields(); syncFormUI(); updateGenerateButton();
+  renderBuilder();
+  showBuilderMsg('Reset to the REBUILT 2026 default.', 'ok');
+}
+
+// =====================================================================
 // UI WIRING
 // =====================================================================
 
@@ -1383,6 +1618,25 @@ function wireUI() {
   // Match / Pit mode
   $('mode-match').addEventListener('click', () => setForm('match'));
   $('mode-pit').addEventListener('click', () => setForm('pit'));
+
+  // Form builder
+  $('btn-builder').addEventListener('click', openBuilder);
+  $('btn-builder-close').addEventListener('click', closeBuilder);
+  $('bf-match').addEventListener('click', () => { builderForm = 'match'; renderBuilder(); });
+  $('bf-pit').addEventListener('click', () => { builderForm = 'pit'; renderBuilder(); });
+  $('builder-body').addEventListener('input', onBuilderEdit);
+  $('builder-body').addEventListener('change', onBuilderEdit);
+  $('builder-body').addEventListener('click', onBuilderClick);
+  $('btn-builder-apply').addEventListener('click', applyConfig);
+  $('btn-builder-export').addEventListener('click', exportConfig);
+  $('btn-builder-reset').addEventListener('click', resetConfig);
+  $('btn-builder-load').addEventListener('click', () => importConfigText($('builder-paste').value));
+  $('builder-file').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (file) { const r = new FileReader(); r.onload = () => { $('builder-paste').value = r.result; importConfigText(r.result); }; r.readAsText(file); }
+  });
+  $('btn-builder-upload').addEventListener('click', () => $('builder-file').click());
+  $('builder-overlay').addEventListener('click', e => { if (e.target === $('builder-overlay')) closeBuilder(); });
 }
 
 // =====================================================================
@@ -1613,11 +1867,9 @@ function showScheduleMsg(msg, kind) {
 // =====================================================================
 
 async function init() {
-  // Load config
+  // Load config (a custom one the host built for this season, else the built-in game)
   try {
-    const resp = await fetch('config.json');
-    if (!resp.ok) throw new Error('Failed to load config.json');
-    CONFIG = await resp.json();
+    CONFIG = await loadConfig();
   } catch (e) {
     document.body.innerHTML = `
       <div style="padding:40px;text-align:center;font-family:sans-serif;">
