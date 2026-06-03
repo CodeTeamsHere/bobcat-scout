@@ -17,6 +17,10 @@ let isRecording = false;
 let recognition = null;
 let baseTranscript = '';      // text before this recording started
 let activeTab = 'qr';
+let currentForm = 'match';    // 'match' (quantitative) or 'pit' (qualitative robot info)
+
+function activeSections() { return currentForm === 'pit' ? (CONFIG.pitSections || []) : CONFIG.sections; }
+function applyForm() { ALL_FIELDS = activeSections().flatMap(s => s.fields); FIELD_ORDER = ALL_FIELDS.map(f => f.code); }
 
 const SAMPLE_TEXT = "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4 in the hub and left the line. Teleop they scored 18, picked from the neutral zone and the outpost chute. Pickup was pretty good, passing was amazing. Endgame climbed the mid rung. Smooth driver. Got defended a bit but no issues.";
 
@@ -351,7 +355,7 @@ function renderFieldHTML(f) {
 function renderAllFields() {
   const container = $('fields-container');
   let html = '';
-  CONFIG.sections.forEach(sec => {
+  activeSections().forEach(sec => {
     html += `<div class="section-header">${escapeHTML(sec.name.toUpperCase())}</div>`;
     html += `<div class="field-grid">`;
     sec.fields.forEach(f => { html += renderFieldHTML(f); });
@@ -1014,6 +1018,7 @@ function buildPayload(data) {
     _id: data._id || currentMatchId || newMatchId()
   };
   if (googleTokenValid()) extra.idToken = googleIdToken;   // max-security mode
+  if (currentForm === 'pit') extra._form = 'pit';          // route to the Pit sheet
   return Object.assign(clean, extra);
 }
 
@@ -1374,6 +1379,10 @@ function wireUI() {
 
   // Session summary
   $('btn-summary').addEventListener('click', toggleSummary);
+
+  // Match / Pit mode
+  $('mode-match').addEventListener('click', () => setForm('match'));
+  $('mode-pit').addEventListener('click', () => setForm('pit'));
 }
 
 // =====================================================================
@@ -1386,6 +1395,7 @@ function saveDraft() {
       fields: fields,
       confidence: confidence,
       matchId: currentMatchId,
+      form: currentForm,
       transcript: $('transcript') ? $('transcript').value : ''
     }));
   } catch (e) {}
@@ -1397,6 +1407,7 @@ function loadDraft() {
     if (!raw) return null;
     const d = JSON.parse(raw);
     if (!d || !d.fields) return null;
+    if (d.form === 'pit' || d.form === 'match') { currentForm = d.form; applyForm(); }
     fields = Object.assign(initialFieldState(), d.fields);
     confidence = d.confidence || {};
     if (d.matchId) currentMatchId = d.matchId;
@@ -1422,6 +1433,38 @@ function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js').catch(() => {});
   }
+}
+
+// ---- Match / Pit mode ----
+function syncFormUI() {
+  const isPit = currentForm === 'pit';
+  const step1 = $('step-describe'); if (step1) step1.classList.toggle('hidden', isPit);
+  const saveNext = $('btn-save-next'); if (saveNext) saveNext.classList.toggle('hidden', isPit);
+  const mm = $('mode-match'), mp = $('mode-pit');
+  if (mm) mm.classList.toggle('mode-active', !isPit);
+  if (mp) mp.classList.toggle('mode-active', isPit);
+}
+
+function setForm(form) {
+  if (form === currentForm) return;
+  currentForm = form;
+  applyForm();
+  const sn = fields.scoutName, ek = fields.eventKey;   // carry identity across the switch
+  fields = initialFieldState();
+  if (sn) fields.scoutName = sn;
+  if (ek) fields.eventKey = ek;
+  confidence = {};
+  currentMatchId = newMatchId();
+  $('output-section').classList.add('hidden');
+  $('generate-row').classList.remove('hidden');
+  const ss = $('submit-status'); if (ss) ss.classList.add('hidden');
+  if ($('transcript')) $('transcript').value = '';
+  renderAllFields();
+  syncFormUI();
+  updateProcessButton();
+  updateGenerateButton();
+  saveDraft();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // =====================================================================
@@ -1585,8 +1628,7 @@ async function init() {
     return;
   }
 
-  ALL_FIELDS = CONFIG.sections.flatMap(s => s.fields);
-  FIELD_ORDER = ALL_FIELDS.map(f => f.code);
+  applyForm();
   fields = initialFieldState();
   currentMatchId = newMatchId();
 
@@ -1620,6 +1662,7 @@ async function init() {
 
   renderAllFields();
   wireUI();
+  syncFormUI();
   if (draft && draft.transcript) $('transcript').value = draft.transcript;
   updateProcessButton();
   updateGenerateButton();

@@ -775,3 +775,12 @@ footer {
 .summary-table tbody tr:nth-child(odd) { background: #fcfaf5; }
 .summary-note { font-size: 11px; color: var(--gray); margin-top: 8px; line-height: 1.5; }
 .summary-empty { font-size: 13px; color: var(--gray); padding: 10px 0; }
+
+/* Match / Pit mode toggle */
+.mode-bar { display: flex; gap: 8px; }
+.mode-btn {
+  flex: 1; padding: 12px; border: 1px solid var(--border); background: var(--white);
+  color: var(--gray); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; border-radius: 2px;
+  transition: background 0.15s, color 0.15s;
+}
+.mode-btn.mode-active { background: var(--maroon); color: var(--white); border-color: var(--maroon); }

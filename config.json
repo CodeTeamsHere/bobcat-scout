@@ -55,5 +55,42 @@
         { "title": "Comments", "type": "text", "code": "comments", "default": "" }
       ]
     }
+  ],
+  "pitSections": [
+    {
+      "name": "Pit Scouting — Team Info",
+      "fields": [
+        { "title": "Scout Name", "type": "text", "code": "scoutName", "required": true, "preserve": true, "placeholder": "Your name" },
+        { "title": "Event Key", "type": "text", "code": "eventKey", "required": true, "preserve": true, "placeholder": "2026ctwat" },
+        { "title": "Team #", "type": "number", "code": "teamNumber", "required": true, "default": 0, "min": 1, "max": 99999 }
+      ]
+    },
+    {
+      "name": "Robot",
+      "fields": [
+        { "title": "Drivetrain", "type": "select", "code": "pitDrivetrain", "default": "unknown", "options": [{"k":"swerve","v":"Swerve"},{"k":"tank","v":"Tank / WCD"},{"k":"mecanum","v":"Mecanum"},{"k":"other","v":"Other"},{"k":"unknown","v":"Unknown"}] },
+        { "title": "Weight (lbs)", "type": "number", "code": "pitWeight", "default": 0, "min": 0, "max": 200 },
+        { "title": "Programming", "type": "select", "code": "pitLanguage", "default": "unknown", "options": [{"k":"java","v":"Java"},{"k":"cpp","v":"C++"},{"k":"python","v":"Python"},{"k":"labview","v":"LabVIEW"},{"k":"other","v":"Other"},{"k":"unknown","v":"Unknown"}] }
+      ]
+    },
+    {
+      "name": "Capabilities",
+      "fields": [
+        { "title": "Climb Capability", "type": "select", "code": "pitClimb", "default": "unknown", "options": [{"k":"none","v":"No climb"},{"k":"low","v":"Low Rung"},{"k":"mid","v":"Mid Rung"},{"k":"high","v":"High Rung"},{"k":"unknown","v":"Unknown"}] },
+        { "title": "Auto Capability", "type": "select", "code": "pitAuto", "default": "unknown", "options": [{"k":"none","v":"None"},{"k":"leave","v":"Leaves line only"},{"k":"score","v":"Scores fuel"},{"k":"score_climb","v":"Scores + climbs"},{"k":"unknown","v":"Unknown"}] },
+        { "title": "Primary Intake", "type": "select", "code": "pitIntake", "default": "unknown", "options": [{"k":"floor","v":"Neutral Zone (floor)"},{"k":"depot","v":"Depot"},{"k":"outpost","v":"Outpost Chute (HP)"},{"k":"multiple","v":"Multiple"},{"k":"none","v":"No intake"},{"k":"unknown","v":"Unknown"}] },
+        { "title": "Fuel Capacity (held)", "type": "number", "code": "pitFuelCapacity", "default": 0, "min": 0, "max": 100 },
+        { "title": "Fits Under Trench", "type": "boolean", "code": "pitFitsTrench", "default": false },
+        { "title": "Crosses Bump", "type": "boolean", "code": "pitCrossesBump", "default": false }
+      ]
+    },
+    {
+      "name": "Assessment",
+      "fields": [
+        { "title": "Scoring Speed (1-5)", "type": "range", "code": "pitScoringSpeed", "default": 3, "min": 1, "max": 5 },
+        { "title": "Build Quality / Reliability (1-5)", "type": "range", "code": "pitReliability", "default": 3, "min": 1, "max": 5 },
+        { "title": "Notes", "type": "text", "code": "pitNotes", "default": "" }
+      ]
+    }
   ]
 }
