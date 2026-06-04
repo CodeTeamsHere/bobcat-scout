@@ -1595,6 +1595,16 @@ function ensureScoutingIdentity(cfg) {
   return cfg;
 }
 
+// Reliability robustness: a boolean that READS like a breakdown counts as one,
+// even if an AI draft set "0 points" instead of ticking breakdown.
+const BREAKDOWN_RE = /(tipp|disab|died|dead|broke|broken|fell|fall|no[\s-]*show|stuck|immobil)/i;
+function markBreakdownFields(cfg) {
+  (cfg.sections || []).forEach(s => (s.fields || []).forEach(f => {
+    if (f.type === 'boolean' && f.fail == null && BREAKDOWN_RE.test(String(f.title || ''))) f.fail = true;
+  }));
+  return cfg;
+}
+
 const MANUAL_PROMPT = [
   'You configure a robotics-competition scouting form. From the game-manual excerpt below, design the MATCH scouting fields and their SCORING.',
   'Output ONLY one JSON object (no markdown fences, no prose) of exactly this shape:',
@@ -1677,6 +1687,7 @@ async function aiDraftConfig(rawText) {
   const cfg = extractJsonObject(text);
   if (!cfg || !Array.isArray(cfg.sections)) throw new Error('The AI returned an invalid form. Try again.');
   ensureScoutingIdentity(cfg);
+  markBreakdownFields(cfg);
   cfg.title = cfg.title || 'Imported game';
   cfg.delimiter = '\t';
   if (!Array.isArray(cfg.pitSections)) cfg.pitSections = deepClone((CONFIG && CONFIG.pitSections) || []);
