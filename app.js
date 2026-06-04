@@ -1327,6 +1327,10 @@ function syncAnalyticsConfig() {
 
 let builderConfig = null;
 let builderForm = 'match';
+let draftFromImport = false;   // true right after an AI/JSON import → show the "review point values" banner
+
+// Identity columns are never scored — don't clutter them with a "pts" box.
+const NONSCORING_CODES = ['scoutName', 'eventKey', 'matchNumber', 'matchType', 'teamNumber', 'alliance', 'driverStation'];
 
 const FIELD_TYPES = [['text', 'Text'], ['number', 'Number'], ['boolean', 'Yes/No toggle'], ['select', 'Dropdown'], ['range', 'Rating slider']];
 
@@ -1369,7 +1373,9 @@ function openBuilder() {
   if (!Array.isArray(builderConfig.sections)) builderConfig.sections = [];
   if (!Array.isArray(builderConfig.pitSections)) builderConfig.pitSections = [];
   builderForm = 'match';
+  draftFromImport = false;
   $('builder-msg').classList.add('hidden');
+  if ($('manual-status')) $('manual-status').classList.add('hidden');
   if ($('builder-paste')) $('builder-paste').value = '';
   renderBuilder();
   $('builder-overlay').classList.remove('hidden');
@@ -1383,6 +1389,7 @@ function closeBuilder() {
 // Per-field scoring inputs (match form only) — these write the point values the
 // Analytics engine reads, so a new game's math works without touching code.
 function scoringControls(f, i, j) {
+  if (f.code && NONSCORING_CODES.indexOf(f.code) !== -1) return '';   // identity fields aren't scored
   const d = 'data-sec="' + i + '" data-fld="' + j + '"';
   if (f.type === 'number' || f.type === 'range') {
     return '<span class="b-pts" title="Points each one is worth (e.g. 1 per ball)">pts ea <input type="number" step="any" class="b-mm" ' + d + ' data-prop="points" value="' + (f.points != null ? f.points : '') + '" placeholder="—"></span>';
@@ -1407,6 +1414,9 @@ function renderBuilder() {
   $('bf-pit').classList.toggle('b-mode-active', builderForm === 'pit');
   const secs = builderSections();
   let h = '';
+  if (draftFromImport && builderForm === 'match') {
+    h += '<div class="b-review-banner">⚠ <strong>Review before you save.</strong> This form was drafted from your manual — read every <span class="b-review-pts">pts</span> value below and fix any the AI misread, then tap APPLY &amp; SAVE. The scoring drives the whole ANALYZE engine.</div>';
+  }
   secs.forEach((sec, i) => {
     h += '<div class="b-section">';
     h += '<div class="b-sec-head">'
@@ -1516,6 +1526,7 @@ function applyConfig() {
   CONFIG = deepClone(builderConfig);
   try { localStorage.setItem('custom_config', JSON.stringify(CONFIG)); } catch (e) {}
   syncAnalyticsConfig();
+  draftFromImport = false;
   clearDraft();
   currentForm = 'match';
   applyForm();
@@ -1545,9 +1556,11 @@ function importConfigText(text) {
   let c;
   try { c = JSON.parse(text); } catch (e) { showBuilderMsg('That is not valid JSON — check for a missing bracket or comma.', 'err'); return; }
   if (!c || !Array.isArray(c.sections)) { showBuilderMsg('A config must have a "sections" array.', 'err'); return; }
+  reconcileSelectScoring(c);
   builderConfig = c;
   if (!Array.isArray(builderConfig.pitSections)) builderConfig.pitSections = [];
   builderForm = 'match';
+  draftFromImport = true;
   renderBuilder();
   showBuilderMsg('Loaded into the editor. Review the fields, then tap APPLY & SAVE.', 'ok');
 }
@@ -1559,6 +1572,7 @@ async function resetConfig() {
   builderConfig = deepClone(def);
   CONFIG = deepClone(def);
   syncAnalyticsConfig();
+  draftFromImport = false;
   currentForm = 'match'; applyForm(); fields = initialFieldState(); confidence = {}; currentMatchId = newMatchId(); clearDraft();
   renderAllFields(); syncFormUI(); updateGenerateButton();
   renderBuilder();
@@ -1603,6 +1617,35 @@ function markBreakdownFields(cfg) {
     if (f.type === 'boolean' && f.fail == null && BREAKDOWN_RE.test(String(f.title || ''))) f.fail = true;
   }));
   return cfg;
+}
+
+// Scoring robustness: an AI sometimes keys optionPoints by the choice's LABEL or a
+// near-miss slug instead of its option key — re-map so every point value actually lands.
+function reconcileSelectScoring(cfg) {
+  (cfg.sections || []).forEach(s => (s.fields || []).forEach(f => {
+    if (f.type !== 'select' || !f.optionPoints || !Array.isArray(f.options) || !f.options.length) return;
+    const keys = f.options.map(o => o.k);
+    const fixed = {};
+    Object.keys(f.optionPoints).forEach(k => {
+      const val = f.optionPoints[k];
+      if (keys.indexOf(k) !== -1) { fixed[k] = val; return; }                 // already a valid key
+      const hit = f.options.find(o =>
+        o.k === slug(k) || String(o.v).toLowerCase() === String(k).toLowerCase() || slug(o.v) === slug(k));
+      if (hit) fixed[hit.k] = val;                                            // matched by label/slug
+    });
+    f.optionPoints = fixed;
+  }));
+  return cfg;
+}
+
+// A short human summary of what scoring the engine will read (for the import banner).
+function summarizeScoring(cfg) {
+  const out = [];
+  (cfg.sections || []).forEach(s => (s.fields || []).forEach(f => {
+    if (f.optionPoints) { const p = Object.keys(f.optionPoints).map(k => f.optionPoints[k]); if (p.length) out.push(f.title + ' (' + Math.min.apply(null, p) + '–' + Math.max.apply(null, p) + ')'); }
+    else if (f.points != null) out.push(f.title + ' ' + f.points + 'pt');
+  }));
+  return out;
 }
 
 const MANUAL_PROMPT = [
@@ -1688,6 +1731,7 @@ async function aiDraftConfig(rawText) {
   if (!cfg || !Array.isArray(cfg.sections)) throw new Error('The AI returned an invalid form. Try again.');
   ensureScoutingIdentity(cfg);
   markBreakdownFields(cfg);
+  reconcileSelectScoring(cfg);
   cfg.title = cfg.title || 'Imported game';
   cfg.delimiter = '\t';
   if (!Array.isArray(cfg.pitSections)) cfg.pitSections = deepClone((CONFIG && CONFIG.pitSections) || []);
@@ -1709,9 +1753,11 @@ async function runManualDraft(getText, label) {
     const cfg = await aiDraftConfig(raw);
     builderConfig = cfg;
     builderForm = 'match';
+    draftFromImport = true;
     renderBuilder();
-    setManualStatus('✓ Drafted! Review every field & point value below, then tap APPLY & SAVE.', 'ok');
-    showBuilderMsg('Draft loaded from your manual — check the point values, then APPLY & SAVE.', 'ok');
+    const scoring = summarizeScoring(cfg);
+    setManualStatus('✓ Drafted ' + scoring.length + ' scoring fields: ' + scoring.slice(0, 8).join(' · ') + (scoring.length > 8 ? ' …' : '') + '. DOUBLE-CHECK these below, then APPLY & SAVE.', 'ok');
+    showBuilderMsg('Draft loaded from your manual — verify the point values, then APPLY & SAVE.', 'ok');
   } catch (e) {
     setManualStatus('⚠ ' + (e && e.message ? e.message : 'Import failed'), 'err');
   }

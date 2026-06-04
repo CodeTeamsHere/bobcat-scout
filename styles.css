@@ -833,6 +833,10 @@ footer {
 .b-import-status.b-import-ok { color: var(--success); border-color: var(--success); background: var(--success-bg); }
 .b-import-status.b-import-err { color: var(--error); border-color: var(--error); background: var(--error-bg); }
 
+/* "review before you save" banner shown on AI/imported drafts */
+.b-review-banner { position: sticky; top: 0; z-index: 5; margin: 0 0 12px; padding: 10px 13px; border-radius: 4px; font-size: 13px; line-height: 1.5; color: var(--warning); background: var(--gold-soft); border: 1px solid var(--gold); border-left: 4px solid var(--gold); }
+.b-review-pts { display: inline-block; font-weight: 700; color: var(--maroon); background: #fff; border: 1px solid var(--gold); border-radius: 3px; padding: 0 4px; }
+
 /* ==========================================================
    Analytics & Strategy engine (ANALYZE)
    ========================================================== */
