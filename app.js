@@ -1019,7 +1019,25 @@ function buildPayload(data) {
   };
   if (googleTokenValid()) extra.idToken = googleIdToken;   // max-security mode
   if (currentForm === 'pit') extra._form = 'pit';          // route to the Pit sheet
+  else extra._scoring = analyticsModel();                  // let the Sheet re-tune its Analytics tab to this game
   return Object.assign(clean, extra);
+}
+
+// Compact scoring model the Sheet uses to build a game-agnostic Analytics tab:
+// which fields score (points / per-option points), which are rating sliders, which
+// mark a breakdown. The Apps Script remembers the latest and rebuilds when it changes.
+function analyticsModel() {
+  const out = [];
+  (CONFIG.sections || []).forEach(s => (s.fields || []).forEach(f => {
+    const scoring = (f.points != null) || f.optionPoints;
+    if (!scoring && !f.fail && f.type !== 'range') return;
+    const m = { code: f.code, title: f.title, type: f.type };
+    if (f.points != null) m.points = f.points;
+    if (f.optionPoints) m.optionPoints = f.optionPoints;
+    if (f.fail) m.fail = true;
+    out.push(m);
+  }));
+  return out;
 }
 
 // JSONP call: works around the cross-origin limits of Apps Script web apps,
