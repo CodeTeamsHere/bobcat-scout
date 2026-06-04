@@ -1391,7 +1391,7 @@ function closeBuilder() {
 function scoringControls(f, i, j) {
   if (f.code && NONSCORING_CODES.indexOf(f.code) !== -1) return '';   // identity fields aren't scored
   const d = 'data-sec="' + i + '" data-fld="' + j + '"';
-  if (f.type === 'number' || f.type === 'range') {
+  if (f.type === 'number') {   // ranges are subjective 1-5 ratings, not point-scored → no pts box
     return '<span class="b-pts" title="Points each one is worth (e.g. 1 per ball)">pts ea <input type="number" step="any" class="b-mm" ' + d + ' data-prop="points" value="' + (f.points != null ? f.points : '') + '" placeholder="—"></span>';
   }
   if (f.type === 'boolean') {
