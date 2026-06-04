@@ -1522,6 +1522,7 @@ function applyConfig() {
   });
   const matchCodes = (builderConfig.sections || []).flatMap(s => (s.fields || []).map(f => f.code));
   const missing = ['scoutName', 'eventKey', 'matchType', 'matchNumber', 'teamNumber'].filter(c => matchCodes.indexOf(c) === -1);
+  const scoringCount = (builderConfig.sections || []).reduce((n, s) => n + (s.fields || []).filter(f => f.points != null || f.optionPoints).length, 0);
 
   CONFIG = deepClone(builderConfig);
   try { localStorage.setItem('custom_config', JSON.stringify(CONFIG)); } catch (e) {}
@@ -1539,7 +1540,8 @@ function applyConfig() {
   updateProcessButton();
   updateGenerateButton();
   if (missing.length) showBuilderMsg('Saved — but the match form no longer has the standard ' + missing.join(', ') + ' field(s). Those codes power Sheet de-duplication; keep fields titled "Scout Name", "Event Key", "Match Type", "Match #", "Team #" for full cloud support.', 'warn');
-  else showBuilderMsg('✓ Saved! The form behind this dialog has rebuilt to match. Export it to share with your scouts.', 'ok');
+  else if (!scoringCount) showBuilderMsg('✓ Saved — but no field has a point value yet, so the 📈 ANALYZE engine can\'t rate teams or predict matches. Add a "pts" value to each scoring field (or re-import the manual).', 'warn');
+  else showBuilderMsg('✓ Saved! The form rebuilt to match (' + scoringCount + ' scoring fields wired to ANALYZE). Export it to share with your scouts.', 'ok');
 }
 
 function exportConfig() {
@@ -1688,7 +1690,10 @@ async function extractPdfText(file) {
     const tc = await page.getTextContent();
     out.push(tc.items.map(it => it.str).join(' '));
   }
-  return out.join('\n');
+  const joined = out.join('\n');
+  if (joined.replace(/\s/g, '').length < 120)
+    throw new Error('No readable text in that PDF — it looks like scanned images. Use PASTE SCORING TEXT and paste the scoring section instead.');
+  return joined;
 }
 
 // Manuals are huge; send the AI the densest scoring region rather than 150 pages.
