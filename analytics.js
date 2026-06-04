@@ -21,7 +21,7 @@
   };
   function num(v) { var n = Number(v); return isNaN(n) ? 0 : n; }
   function truthy(v) { return v === true || v === 'true' || v === 1 || v === '1'; }
-  function robotPoints(r) {
+  function robotPoints(r) {                       // legacy REBUILT model (fallback only)
     var p = 0;
     if (truthy(r.autoLeft)) p += PTS.leave;
     if (String(r.autoClimb) === 'level1') p += PTS.autoClimbL1;
@@ -30,7 +30,52 @@
     p += PTS.climb[String(r.endgameClimb)] || 0;
     return p;
   }
-  function isFail(r) { return truthy(r.disabled) || truthy(r.tipped) || truthy(r.noShow); }
+
+  // ----- config-driven scoring (so ANY game works from the Form Builder) -----
+  // The active scouting config carries the point values on its fields:
+  //   number/range field -> field.points       = points per unit
+  //   boolean field      -> field.points        = points when true   (+ field.fail = a breakdown)
+  //   select field       -> field.optionPoints  = { optionKey: points }
+  // If a config has no such annotations we fall back to the REBUILT model above,
+  // so older saved configs and bare datasets still score.
+  var SCFG = null;                                // active config (set by the app via setConfig)
+  function activeConfig() {
+    if (SCFG) return SCFG;
+    try { if (typeof CONFIG !== 'undefined' && CONFIG) return CONFIG; } catch (e) {}
+    return null;
+  }
+  function scoringFields(cfg) {
+    var out = [];
+    if (cfg && cfg.sections) cfg.sections.forEach(function (s) {
+      (s.fields || []).forEach(function (f) { if (f && (f.points != null || f.optionPoints)) out.push(f); });
+    });
+    return out;
+  }
+  function failCodes(cfg) {
+    var out = [];
+    if (cfg && cfg.sections) cfg.sections.forEach(function (s) {
+      (s.fields || []).forEach(function (f) { if (f && f.fail && f.code) out.push(f.code); });
+    });
+    return out;
+  }
+  function recordPoints(r) {
+    var fs = scoringFields(activeConfig());
+    if (!fs.length) return robotPoints(r);        // no scoring metadata -> REBUILT fallback
+    var p = 0;
+    fs.forEach(function (f) {
+      var v = r[f.code];
+      if (f.type === 'boolean') { if (truthy(v)) p += num(f.points); }
+      else if (f.type === 'select') { if (f.optionPoints) p += num(f.optionPoints[String(v)]); }
+      else p += num(v) * num(f.points);            // number / range
+    });
+    return p;
+  }
+  function isFail(r) {
+    var fc = failCodes(activeConfig());
+    if (!fc.length) return truthy(r.disabled) || truthy(r.tipped) || truthy(r.noShow);
+    for (var i = 0; i < fc.length; i++) if (truthy(r[fc[i]])) return true;
+    return false;
+  }
   function matchKey(r) { return [r.eventKey, r.matchType, r.matchNumber].join('|'); }
 
   function normalize(records) {
@@ -40,7 +85,7 @@
         for (var k in r) o[k] = r[k];
         o.teamNumber = String(r.teamNumber).trim();
         o.alliance = String(r.alliance || '').toLowerCase();
-        o._pts = robotPoints(o);
+        o._pts = recordPoints(o);
         return o;
       });
   }
@@ -187,11 +232,14 @@
     }
     var ourAuto = us.reduce(function (s, t) { return s + (caps[t] ? caps[t].avgAuto : 0); }, 0);
     var theirAuto = them.reduce(function (s, t) { return s + (caps[t] ? caps[t].avgAuto : 0); }, 0);
-    lines.push(ourAuto >= theirAuto
-      ? 'You out-score in auto (' + ourAuto.toFixed(1) + ' vs ' + theirAuto.toFixed(1) + ' fuel) — press the early game and bank the lead.'
-      : 'They win auto (' + theirAuto.toFixed(1) + ' vs ' + ourAuto.toFixed(1) + ' fuel) — protect your hub early and win it back on cycles.');
-    var ourClimb = us.filter(function (t) { return caps[t] && caps[t].climbRate >= 0.6; }).length;
-    lines.push(ourClimb >= 2 ? 'Endgame is a strength — lock in a multi-climb every match.' : 'Climb is shaky on your side — practice the endgame; it could decide a close one.');
+    if (ourAuto + theirAuto > 0) lines.push(ourAuto >= theirAuto
+      ? 'You out-score in auto (' + ourAuto.toFixed(1) + ' vs ' + theirAuto.toFixed(1) + ') — press the early game and bank the lead.'
+      : 'They win auto (' + theirAuto.toFixed(1) + ' vs ' + ourAuto.toFixed(1) + ') — protect the early game and win it back on cycles.');
+    var anyClimb = Object.keys(caps).some(function (t) { return caps[t].climbRate > 0; });
+    if (anyClimb) {
+      var ourClimb = us.filter(function (t) { return caps[t] && caps[t].climbRate >= 0.6; }).length;
+      lines.push(ourClimb >= 2 ? 'Endgame is a strength — lock in a multi-climb every match.' : 'Climb is shaky on your side — practice the endgame; it could decide a close one.');
+    }
     return lines;
   }
 
@@ -266,6 +314,13 @@
     ENGINE.source = source;
     recompute();
   }
+  function setConfig(cfg) {                      // app calls this whenever the game/config changes
+    SCFG = cfg || null;
+    if (ENGINE.data && ENGINE.data.length) {     // re-score already-loaded rows in place
+      ENGINE.data.forEach(function (o) { o._pts = recordPoints(o); });
+      recompute();
+    }
+  }
 
   function teamList() { return Object.keys(ENGINE.caps).sort(function (a, b) { return num(a) - num(b); }); }
   function teamOptions(sel) { return teamList().map(function (t) { return '<option value="' + t + '"' + (String(sel) === t ? ' selected' : '') + '>' + t + '</option>'; }).join(''); }
@@ -339,11 +394,12 @@
 
   function renderCaps(b) {
     var rows = teamList().map(function (t) { return ENGINE.caps[t]; }).sort(function (a, b) { return (ENGINE.opr[b.team] || 0) - (ENGINE.opr[a.team] || 0); });
+    var showClimb = rows.some(function (r) { return r.climbRate > 0; });   // REBUILT-style endgame data present?
     var h = '<p class="an-intro">Phase 2 — each robot\'s raw stats become one <strong>Capability</strong> score (points + consistency + reliability) and an <strong>OPR</strong> (its estimated point contribution, solved with linear algebra across all alliances).</p>';
-    h += '<div class="an-scroll"><table class="an-table"><thead><tr><th>Team</th><th>Mch</th><th>OPR</th><th>Avg Pts</th><th>Consistency</th><th>Reliability</th><th>Climb %</th><th>Capability</th></tr></thead><tbody>';
+    h += '<div class="an-scroll"><table class="an-table"><thead><tr><th>Team</th><th>Mch</th><th>OPR</th><th>Avg Pts</th><th>Consistency</th><th>Reliability</th>' + (showClimb ? '<th>Climb %</th>' : '') + '<th>Capability</th></tr></thead><tbody>';
     rows.forEach(function (r) {
       h += '<tr><td><strong>' + r.team + '</strong></td><td>' + r.matches + '</td><td><strong>' + (ENGINE.opr[r.team] || 0).toFixed(1) + '</strong></td><td>' + r.avgPts.toFixed(1) +
-        '</td><td>' + Math.round(r.consistency * 100) + '%</td><td>' + Math.round(r.reliability * 100) + '%</td><td>' + Math.round(r.climbRate * 100) + '%</td><td><strong>' + r.capability.toFixed(0) + '</strong></td></tr>';
+        '</td><td>' + Math.round(r.consistency * 100) + '%</td><td>' + Math.round(r.reliability * 100) + '%</td>' + (showClimb ? '<td>' + Math.round(r.climbRate * 100) + '%</td>' : '') + '<td><strong>' + r.capability.toFixed(0) + '</strong></td></tr>';
     });
     h += '</tbody></table></div><div class="an-hint">OPR uses ridge least-squares on alliance scores — it untangles who actually contributes when teams keep playing together.</div>';
     b.innerHTML = h;
@@ -445,7 +501,7 @@
   }
 
   // expose
-  window.ANALYTICS = { open: open, engine: ENGINE, _: { computeOPR: computeOPR, capabilities: capabilities, backtest: backtest, sampleSeason: sampleSeason, setData: setData, recommendPicks: recommendPicks, robotPoints: robotPoints } };
+  window.ANALYTICS = { open: open, setConfig: setConfig, engine: ENGINE, _: { computeOPR: computeOPR, capabilities: capabilities, backtest: backtest, sampleSeason: sampleSeason, setData: setData, setConfig: setConfig, recordPoints: recordPoints, recommendPicks: recommendPicks, robotPoints: robotPoints } };
 
   // wire the header button if present
   if (document.readyState !== 'loading') wire(); else document.addEventListener('DOMContentLoaded', wire);

@@ -815,6 +815,24 @@ footer {
 .b-paste textarea { width: 100%; min-height: 120px; margin-top: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 2px; font-family: "SF Mono", Consolas, monospace; font-size: 12px; }
 .builder-warn { margin-top: 14px; padding: 10px 12px; border-radius: 2px; background: var(--gold-soft); color: var(--warning); font-size: 13px; line-height: 1.5; }
 
+/* per-field scoring inputs */
+.b-pts { font-size: 11px; color: var(--maroon); font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; background: var(--gold-soft); border: 1px solid var(--gold); padding: 2px 6px; border-radius: 3px; }
+.b-optpts { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; padding: 7px 8px; background: var(--gold-soft); border: 1px solid var(--gold); border-radius: 3px; }
+.b-optpt { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--maroon); font-weight: 600; }
+.b-optpt-k { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b-optpt input { width: 50px; }
+
+/* import-from-manual card */
+.b-import { border: 1px solid var(--gold); background: linear-gradient(180deg, var(--gold-soft), #fff); border-radius: 6px; padding: 14px 16px; margin-bottom: 16px; }
+.b-import-head { font-weight: 800; color: var(--maroon); font-size: 15px; margin-bottom: 6px; }
+.b-import-sub { font-size: 13px; color: var(--gray); line-height: 1.5; margin-bottom: 10px; }
+.b-import-net { color: var(--warning); font-weight: 600; }
+#manual-text-wrap { margin-top: 10px; }
+#manual-text { width: 100%; min-height: 120px; padding: 10px; border: 1px solid var(--border); border-radius: 2px; font-size: 12px; resize: vertical; }
+.b-import-status { margin-top: 10px; padding: 8px 11px; border-radius: 2px; font-size: 13px; line-height: 1.45; background: var(--white); border: 1px solid var(--border); }
+.b-import-status.b-import-ok { color: var(--success); border-color: var(--success); background: var(--success-bg); }
+.b-import-status.b-import-err { color: var(--error); border-color: var(--error); background: var(--error-bg); }
+
 /* ==========================================================
    Analytics & Strategy engine (ANALYZE)
    ========================================================== */

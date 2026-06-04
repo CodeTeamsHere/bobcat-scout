@@ -371,6 +371,21 @@
       <div class="help-body">
         <p class="help-intro">Every season the game changes. Define this year's scouting fields here — the form rebuilds instantly, no code. Saved on this device; <strong>Export JSON</strong> to share the exact form with your scouts (they tap <strong>Upload JSON</strong>).</p>
 
+        <div class="b-import">
+          <div class="b-import-head">📄 Start from this year's game manual</div>
+          <p class="b-import-sub">Upload the FRC game manual PDF (or paste its scoring section) and Bobcat Scout drafts the fields <em>and</em> the point values for you — boxes, dropdowns, scoring, all of it. Then you just review and tap APPLY &amp; SAVE. <span class="b-import-net">Needs internet for this step.</span></p>
+          <div class="btn-row">
+            <button id="btn-manual-pdf" class="btn btn-primary">UPLOAD GAME MANUAL (PDF)</button>
+            <button id="btn-manual-text" class="btn btn-outline">PASTE SCORING TEXT</button>
+          </div>
+          <input id="manual-file" type="file" accept="application/pdf,.pdf" class="hidden">
+          <div id="manual-text-wrap" class="hidden">
+            <textarea id="manual-text" placeholder="Paste the scoring / game-overview section of the manual here, then tap DRAFT FORM…"></textarea>
+            <button id="btn-manual-go" class="btn btn-outline" style="margin-top:8px;">DRAFT FORM FROM TEXT</button>
+          </div>
+          <div id="manual-status" class="b-import-status hidden"></div>
+        </div>
+
         <div class="b-formsel">
           <button id="bf-match" class="b-formsel-btn b-mode-active">MATCH FORM</button>
           <button id="bf-pit" class="b-formsel-btn">PIT FORM</button>
@@ -395,7 +410,7 @@
         </details>
 
         <div class="help-note" style="margin-top:16px;">
-          <strong>Note:</strong> keep the Prematch identity fields (Scout Name, Event Key, Match Type, Match #, Team #) so the Google Sheet can de-duplicate and the Analytics tab can group by team. The Analytics tab's averages are tuned to the current game's scoring fields — ping for help re-tuning it to a new game.
+          <strong>Note:</strong> keep the Prematch identity fields (Scout Name, Event Key, Match Type, Match #, Team #) so the Google Sheet can de-duplicate and the Analytics tab can group by team. The <strong>pts</strong> boxes on each field set the scoring — the in-app ANALYZE engine (OPR, predictions, pick list) reads them, so it re-tunes itself to whatever game you build here.
         </div>
       </div>
     </div>

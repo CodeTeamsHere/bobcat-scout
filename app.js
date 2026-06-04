@@ -1315,6 +1315,12 @@ async function loadConfig() {
   return def;
 }
 
+// Hand the live config (with its scoring point-values) to the Analytics engine
+// so OPR / predictions / pick-list re-derive points for whatever game is loaded.
+function syncAnalyticsConfig() {
+  try { if (window.ANALYTICS && ANALYTICS.setConfig) ANALYTICS.setConfig(CONFIG); } catch (e) {}
+}
+
 // =====================================================================
 // FORM BUILDER — define this year's game fields with no code; the boxes rebuild live
 // =====================================================================
@@ -1374,6 +1380,28 @@ function closeBuilder() {
   document.body.classList.remove('no-scroll');
 }
 
+// Per-field scoring inputs (match form only) — these write the point values the
+// Analytics engine reads, so a new game's math works without touching code.
+function scoringControls(f, i, j) {
+  const d = 'data-sec="' + i + '" data-fld="' + j + '"';
+  if (f.type === 'number' || f.type === 'range') {
+    return '<span class="b-pts" title="Points each one is worth (e.g. 1 per ball)">pts ea <input type="number" step="any" class="b-mm" ' + d + ' data-prop="points" value="' + (f.points != null ? f.points : '') + '" placeholder="—"></span>';
+  }
+  if (f.type === 'boolean') {
+    return '<span class="b-pts" title="Points if YES (leave blank if not scored)">pts if yes <input type="number" step="any" class="b-mm" ' + d + ' data-prop="points" value="' + (f.points != null ? f.points : '') + '" placeholder="—"></span>'
+      + '<label class="b-req" title="Tick if YES means the robot broke down / no-showed / tipped — used for the reliability score"><input type="checkbox" ' + d + ' data-prop="fail"' + (f.fail ? ' checked' : '') + '> breakdown</label>';
+  }
+  if (f.type === 'select') {
+    const opts = f.options || [];
+    if (!opts.length) return '';
+    const op = f.optionPoints || {};
+    return '<div class="b-optpts" title="Points for each choice (e.g. L3 climb = 30)">' + opts.map(o =>
+      '<span class="b-optpt"><span class="b-optpt-k">' + escapeHTML(o.v) + '</span><input type="number" step="any" class="b-mm" ' + d + ' data-prop="optpts" data-optk="' + escapeHTML(o.k) + '" value="' + (op[o.k] != null ? op[o.k] : '') + '" placeholder="0"></span>'
+    ).join('') + '</div>';
+  }
+  return '';
+}
+
 function renderBuilder() {
   $('bf-match').classList.toggle('b-mode-active', builderForm === 'match');
   $('bf-pit').classList.toggle('b-mode-active', builderForm === 'pit');
@@ -1400,6 +1428,7 @@ function renderBuilder() {
         h += '<span class="b-minmax">min <input type="number" class="b-mm" data-sec="' + i + '" data-fld="' + j + '" data-prop="min" value="' + (f.min != null ? f.min : '') + '"> '
           + 'max <input type="number" class="b-mm" data-sec="' + i + '" data-fld="' + j + '" data-prop="max" value="' + (f.max != null ? f.max : '') + '"></span>';
       }
+      if (builderForm === 'match') h += scoringControls(f, i, j);
       h += '<label class="b-req"><input type="checkbox" data-sec="' + i + '" data-fld="' + j + '" data-prop="required"' + (f.required ? ' checked' : '') + '> required</label>';
       h += '<button class="b-icon" data-action="fld-up" data-sec="' + i + '" data-fld="' + j + '" title="Move up">↑</button>';
       h += '<button class="b-icon" data-action="fld-down" data-sec="' + i + '" data-fld="' + j + '" title="Move down">↓</button>';
@@ -1427,7 +1456,17 @@ function onBuilderEdit(e) {
   else if (prop === 'required') f.required = el.checked;
   else if (prop === 'min') f.min = el.value === '' ? undefined : Number(el.value);
   else if (prop === 'max') f.max = el.value === '' ? undefined : Number(el.value);
-  else if (prop === 'options') f.options = el.value.split('\n').map(s => s.trim()).filter(Boolean).map(v => ({ k: slug(v), v: v }));
+  else if (prop === 'points') f.points = el.value === '' ? undefined : Number(el.value);
+  else if (prop === 'fail') f.fail = el.checked;
+  else if (prop === 'optpts') {
+    const k = el.getAttribute('data-optk');
+    f.optionPoints = f.optionPoints || {};
+    if (el.value === '') delete f.optionPoints[k]; else f.optionPoints[k] = Number(el.value);
+  }
+  else if (prop === 'options') {
+    f.options = el.value.split('\n').map(s => s.trim()).filter(Boolean).map(v => ({ k: slug(v), v: v }));
+    if (e.type === 'change') renderBuilder();   // refresh the per-choice point inputs once they finish typing
+  }
 }
 
 function onBuilderClick(e) {
@@ -1476,6 +1515,7 @@ function applyConfig() {
 
   CONFIG = deepClone(builderConfig);
   try { localStorage.setItem('custom_config', JSON.stringify(CONFIG)); } catch (e) {}
+  syncAnalyticsConfig();
   clearDraft();
   currentForm = 'match';
   applyForm();
@@ -1518,10 +1558,152 @@ async function resetConfig() {
   const def = await fetchDefaultConfig();
   builderConfig = deepClone(def);
   CONFIG = deepClone(def);
+  syncAnalyticsConfig();
   currentForm = 'match'; applyForm(); fields = initialFieldState(); confidence = {}; currentMatchId = newMatchId(); clearDraft();
   renderAllFields(); syncFormUI(); updateGenerateButton();
   renderBuilder();
   showBuilderMsg('Reset to the REBUILT 2026 default.', 'ok');
+}
+
+// =====================================================================
+// IMPORT FROM GAME MANUAL — upload the year's manual, AI drafts the fields + scoring
+// =====================================================================
+
+// The identity columns every game needs (Sheet de-dup + analytics group-by).
+// We always inject these so an AI/hand-built form can't accidentally drop them.
+const IDENTITY_FIELDS = [
+  { title: 'Scout Name', type: 'text', code: 'scoutName', required: true, preserve: true, placeholder: 'Your name' },
+  { title: 'Event Key', type: 'text', code: 'eventKey', required: true, preserve: true, placeholder: '2026ctwat' },
+  { title: 'Match #', type: 'number', code: 'matchNumber', required: true, default: 1, min: 1, max: 200 },
+  { title: 'Match Type', type: 'select', code: 'matchType', default: 'qm', options: [{ k: 'qm', v: 'Qualification' }, { k: 'pm', v: 'Practice' }, { k: 'sf', v: 'Playoff' }] },
+  { title: 'Team #', type: 'number', code: 'teamNumber', required: true, default: 0, min: 1, max: 99999 },
+  { title: 'Alliance', type: 'select', code: 'alliance', preserve: true, default: 'red', options: [{ k: 'red', v: 'Red' }, { k: 'blue', v: 'Blue' }] },
+  { title: 'Driver Station', type: 'select', code: 'driverStation', default: '1', options: [{ k: '1', v: '1' }, { k: '2', v: '2' }, { k: '3', v: '3' }] },
+  { title: 'No Show', type: 'boolean', code: 'noShow', default: false, fail: true }
+];
+const IDENTITY_TITLE_RE = /^(scout\s*name|event\s*key|match\s*#|match\s*number|match\s*type|team\s*#|team\s*number|alliance|driver\s*station|no\s*show)$/i;
+
+function ensureScoutingIdentity(cfg) {
+  cfg.sections = Array.isArray(cfg.sections) ? cfg.sections : [];
+  const idCodes = IDENTITY_FIELDS.map(f => f.code);
+  cfg.sections.forEach(s => {
+    s.fields = (s.fields || []).filter(f =>
+      idCodes.indexOf(f.code) === -1 && !IDENTITY_TITLE_RE.test(String(f.title || '').trim()));
+  });
+  cfg.sections = cfg.sections.filter(s => s.fields && s.fields.length);
+  cfg.sections.unshift({ name: 'Prematch', fields: deepClone(IDENTITY_FIELDS) });   // always lead with clean identity
+  return cfg;
+}
+
+const MANUAL_PROMPT = [
+  'You configure a robotics-competition scouting form. From the game-manual excerpt below, design the MATCH scouting fields and their SCORING.',
+  'Output ONLY one JSON object (no markdown fences, no prose) of exactly this shape:',
+  '{"title":"<Game> <Year>","sections":[{"name":"Auto","fields":[{"title":"Human label","type":"number|boolean|select|range|text","points":0,"optionPoints":{"key":0},"options":[{"k":"key","v":"Label"}],"fail":false}]}]}',
+  'Rules:',
+  '- Do NOT include identity fields (scout name, team #, match #, match type, alliance, driver station, no-show) — the app injects those itself.',
+  '- Create one section per game period, e.g. "Auto", "Teleop", "Endgame", then a final "Qualitative" section.',
+  '- type "number": a counted scoring action (balls/notes/cones/links scored). Set "points" to its value THAT period; make separate Auto vs Teleop fields when the value differs.',
+  '- type "select" with "optionPoints": tiered actions (climb/park/stage levels). Give every option a point value and include its "options" list.',
+  '- type "boolean": a yes/no scoring action (e.g. left the starting line). Set "points" if it scores; omit otherwise.',
+  '- Set "fail":true ONLY on boolean breakdown fields (Tipped, Died/Disabled).',
+  '- Always end with a "Qualitative" section containing: a 1-5 "range" Driver Skill, a 1-5 "range" Defense Rating, a boolean "Tipped" (fail), a boolean "Died / Disabled" (fail), and a text "Comments". No points on these.',
+  '- Keep labels short. Use real point values from the manual. Output strictly valid JSON with numeric (not string) points.'
+].join('\n');
+
+function loadExternalScript(src) {
+  return new Promise((res, rej) => {
+    if (document.querySelector('script[data-ext="' + src + '"]')) return res();
+    const s = document.createElement('script');
+    s.src = src; s.async = true; s.setAttribute('data-ext', src);
+    s.onload = () => res();
+    s.onerror = () => rej(new Error('Could not load a helper (need internet for manual import).'));
+    document.head.appendChild(s);
+  });
+}
+
+async function extractPdfText(file) {
+  await loadExternalScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+  if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions)
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  if (!window.pdfjsLib) throw new Error('PDF reader failed to load — paste the scoring text instead.');
+  const buf = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+  const out = [];
+  const maxPages = Math.min(pdf.numPages, 140);
+  for (let p = 1; p <= maxPages; p++) {
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    out.push(tc.items.map(it => it.str).join(' '));
+  }
+  return out.join('\n');
+}
+
+// Manuals are huge; send the AI the densest scoring region rather than 150 pages.
+function pickScoringExcerpt(text) {
+  text = String(text).replace(/\s+/g, ' ').trim();
+  if (text.length <= 14000) return text;
+  const kw = /(point|scor|ranking|climb|cargo|cone|cube|note|fuel|goal|rung|barge|amp|speaker|tarmac|auto|endgame|penalt|hatch|panel|cell|link)/gi;
+  let best = 0, bestI = 0; const win = 14000;
+  for (let i = 0; i < text.length - 1; i += 2000) {
+    const m = text.slice(i, i + win).match(kw);
+    const c = m ? m.length : 0;
+    if (c > best) { best = c; bestI = i; }
+  }
+  return text.slice(bestI, bestI + win);
+}
+
+function extractJsonObject(s) {
+  s = String(s).trim().replace(/^```(?:json)?/i, '').replace(/```\s*$/, '').trim();
+  const a = s.indexOf('{'), b = s.lastIndexOf('}');
+  if (a === -1 || b === -1) throw new Error('The AI did not return a form. Try again or paste a cleaner scoring section.');
+  return JSON.parse(s.slice(a, b + 1));
+}
+
+async function aiDraftConfig(rawText) {
+  const excerpt = pickScoringExcerpt(rawText);
+  if (excerpt.length < 40) throw new Error('That looked empty — paste the scoring section, or the PDF may be scanned images (no text).');
+  await loadExternalScript('https://js.puter.com/v2/');
+  if (!window.puter || !puter.ai || !puter.ai.chat) throw new Error('AI service unavailable — check internet, or build the form by hand below.');
+  try { puter.quiet = true; } catch (e) {}
+  const resp = await Promise.race([
+    puter.ai.chat(MANUAL_PROMPT + '\n\nMANUAL EXCERPT:\n"""\n' + excerpt + '\n"""'),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('AI timed out. If a Puter sign-in window opened, finish it and retry — or just build the form by hand below (the pts boxes set the scoring).')), 75000))
+  ]);
+  let text;
+  if (resp && typeof resp === 'object') {
+    const mc = resp.message && resp.message.content;
+    text = resp.text || (typeof mc === 'string' ? mc : (mc && mc[0] && mc[0].text)) || String(resp);
+  } else text = String(resp);
+  const cfg = extractJsonObject(text);
+  if (!cfg || !Array.isArray(cfg.sections)) throw new Error('The AI returned an invalid form. Try again.');
+  ensureScoutingIdentity(cfg);
+  cfg.title = cfg.title || 'Imported game';
+  cfg.delimiter = '\t';
+  if (!Array.isArray(cfg.pitSections)) cfg.pitSections = deepClone((CONFIG && CONFIG.pitSections) || []);
+  return cfg;
+}
+
+function setManualStatus(msg, kind) {
+  const el = $('manual-status'); if (!el) return;
+  el.textContent = msg;
+  el.className = 'b-import-status' + (kind === 'err' ? ' b-import-err' : (kind === 'ok' ? ' b-import-ok' : ''));
+  el.classList.remove('hidden');
+}
+
+async function runManualDraft(getText, label) {
+  setManualStatus('Reading ' + label + '… (10–30s)', '');
+  try {
+    const raw = await getText();
+    setManualStatus('Designing your form from the manual with AI…', '');
+    const cfg = await aiDraftConfig(raw);
+    builderConfig = cfg;
+    builderForm = 'match';
+    renderBuilder();
+    setManualStatus('✓ Drafted! Review every field & point value below, then tap APPLY & SAVE.', 'ok');
+    showBuilderMsg('Draft loaded from your manual — check the point values, then APPLY & SAVE.', 'ok');
+  } catch (e) {
+    setManualStatus('⚠ ' + (e && e.message ? e.message : 'Import failed'), 'err');
+  }
 }
 
 // =====================================================================
@@ -1631,6 +1813,23 @@ function wireUI() {
   $('btn-builder-export').addEventListener('click', exportConfig);
   $('btn-builder-reset').addEventListener('click', resetConfig);
   $('btn-builder-load').addEventListener('click', () => importConfigText($('builder-paste').value));
+  // Import from game manual (AI-assisted draft)
+  if ($('btn-manual-pdf')) $('btn-manual-pdf').addEventListener('click', () => $('manual-file').click());
+  if ($('manual-file')) $('manual-file').addEventListener('change', e => {
+    const file = e.target.files && e.target.files[0];
+    if (file) runManualDraft(() => extractPdfText(file), file.name);
+    e.target.value = '';
+  });
+  if ($('btn-manual-text')) $('btn-manual-text').addEventListener('click', () => {
+    const wrap = $('manual-text-wrap');
+    wrap.classList.toggle('hidden');
+    if (!wrap.classList.contains('hidden')) $('manual-text').focus();
+  });
+  if ($('btn-manual-go')) $('btn-manual-go').addEventListener('click', () => {
+    const t = $('manual-text').value.trim();
+    if (t.length < 40) { setManualStatus('Paste a bit more of the scoring section first.', 'err'); return; }
+    runManualDraft(() => Promise.resolve(t), 'pasted text');
+  });
   $('builder-file').addEventListener('change', e => {
     const file = e.target.files[0];
     if (file) { const r = new FileReader(); r.onload = () => { $('builder-paste').value = r.result; importConfigText(r.result); }; r.readAsText(file); }
@@ -1879,6 +2078,7 @@ async function init() {
       </div>`;
     return;
   }
+  syncAnalyticsConfig();
 
   applyForm();
   fields = initialFieldState();
