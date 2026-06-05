@@ -298,9 +298,10 @@
   }
 
   // ===================== UI =====================
-  var ENGINE = { data: [], caps: {}, opr: {}, matches: [], _model: null, source: '' };
+  var ENGINE = { data: [], caps: {}, opr: {}, matches: [], _model: null, source: '', tba: null };
 
   function $(id) { return document.getElementById(id); }
+  function teamLabel(t) { var nm = ENGINE.tba && ENGINE.tba.names ? ENGINE.tba.names[t] : ''; return nm ? (t + ' · ' + nm) : t; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
 
   function recompute() {
@@ -319,6 +320,14 @@
     if (ENGINE.data && ENGINE.data.length) {     // re-score already-loaded rows in place
       ENGINE.data.forEach(function (o) { o._pts = recordPoints(o); });
       recompute();
+    }
+  }
+  function setTBA(tba) {                          // official Blue Alliance data (names/opr/rank/results)
+    ENGINE.tba = tba || null;
+    var ov = $('analytics-overlay');             // re-render the open tab so it shows up immediately
+    if (ov && !ov.classList.contains('hidden')) {
+      var active = document.querySelector('#analytics-overlay .an-tab.active');
+      if (active) renderTab(active.getAttribute('data-tab'));
     }
   }
 
@@ -380,31 +389,45 @@
     var summary = ENGINE.data.length
       ? '<div class="an-note">Loaded <strong>' + ENGINE.data.length + '</strong> robot-match rows · <strong>' + teamList().length + '</strong> teams · <strong>' + ENGINE.matches.length + '</strong> matches · source: ' + esc(ENGINE.source) + '</div>'
       : '<div class="an-note">No data yet. Load one of the sources below.</div>';
+    var tba = ENGINE.tba;
+    var tbaLine = tba
+      ? '<div class="an-note an-note-tba">📊 The Blue Alliance — <strong>' + esc(tba.event) + '</strong>: ' + Object.keys(tba.names || {}).length + ' team names · ' + Object.keys(tba.opr || {}).length + ' official OPRs · ' + ((tba.results || []).length) + ' played results. Capabilities &amp; Validation now compare against the real field.</div>'
+      : '';
     b.innerHTML =
-      '<p class="an-intro">Phase 1 — feed the engine a clean dataset of per-robot match rows (the same columns the app records). Use this session, import last season\'s export, or load a sample to explore.</p>' +
+      '<p class="an-intro">Phase 1 — feed the engine a clean dataset of per-robot match rows (the same columns the app records). Use this session, import last season\'s export, or load a sample to explore. Add <strong>official Blue Alliance data</strong> to show team names and grade the engine against real outcomes.</p>' +
       '<div class="an-btnrow">' +
       '<button class="btn btn-primary" data-act="use-session">USE THIS SESSION</button>' +
       '<button class="btn btn-outline" data-act="import">IMPORT CSV / TSV / JSON</button>' +
       '<button class="btn btn-outline" data-act="sample">LOAD SAMPLE SEASON</button>' +
+      '<button class="btn btn-outline" data-act="tba">📊 ADD OFFICIAL TBA DATA</button>' +
       '</div>' +
       '<input id="an-file" type="file" accept=".csv,.tsv,.json,text/csv,application/json" class="hidden">' +
-      summary +
-      '<div class="an-hint">Tip: in Google Sheets, File → Download → CSV of the <em>Data</em> tab, then Import here. Columns must include teamNumber, alliance, matchNumber and the scoring fields.</div>';
+      '<div id="an-tba-status" class="an-hint"></div>' +
+      summary + tbaLine +
+      '<div class="an-hint">Tip: in Google Sheets, File → Download → CSV of the <em>Data</em> tab, then Import here. Columns must include teamNumber, alliance, matchNumber and the scoring fields. TBA data uses the Event Key + API key from ⚙ SHEET.</div>';
   }
 
   function renderCaps(b) {
     var rows = teamList().map(function (t) { return ENGINE.caps[t]; }).sort(function (a, b) { return (ENGINE.opr[b.team] || 0) - (ENGINE.opr[a.team] || 0); });
     var showClimb = rows.some(function (r) { return r.climbRate > 0; });   // REBUILT-style endgame data present?
     var maxOPR = Math.max.apply(null, rows.map(function (r) { return ENGINE.opr[r.team] || 0; }).concat([1]));
-    var h = '<p class="an-intro">Phase 2 — each robot\'s raw stats become one <strong>Capability</strong> score (points + consistency + reliability) and an <strong>OPR</strong> (its estimated point contribution, solved with linear algebra across all alliances).</p>';
-    h += '<div class="an-scroll"><table class="an-table"><thead><tr><th>Team</th><th>Mch</th><th>OPR</th><th>Avg Pts</th><th>Consistency</th><th>Reliability</th>' + (showClimb ? '<th>Climb %</th>' : '') + '<th>Capability</th></tr></thead><tbody>';
+    var tba = ENGINE.tba, showTBA = !!(tba && (Object.keys(tba.opr || {}).length || Object.keys(tba.rank || {}).length));
+    var h = '<p class="an-intro">Phase 2 — each robot\'s raw stats become one <strong>Capability</strong> score (points + consistency + reliability) and an <strong>OPR</strong> (its estimated point contribution, solved with linear algebra across all alliances).' + (showTBA ? ' The <strong>TBA OPR</strong> column is the official Blue Alliance OPR — compare it to your scouted OPR to gauge your data.' : '') + '</p>';
+    h += '<div class="an-scroll"><table class="an-table"><thead><tr><th>Team</th><th>Mch</th><th>OPR</th><th>Avg Pts</th><th>Consistency</th><th>Reliability</th>' + (showClimb ? '<th>Climb %</th>' : '') + '<th>Capability</th>' + (showTBA ? '<th>TBA OPR</th><th>Rank</th>' : '') + '</tr></thead><tbody>';
     rows.forEach(function (r) {
       var o = ENGINE.opr[r.team] || 0, pct = Math.max(2, Math.min(100, Math.round(o / maxOPR * 100)));
       var bar = '<div class="an-bar2"><div class="an-bar2-fill" style="width:' + pct + '%"></div><span class="an-bar2-num">' + o.toFixed(1) + '</span></div>';
-      h += '<tr><td><strong>' + r.team + '</strong></td><td>' + r.matches + '</td><td>' + bar + '</td><td>' + r.avgPts.toFixed(1) +
-        '</td><td>' + Math.round(r.consistency * 100) + '%</td><td>' + Math.round(r.reliability * 100) + '%</td>' + (showClimb ? '<td>' + Math.round(r.climbRate * 100) + '%</td>' : '') + '<td><strong>' + r.capability.toFixed(0) + '</strong></td></tr>';
+      var nm = tba && tba.names ? tba.names[r.team] : '';
+      var tcell = '<td><strong>' + r.team + '</strong>' + (nm ? '<div class="an-tname">' + esc(nm) + '</div>' : '') + '</td>';
+      var tbaCells = '';
+      if (showTBA) {
+        var to = tba.opr[r.team], rk = tba.rank[r.team];
+        tbaCells = '<td>' + (to != null ? to.toFixed(1) : '–') + '</td><td>' + (rk ? ('#' + rk.rank + (rk.w != null ? ' <span class="an-rec">(' + rk.w + '-' + rk.l + '-' + rk.t + ')</span>' : '')) : '–') + '</td>';
+      }
+      h += '<tr>' + tcell + '<td>' + r.matches + '</td><td>' + bar + '</td><td>' + r.avgPts.toFixed(1) +
+        '</td><td>' + Math.round(r.consistency * 100) + '%</td><td>' + Math.round(r.reliability * 100) + '%</td>' + (showClimb ? '<td>' + Math.round(r.climbRate * 100) + '%</td>' : '') + '<td><strong>' + r.capability.toFixed(0) + '</strong></td>' + tbaCells + '</tr>';
     });
-    h += '</tbody></table></div><div class="an-hint">OPR uses ridge least-squares on alliance scores — it untangles who actually contributes when teams keep playing together.</div>';
+    h += '</tbody></table></div><div class="an-hint">OPR uses ridge least-squares on alliance scores — it untangles who actually contributes when teams keep playing together.' + (showTBA ? ' A big gap between your OPR and TBA OPR means either a scouting error or a team that changed — worth a look.' : '') + '</div>';
     b.innerHTML = h;
   }
 
@@ -429,10 +452,30 @@
       '<button class="btn btn-outline" data-act="run-strategy">SUGGEST STRATEGY</button><div id="an-strat-out"></div>';
   }
 
+  // Validate the scouting-trained engine against the OFFICIAL Blue Alliance results —
+  // i.e. did it predict what actually happened on the field?
+  function validateVsOfficial() {
+    var tba = ENGINE.tba;
+    if (!tba || !tba.results || !tba.results.length) return null;
+    var opr = ENGINE.opr, model = ENGINE._model;
+    var n = 0, correct = 0, base = 0, brier = 0, rows = [];
+    tba.results.forEach(function (m) {
+      if (m.winner !== 'red' && m.winner !== 'blue') return;                 // skip ties
+      if (!m.redTeams.concat(m.blueTeams).some(function (t) { return opr[t] != null; })) return;  // need scouted OPR
+      var actual = m.winner === 'red' ? 1 : 0;
+      var p = predictRedWin(m.redTeams, m.blueTeams, opr, model);
+      var pred = p >= 0.5 ? 1 : 0;
+      var bl = oprSum(m.redTeams, opr) >= oprSum(m.blueTeams, opr) ? 1 : 0;
+      n++; if (pred === actual) correct++; if (bl === actual) base++; brier += Math.pow(p - actual, 2);
+      rows.push({ match: m.matchNumber, red: m.redTeams.join('+'), blue: m.blueTeams.join('+'), p: p, pred: pred ? 'Red' : 'Blue', actual: m.winner === 'red' ? 'Red' : 'Blue', score: m.redScore + '–' + m.blueScore, ok: pred === actual });
+    });
+    return { n: n, accuracy: n ? correct / n : 0, baseAccuracy: n ? base / n : 0, brier: n ? brier / n : 0, rows: rows };
+  }
+
   function renderValidation(b) {
     var r = backtest(ENGINE.data);
     var lift = r.accuracy - 0.5;
-    b.innerHTML =
+    var html =
       '<p class="an-intro">Phase 5 — the credibility check. The engine trains on ~75% of matches and predicts the rest (' + (r.inSample ? 'dataset too small — shown in-sample' : 'matches it never saw') + '). If it beats a coin flip, it works.</p>' +
       '<div class="an-cards">' +
       card('Prediction accuracy', Math.round(r.accuracy * 100) + '%', (lift >= 0 ? '+' : '') + Math.round(lift * 100) + ' pts vs coin flip') +
@@ -445,6 +488,25 @@
         return '<tr><td>' + esc(x.key.split('|').pop()) + '</td><td>' + esc(x.red) + '</td><td>' + esc(x.blue) + '</td><td>' + Math.round(x.p * 100) + '%</td><td>' + x.pred + '</td><td>' + x.actual + '</td><td>' + (x.ok ? '✅' : '❌') + '</td></tr>';
       }).join('') +
       '</tbody></table></div>';
+
+    var off = validateVsOfficial();
+    if (off && off.n) {
+      var olift = off.accuracy - off.baseAccuracy;
+      html += '<hr class="an-hr"><h4 class="an-h4">🏟️ vs The Blue Alliance — real field results</h4>' +
+        '<p class="an-intro">The ultimate test: the model trained on <em>your scouting</em> vs what <strong>actually happened</strong> in ' + off.n + ' played qual matches. This is the number to trust.</p>' +
+        '<div class="an-cards">' +
+        card('Real-world accuracy', Math.round(off.accuracy * 100) + '%', 'called the actual winner') +
+        card('Brier score', off.brier.toFixed(3), 'vs official outcomes') +
+        card('OPR-only baseline', Math.round(off.baseAccuracy * 100) + '%', (olift >= 0 ? '+' : '') + Math.round(olift * 100) + ' pts from the model') +
+        card('Matches', off.n + ' official', 'played qual matches') +
+        '</div>' +
+        '<div class="an-scroll"><table class="an-table"><thead><tr><th>Qual</th><th>Red</th><th>Blue</th><th>Win prob (Red)</th><th>Predicted</th><th>Actual</th><th>Score</th><th></th></tr></thead><tbody>' +
+        off.rows.slice(0, 80).map(function (x) {
+          return '<tr><td>' + esc(x.match) + '</td><td>' + esc(x.red) + '</td><td>' + esc(x.blue) + '</td><td>' + Math.round(x.p * 100) + '%</td><td>' + x.pred + '</td><td>' + x.actual + '</td><td>' + esc(x.score) + '</td><td>' + (x.ok ? '✅' : '❌') + '</td></tr>';
+        }).join('') +
+        '</tbody></table></div>';
+    }
+    b.innerHTML = html;
   }
   function card(t, big, sub) { return '<div class="an-card"><div class="an-card-t">' + t + '</div><div class="an-card-big">' + big + '</div><div class="an-card-sub">' + sub + '</div></div>'; }
 
@@ -463,6 +525,17 @@
       try { if (typeof sessionMatches !== 'undefined' && sessionMatches.length) { setData(sessionMatches, 'this session'); renderTab('data'); } else alert('No saved matches in this session yet — save some, or load the sample.'); } catch (e2) { alert('No session data.'); }
     } else if (act === 'import') { $('an-file').click(); }
     else if (act === 'sample') { setData(sampleSeason(), 'sample 2025 season'); renderTab('data'); }
+    else if (act === 'tba') {
+      var st = $('an-tba-status');
+      if (!window.loadTBAData) { if (st) st.textContent = 'Open this inside the Bobcat Scout app to pull Blue Alliance data.'; return; }
+      if (st) { st.className = 'an-hint'; st.textContent = '⏳ Pulling official data from The Blue Alliance…'; }
+      window.loadTBAData().then(function (tba) {
+        if (st) st.innerHTML = '✓ Loaded ' + Object.keys(tba.names || {}).length + ' team names · ' + Object.keys(tba.opr || {}).length + ' official OPRs · ' + ((tba.results || []).length) + ' played results for ' + esc(tba.event) + '. Check Capabilities &amp; Validation.';
+        renderTab('data');
+      }).catch(function (err) {
+        if (st) st.innerHTML = '⚠ ' + esc(err && err.message ? err.message : 'Could not load TBA data');
+      });
+    }
     else if (act === 'run-predict') {
       var red = sel('[data-pred="red"]'), blue = sel('[data-pred="blue"]');
       var p = predictRedWin(red, blue, ENGINE.opr, ENGINE._model);
@@ -471,7 +544,7 @@
       var yt = $('an-yourteam').value;
       var list = recommendPicks(yt, ENGINE.data, ENGINE.opr, ENGINE.caps);
       $('an-picks-out').innerHTML = '<ol class="an-picks">' + list.slice(0, 8).map(function (p, i) {
-        return '<li><div class="an-pick-h"><span class="an-rank">#' + (i + 1) + '</span> <strong>' + p.team + '</strong> <span class="an-pill">OPR ' + Math.round(p.opr) + '</span> <span class="an-pill">cap ' + Math.round(p.capability) + '</span></div><div class="an-why">' + p.reasons.map(esc).join(' · ') + '</div></li>';
+        return '<li><div class="an-pick-h"><span class="an-rank">#' + (i + 1) + '</span> <strong>' + esc(teamLabel(p.team)) + '</strong> <span class="an-pill">OPR ' + Math.round(p.opr) + '</span> <span class="an-pill">cap ' + Math.round(p.capability) + '</span></div><div class="an-why">' + p.reasons.map(esc).join(' · ') + '</div></li>';
       }).join('') + '</ol>';
     } else if (act === 'run-strategy') {
       var r = sel('[data-strat="red"]'), bl = sel('[data-strat="blue"]'), yt2 = ($('an-yourteam') ? $('an-yourteam').value : r[0]);
@@ -504,7 +577,7 @@
   }
 
   // expose
-  window.ANALYTICS = { open: open, setConfig: setConfig, engine: ENGINE, _: { computeOPR: computeOPR, capabilities: capabilities, backtest: backtest, sampleSeason: sampleSeason, setData: setData, setConfig: setConfig, recordPoints: recordPoints, recommendPicks: recommendPicks, robotPoints: robotPoints } };
+  window.ANALYTICS = { open: open, setConfig: setConfig, setTBA: setTBA, engine: ENGINE, _: { computeOPR: computeOPR, capabilities: capabilities, backtest: backtest, validateVsOfficial: validateVsOfficial, sampleSeason: sampleSeason, setData: setData, setConfig: setConfig, setTBA: setTBA, recordPoints: recordPoints, recommendPicks: recommendPicks, robotPoints: robotPoints } };
 
   // wire the header button if present
   if (document.readyState !== 'loading') wire(); else document.addEventListener('DOMContentLoaded', wire);

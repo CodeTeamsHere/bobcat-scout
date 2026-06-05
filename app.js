@@ -2162,6 +2162,75 @@ async function doLoadSchedule() {
   }
 }
 
+// ----- Rich Blue Alliance data for analytics (team names, official OPR, rankings, results) -----
+// Lets the ANALYZE engine show real team names and validate its scouting-based
+// predictions against the official match outcomes from the field.
+async function fetchTBAEvent(tbaKey, eventKey) {
+  eventKey = String(eventKey || '').toLowerCase().trim();
+  if (!eventKey) throw new Error('set the Event Key first');
+  if (!tbaKey) throw new Error('add your free TBA API key first');
+  const base = 'https://www.thebluealliance.com/api/v3/event/' + eventKey;
+  const opts = { headers: { 'X-TBA-Auth-Key': tbaKey } };
+  async function get(path) {
+    const r = await fetch(base + path, opts);
+    if (!r.ok) throw new Error('TBA ' + r.status + (r.status === 401 ? ' — check the API key' : (r.status === 404 ? ' — no event "' + eventKey + '"' : '')));
+    return r.json();
+  }
+  const [teams, oprs, rankings, matches] = await Promise.all([
+    get('/teams/simple').catch(() => []),
+    get('/oprs').catch(() => null),
+    get('/rankings').catch(() => null),
+    get('/matches/simple').catch(() => [])
+  ]);
+  const names = {};
+  (teams || []).forEach(t => { if (t && t.team_number != null) names[String(t.team_number)] = t.nickname || ''; });
+  const opr = {};
+  if (oprs && oprs.oprs) Object.keys(oprs.oprs).forEach(k => { opr[k.replace('frc', '')] = Math.round(oprs.oprs[k] * 10) / 10; });
+  const rank = {};
+  if (rankings && rankings.rankings) rankings.rankings.forEach(r => {
+    const rec = r.record || {};
+    rank[String(r.team_key).replace('frc', '')] = { rank: r.rank, w: rec.wins, l: rec.losses, t: rec.ties };
+  });
+  const results = [];
+  (matches || []).forEach(mt => {
+    if (mt.comp_level !== 'qm' || !mt.alliances) return;
+    const rs = mt.alliances.red.score, bs = mt.alliances.blue.score;
+    if (rs == null || rs < 0 || bs == null || bs < 0) return;   // not played yet
+    results.push({
+      matchNumber: mt.match_number,
+      redTeams: (mt.alliances.red.team_keys || []).map(k => k.replace('frc', '')),
+      blueTeams: (mt.alliances.blue.team_keys || []).map(k => k.replace('frc', '')),
+      redScore: rs, blueScore: bs,
+      winner: mt.winning_alliance || (rs > bs ? 'red' : (bs > rs ? 'blue' : ''))
+    });
+  });
+  const tba = { event: eventKey, names, opr, rank, results, pulledAt: Date.now() };
+  try { localStorage.setItem('tba_event_' + eventKey, JSON.stringify(tba)); localStorage.setItem('tba_key', tbaKey); } catch (e) {}
+  return tba;
+}
+
+// Called by the ANALYZE "Add official TBA data" button.
+async function loadTBAData() {
+  const tbaKey = ((localStorage.getItem('tba_key') || '') || ($('tba-key') ? $('tba-key').value : '')).trim();
+  const ek = String(fields.eventKey || '').trim();
+  if (!ek) throw new Error('Set the Event Key on the scouting form first (e.g. 2026ctwat).');
+  if (!tbaKey) throw new Error('Add your free TBA API key in ⚙ SHEET → "Match schedule" first.');
+  const tba = await fetchTBAEvent(tbaKey, ek);
+  if (window.ANALYTICS && ANALYTICS.setTBA) ANALYTICS.setTBA(tba);
+  return tba;
+}
+window.loadTBAData = loadTBAData;
+
+// On startup, hand any cached official data to the analytics engine.
+function loadCachedTBA() {
+  try {
+    const ek = String(fields.eventKey || '').toLowerCase();
+    if (!ek) return;
+    const raw = localStorage.getItem('tba_event_' + ek);
+    if (raw && window.ANALYTICS && ANALYTICS.setTBA) ANALYTICS.setTBA(JSON.parse(raw));
+  } catch (e) {}
+}
+
 function showScheduleMsg(msg, kind) {
   const el = $('schedule-status');
   if (!el) return;
@@ -2213,6 +2282,7 @@ async function init() {
 
   // Match schedule (optional) for team-number auto-fill
   loadCachedSchedule();
+  loadCachedTBA();           // hand any cached official Blue Alliance data to the analytics engine
   try {
     const tk = localStorage.getItem('tba_key');
     const ek = String(fields.eventKey || '').toLowerCase();
