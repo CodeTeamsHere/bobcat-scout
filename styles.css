@@ -860,6 +860,10 @@ footer {
 .an-table thead th { background: var(--maroon); color: var(--white); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; position: sticky; top: 0; }
 .an-table td:nth-child(2), .an-table td:nth-child(3) { font-variant-numeric: tabular-nums; }
 .an-table tbody tr:nth-child(odd) { background: #fcfaf5; }
+/* inline OPR bar chart inside the capabilities table */
+.an-bar2 { position: relative; min-width: 80px; height: 18px; background: #eee; border-radius: 3px; overflow: hidden; }
+.an-bar2-fill { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, var(--gold), var(--maroon)); border-radius: 3px; }
+.an-bar2-num { position: relative; z-index: 1; font-weight: 800; font-size: 11px; color: #1a1a1a; line-height: 18px; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }
 .an-vs { display: flex; gap: 12px; margin: 12px 0; }
 .an-side { flex: 1; padding: 12px; border-radius: 4px; }
 .an-side h4 { font-size: 12px; letter-spacing: 1px; margin-bottom: 8px; }

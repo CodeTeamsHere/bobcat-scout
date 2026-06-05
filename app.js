@@ -566,6 +566,7 @@ function generateOutput() {
     alert('Please fill required fields first:\n• ' + missing.join('\n• '));
     return;
   }
+  if (!confirmUnusual()) return;
   $('generate-row').classList.add('hidden');
   $('output-section').classList.remove('hidden');
   showTab(activeTab);
@@ -657,6 +658,7 @@ function copyToClipboard(text, btn) {
 // =====================================================================
 
 function saveMatchAndNext() {
+  if (!confirmUnusual()) return;
   if (isDuplicateInSession(fields)) {
     if (!confirm('You already saved Match ' + fields.matchNumber + ' for team ' + fields.teamNumber + ' this session.\n\nSave it again anyway?')) return;
   }
@@ -1009,6 +1011,32 @@ function validateForSubmit(d) {
   return { ok: true };
 }
 
+// Game-agnostic "fat-finger" guard: flag number/range values that fall outside the
+// field's configured min/max (set per game in the Form Builder), or are implausibly
+// high when no max is set. Soft check — it asks the scouter to confirm, never silently
+// drops data. Catches the classic "50 scored in a 30-second period" mis-tap for ANY game.
+function getSanityWarnings() {
+  const warn = [];
+  activeSections().forEach(s => (s.fields || []).forEach(f => {
+    if (f.type !== 'number' && f.type !== 'range') return;
+    const raw = fields[f.code];
+    if (raw === undefined || raw === null || raw === '') return;
+    const n = Number(raw);
+    if (isNaN(n)) { warn.push(f.title + ' = "' + raw + '" — not a number'); return; }
+    const min = (f.min != null) ? Number(f.min) : null;
+    const max = (f.max != null) ? Number(f.max) : null;
+    if (min != null && n < min) warn.push(f.title + ' = ' + n + ' (below the ' + min + ' minimum)');
+    else if (max != null && n > max) warn.push(f.title + ' = ' + n + ' (above the ' + max + ' max)');
+    else if (max == null && n > 200) warn.push(f.title + ' = ' + n + ' (unusually high — sure?)');
+  }));
+  return warn;
+}
+function confirmUnusual() {
+  const w = getSanityWarnings();
+  if (!w.length) return true;
+  return confirm('⚠ Some entries look unusual — please double-check before saving:\n\n• ' + w.join('\n• ') + '\n\nKeep these values and continue?');
+}
+
 function buildPayload(data) {
   const clean = Object.assign({}, data);
   delete clean._ts;
@@ -1198,6 +1226,7 @@ function showSheetMsg(msg, kind) {
 async function submitCurrentMatch() {
   const v = validateForSubmit(fields);
   if (!v.ok) { showSubmitStatus(v.error, 'err'); return; }
+  if (!confirmUnusual()) { showSubmitStatus('Submission paused — adjust the flagged values, or confirm to continue.', 'warn'); return; }
   if (!isSheetConnected()) { showSubmitStatus('No Sheet connected — scan the QR code, or tap ⚙ SHEET above to connect one.', 'warn'); return; }
   if (googleEnabled() && !googleTokenValid()) { showSubmitStatus('Sign in with Google first — open ⚙ SHEET and tap the Google button.', 'warn'); return; }
   showSubmitStatus('Sending to Sheet…', 'info');

@@ -395,10 +395,13 @@
   function renderCaps(b) {
     var rows = teamList().map(function (t) { return ENGINE.caps[t]; }).sort(function (a, b) { return (ENGINE.opr[b.team] || 0) - (ENGINE.opr[a.team] || 0); });
     var showClimb = rows.some(function (r) { return r.climbRate > 0; });   // REBUILT-style endgame data present?
+    var maxOPR = Math.max.apply(null, rows.map(function (r) { return ENGINE.opr[r.team] || 0; }).concat([1]));
     var h = '<p class="an-intro">Phase 2 — each robot\'s raw stats become one <strong>Capability</strong> score (points + consistency + reliability) and an <strong>OPR</strong> (its estimated point contribution, solved with linear algebra across all alliances).</p>';
     h += '<div class="an-scroll"><table class="an-table"><thead><tr><th>Team</th><th>Mch</th><th>OPR</th><th>Avg Pts</th><th>Consistency</th><th>Reliability</th>' + (showClimb ? '<th>Climb %</th>' : '') + '<th>Capability</th></tr></thead><tbody>';
     rows.forEach(function (r) {
-      h += '<tr><td><strong>' + r.team + '</strong></td><td>' + r.matches + '</td><td><strong>' + (ENGINE.opr[r.team] || 0).toFixed(1) + '</strong></td><td>' + r.avgPts.toFixed(1) +
+      var o = ENGINE.opr[r.team] || 0, pct = Math.max(2, Math.min(100, Math.round(o / maxOPR * 100)));
+      var bar = '<div class="an-bar2"><div class="an-bar2-fill" style="width:' + pct + '%"></div><span class="an-bar2-num">' + o.toFixed(1) + '</span></div>';
+      h += '<tr><td><strong>' + r.team + '</strong></td><td>' + r.matches + '</td><td>' + bar + '</td><td>' + r.avgPts.toFixed(1) +
         '</td><td>' + Math.round(r.consistency * 100) + '%</td><td>' + Math.round(r.reliability * 100) + '%</td>' + (showClimb ? '<td>' + Math.round(r.climbRate * 100) + '%</td>' : '') + '<td><strong>' + r.capability.toFixed(0) + '</strong></td></tr>';
     });
     h += '</tbody></table></div><div class="an-hint">OPR uses ridge least-squares on alliance scores — it untangles who actually contributes when teams keep playing together.</div>';
