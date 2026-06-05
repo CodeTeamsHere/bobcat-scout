@@ -31,10 +31,12 @@ html, body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  -webkit-text-size-adjust: 100%;   /* don't let iOS rescale text on orientation change */
+  text-size-adjust: 100%;
 }
 
 button, input, select, textarea { font-family: inherit; }
-button { cursor: pointer; }
+button { cursor: pointer; touch-action: manipulation; }   /* removes the 300ms tap delay + double-tap zoom on buttons */
 a { color: var(--maroon); }
 
 .top-accent { height: 4px; background: var(--gold); }
@@ -79,6 +81,10 @@ a { color: var(--maroon); }
   font-weight: 700;
   letter-spacing: 1px;
   border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;          /* match outline buttons + comfortable tap target */
 }
 .btn-header-outline {
   background: transparent;
@@ -91,7 +97,9 @@ a { color: var(--maroon); }
   border-radius: 2px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  min-height: 38px;
 }
 .btn-header-outline svg { width: 12px; height: 12px; }
 
@@ -163,20 +171,20 @@ textarea {
   min-height: 100px;
   padding: 12px 14px;
   border: 1px solid var(--border);
-  font-size: 14px;
+  font-size: 16px;          /* 16px+ stops iOS Safari from auto-zooming on focus */
   color: var(--charcoal);
   resize: vertical;
   outline: none;
   border-radius: 2px;
   line-height: 1.5;
 }
-textarea:focus, input:focus, select:focus { border-color: var(--maroon); }
+textarea:focus, input:focus, select:focus { border-color: var(--maroon); box-shadow: 0 0 0 3px rgba(123,31,43,0.15); }
 
 /* Inputs */
 input[type="text"], input[type="number"], select {
   width: 100%;
-  padding: 9px 10px;
-  font-size: 14px;
+  padding: 10px 10px;
+  font-size: 16px;          /* 16px+ stops iOS Safari from auto-zooming on focus */
   border: 1px solid var(--border);
   background: var(--white);
   color: var(--charcoal);
@@ -570,7 +578,9 @@ footer {
 .help-body {
   padding: 20px 24px 28px;
   max-height: calc(100vh - 120px);
+  max-height: calc(100dvh - 120px);   /* dvh = real visible height on mobile (excludes iOS address bar) */
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   font-size: 14px;
   color: var(--charcoal);
   line-height: 1.6;
@@ -651,15 +661,29 @@ footer {
 @media (max-width: 600px) {
   .header-inner { gap: 8px; }
   .wordmark { font-size: 18px; }
+  /* the 5 header buttons wrap to their own full-width row instead of overflowing
+     off-screen (which previously hid CLEAR ALL on narrow phones) */
+  .header-actions { flex-wrap: wrap; width: 100%; gap: 6px; }
+  .header-actions > button { flex: 1 1 auto; }
   .field-grid {
     grid-template-columns: 1fr;
     padding: 14px 16px;
   }
   .card-body { padding: 16px; }
   main { padding: 14px; gap: 14px; }
-  .btn-big { padding: 12px 24px; }
+  .btn-big { padding: 14px 24px; width: 100%; }
   .voice-row { flex-direction: column; }
   .mic-button { align-self: flex-start; }
+  /* 16px on every focusable control so iOS Safari never zoom-jumps on focus,
+     even for the dense Form Builder / Analytics inputs that are smaller on desktop */
+  input, select, textarea,
+  .b-title, .b-type, .b-mm, .b-opts, .b-sec-name, .an-side select,
+  #manual-text, #builder-paste { font-size: 16px !important; }
+  /* give modals the full small screen */
+  .help-overlay, .an-overlay { padding: 8px 6px; }
+  .an-tab { min-width: 72px; font-size: 11px; padding: 10px 4px; }
+  .divider-line { flex-direction: column; }
+  .b-icon { width: 36px; height: 36px; }   /* easier to tap in the Form Builder */
 }
 
 /* ==========================================================
@@ -848,7 +872,7 @@ footer {
 .an-tabs { display: flex; flex-wrap: wrap; gap: 2px; background: var(--cream); padding: 6px; border-bottom: 1px solid var(--border); }
 .an-tab { flex: 1; min-width: 90px; padding: 9px 6px; border: none; background: transparent; color: var(--gray); font-size: 11px; font-weight: 700; letter-spacing: 0.5px; border-radius: 2px; }
 .an-tab.active { background: var(--maroon); color: var(--white); }
-.an-body { padding: 20px; max-height: calc(100vh - 180px); overflow-y: auto; }
+.an-body { padding: 20px; max-height: calc(100vh - 180px); max-height: calc(100dvh - 180px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .an-intro { font-size: 13px; color: var(--gray); line-height: 1.6; margin-bottom: 14px; }
 .an-note { margin: 12px 0; padding: 10px 12px; background: var(--cream); border-left: 3px solid var(--gold); border-radius: 2px; font-size: 13px; color: var(--charcoal); }
 .an-hint { font-size: 12px; color: var(--gray); margin-top: 10px; line-height: 1.5; }
