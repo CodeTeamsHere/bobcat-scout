@@ -820,7 +820,10 @@ footer {
 .summary-empty { font-size: 13px; color: var(--gray); padding: 10px 0; }
 
 /* Match / Pit mode toggle */
-.mode-bar { display: flex; gap: 8px; }
+/* Pit scouting removed — just game (match) scouting on one page.
+   (Hidden, not deleted, so it can be flipped back on later if ever needed.) */
+.mode-bar { display: none; }
+#bf-pit { display: none; }
 .mode-btn {
   flex: 1; padding: 12px; border: 1px solid var(--border); background: var(--white);
   color: var(--gray); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; border-radius: 2px;

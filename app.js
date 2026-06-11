@@ -1615,7 +1615,7 @@ function importConfigText(text) {
 }
 
 async function resetConfig() {
-  if (!confirm('Reset to the built-in REBUILT 2026 form? Your custom fields will be removed from this device.')) return;
+  if (!confirm('Switch back to this year\'s game (REBUILT 2026)? Any custom game you built or imported will be replaced on this device.')) return;
   try { localStorage.removeItem('custom_config'); } catch (e) {}
   const def = await fetchDefaultConfig();
   builderConfig = deepClone(def);
@@ -1625,7 +1625,7 @@ async function resetConfig() {
   currentForm = 'match'; applyForm(); fields = initialFieldState(); confidence = {}; currentMatchId = newMatchId(); clearDraft();
   renderAllFields(); syncFormUI(); updateGenerateButton();
   renderBuilder();
-  showBuilderMsg('Reset to the REBUILT 2026 default.', 'ok');
+  showBuilderMsg('✓ Switched back to this year\'s game — REBUILT 2026.', 'ok');
 }
 
 // =====================================================================
@@ -1969,7 +1969,7 @@ function loadDraft() {
     if (!raw) return null;
     const d = JSON.parse(raw);
     if (!d || !d.fields) return null;
-    if (d.form === 'pit' || d.form === 'match') { currentForm = d.form; applyForm(); }
+    if (d.form === 'match') { currentForm = d.form; applyForm(); }   // pit scouting removed — match only
     fields = Object.assign(initialFieldState(), d.fields);
     confidence = d.confidence || {};
     if (d.matchId) currentMatchId = d.matchId;
