@@ -16,6 +16,48 @@ The app lives at **https://codeteamshere.github.io/bobcat-scout** — anyone can
 
 ---
 
+# How it works & who can access what
+
+Scouters can **send** matches into your Sheet, but they **never get access to the Sheet itself** — they can't open it, read other rows, or edit anything. Here's the path every match takes:
+
+```mermaid
+flowchart TD
+    S["📱 Scouter — submit only, no Sheet access"]
+    G["🔒 The Gate · Apps Script Web App<br/>checks passcode · sign-in · valid numbers · right event · no duplicates<br/>runs as the host"]
+    SH["📊 Host's Sheet — only the host can open or edit"]
+    A["📈 Analytics — OPR · pick list · predictions · vs real results"]
+    S -->|"1 · submits a match"| G
+    G -->|"2 · writes a validated row"| SH
+    SH -->|"3 · feeds"| A
+```
+
+**Why scouters can't reach the Sheet:** when you deployed the script you set **"Execute as: Me"** and **"Who has access: Anyone."** Together these make a one-way gate:
+
+- *Execute as: Me* → the script writes to the Sheet using **your** permissions, on the scouter's behalf. The scouter's Google account is never given any role on the Sheet.
+- *Who has access: Anyone* → anyone can **call the script** (send a match) — **not** open the spreadsheet.
+
+So a scouter's phone can only POST a match to your gate. It can't open, read, edit, or delete the Sheet — there's no sharing involved. And the gate still checks passcode + Google sign-in + event + sane numbers before it writes anything.
+
+## Who can do what
+
+| Who | Open / read Sheet | Edit / delete rows | Submit a match | See analytics |
+|---|:---:|:---:|:---:|:---:|
+| **Host (you)** | ✅ | ✅ | ✅ | ✅ |
+| **Scouter** | ❌ | ❌ | ✅ (gated) | ❌\* |
+
+\*Scouters only see analytics if you choose to share the ANALYZE view or the Sheet — by default the numbers are yours.
+
+## Why your data lands clean for analytics
+
+Every row the gate writes is already analysis-ready, because it:
+
+- **Validates** — blank required fields or impossible numbers (bad team #, 350 scored in a 30-second period) are rejected at the door.
+- **De-duplicates** — re-sending the same match + team **updates** that one row instead of doubling it.
+- **Stamps** — each row records the scout's email + timestamp, so bad data is traceable.
+- **Auto-tunes the Analytics tab** — the first submission teaches the Sheet your scoring model; the **Analytics** tab and **📈 ANALYZE** engine read straight from the clean Data tab (and can compare against the official Blue Alliance results).
+
+---
+
 # PART 1 — HOST: open it up and start using it
 
 **Do this once.** Takes ~15 minutes. You need a Google account and a computer.

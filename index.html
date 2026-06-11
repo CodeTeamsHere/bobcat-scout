@@ -258,6 +258,31 @@
         </section>
 
         <section class="help-section">
+          <h3>How your data flows &amp; who can see what</h3>
+          <p class="help-intro">Scouters can <strong>send</strong> matches into the host's Sheet, but they <strong>never get access to the Sheet itself</strong> — they can't open it, read other rows, or edit anything. Here's the path every match takes:</p>
+          <div class="flow-diagram">
+            <div class="flow-step"><span class="flow-emoji">📱</span><div class="flow-text"><strong>Scouter</strong><span>Submit only — no Sheet access</span></div></div>
+            <div class="flow-arrow"><span class="flow-num">1</span> submits a match</div>
+            <div class="flow-step flow-gate"><span class="flow-emoji">🔒</span><div class="flow-text"><strong>The Gate</strong> <span class="flow-dim">(Apps Script Web App)</span><span>Checks passcode · sign-in · valid numbers · right event · no duplicates — runs as the host</span></div></div>
+            <div class="flow-arrow"><span class="flow-num">2</span> writes a validated row</div>
+            <div class="flow-step"><span class="flow-emoji">📊</span><div class="flow-text"><strong>Host's Sheet</strong><span>Only the host can open or edit it</span></div></div>
+            <div class="flow-arrow"><span class="flow-num">3</span> feeds the analytics</div>
+            <div class="flow-step"><span class="flow-emoji">📈</span><div class="flow-text"><strong>Analytics</strong><span>OPR · pick list · predictions · vs real results</span></div></div>
+          </div>
+          <p class="help-intro"><strong>Why scouters can't reach the Sheet:</strong> the script is deployed as <em>“execute as the host · anyone can submit.”</em> A scouter's phone can only <em>call the gate</em> (send one match) — it is never given any role on the spreadsheet. The gate decides what gets written, so the Sheet stays the host's alone.</p>
+          <table class="help-table">
+            <thead><tr><th>Who</th><th>Open / read</th><th>Edit / delete</th><th>Submit match</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Host (you)</strong></td><td class="ht-yes">✅</td><td class="ht-yes">✅</td><td class="ht-yes">✅</td></tr>
+              <tr><td><strong>Scouter</strong></td><td class="ht-no">❌</td><td class="ht-no">❌</td><td class="ht-yes">✅ gated</td></tr>
+            </tbody>
+          </table>
+          <div class="help-note">
+            <strong>Why your data stays clean for analytics:</strong> the gate <strong>validates</strong> (rejects blank required fields &amp; impossible numbers), <strong>de-duplicates</strong> (re-sending the same match + team updates that one row instead of doubling), and <strong>stamps</strong> every row with the scout's email + time. So the <strong>Data</strong> tab is always analysis-ready, and the <strong>Analytics</strong> tab + <strong>📈 ANALYZE</strong> read straight from it (and can grade your scouting against the official Blue Alliance results).
+          </div>
+        </section>
+
+        <section class="help-section">
           <h3>Microphone Troubleshooting</h3>
           <p class="help-intro">Voice input uses your browser's built-in speech recognition. If the mic button doesn't work or no text appears, follow the directions for your device below.</p>
 

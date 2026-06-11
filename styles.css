@@ -643,6 +643,25 @@ footer {
   margin-top: 12px;
 }
 
+/* Help: data-flow diagram + access table */
+.flow-diagram { margin: 14px 0 16px; }
+.flow-step { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--white); }
+.flow-step.flow-gate { border-color: var(--maroon); border-width: 2px; background: var(--gold-soft); }
+.flow-emoji { font-size: 22px; flex-shrink: 0; line-height: 1; }
+.flow-text { display: flex; flex-direction: column; }
+.flow-text strong { color: var(--maroon); font-size: 14px; }
+.flow-text > span { color: var(--gray); font-size: 12px; line-height: 1.4; margin-top: 1px; }
+.flow-dim { color: var(--gray) !important; font-weight: 400; font-size: 11px !important; }
+.flow-arrow { display: flex; align-items: center; gap: 8px; margin: 4px 0 4px 24px; padding: 5px 0 5px 16px; font-size: 12px; color: var(--gray); border-left: 2px solid var(--gold); }
+.flow-num { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--maroon); color: var(--white); font-size: 11px; font-weight: 700; flex-shrink: 0; margin-left: -25px; }
+.help-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+.help-table th, .help-table td { padding: 8px 10px; border: 1px solid var(--border); text-align: center; }
+.help-table th { background: var(--maroon); color: var(--white); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.help-table td:first-child, .help-table th:first-child { text-align: left; }
+.help-table tbody tr:nth-child(odd) { background: var(--cream); }
+.ht-yes { color: var(--success); font-weight: 700; }
+.ht-no { color: var(--error); font-weight: 700; }
+
 @media (max-width: 600px) {
   .help-body { padding: 16px; }
   .help-head h2 { font-size: 13px; letter-spacing: 1.5px; }
