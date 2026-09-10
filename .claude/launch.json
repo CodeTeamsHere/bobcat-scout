@@ -4,8 +4,8 @@
     {
       "name": "bobcat-scout",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "5199"],
-      "port": 5199
+      "runtimeArgs": ["-m", "http.server", "8000"],
+      "port": 8000
     }
   ]
 }
