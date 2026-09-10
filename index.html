@@ -25,11 +25,14 @@
     <div class="header-inner">
       <div>
         <div class="wordmark">BOBCAT <span class="accent">SCOUT</span></div>
-        <div class="tagline">TEAM 177 · REBUILT 2026 · VOICE SCOUTING</div>
+        <div class="tagline">TEAM 177 · REBUILT 2026 · VOICE OR TYPE</div>
       </div>
       <div class="header-actions">
         <button id="btn-session" class="btn-header-gold hidden">
           <span id="session-count">0</span> SAVED <span id="session-arrow">▼</span>
+        </button>
+        <button id="btn-setup" class="btn-header-gold" title="Step-by-step setup for hosts and scouters">
+          &#9889; SETUP<span id="setup-badge" class="setup-badge hidden"></span>
         </button>
         <button id="btn-sheet" class="btn-header-outline" title="Connect to your Google Sheet">
           <span id="sheet-dot" class="sheet-dot dot-off"></span>
@@ -54,6 +57,17 @@
     <div class="mode-bar" role="tablist" aria-label="Scouting mode">
       <button id="mode-match" class="mode-btn mode-active">📋 MATCH SCOUTING</button>
       <button id="mode-pit" class="mode-btn">🔧 PIT SCOUTING</button>
+    </div>
+
+    <!-- First-run / readiness strip -->
+    <div id="ready-strip" class="ready-strip hidden">
+      <span id="ready-icon" class="ready-icon">&#9889;</span>
+      <div class="ready-text">
+        <strong id="ready-title">Finish setting up</strong>
+        <span id="ready-sub">Two minutes and you are ready to scout.</span>
+      </div>
+      <button id="btn-ready-go" class="btn btn-primary" style="padding:8px 14px;font-size:11px;white-space:nowrap;">OPEN SETUP</button>
+      <button id="btn-ready-hide" class="btn btn-ghost" style="padding:8px 10px;font-size:11px;" title="Hide this">&times;</button>
     </div>
 
     <!-- Session card (hidden by default) -->
@@ -209,6 +223,37 @@
         </section>
 
         <section class="help-section">
+          <h3>Voice is an option, not a requirement</h3>
+          <p class="help-intro">Read this first if you are deciding whether your team should use Bobcat Scout. It is deliberately honest, because a scouting tool that oversells itself gets abandoned by week two.</p>
+          <div class="help-note" style="margin-bottom:14px;">
+            <strong>Nobody has to talk.</strong> Every single field on this form is a normal box, dropdown or counter. You can tap through an entire match and never touch the microphone, and the spreadsheet, the ratings and the pick list cannot tell the difference. Voice is a shortcut for people who want it, not a toll gate.
+          </div>
+          <p class="help-intro"><strong>It is meant to run beside your current scouting, not instead of it.</strong> The safe way to adopt this is to keep doing exactly what you do now for one event, and put two or three people on Bobcat Scout at the same time. At the end of the event you have two records of the same matches. Compare them. If this one is faster and just as accurate, expand it next event. If it is not, you lost nothing, because your normal scouting never stopped.</p>
+          <h4 style="margin-top:14px;">What voice is genuinely good at</h4>
+          <ul class="help-list">
+            <li><strong>Keeping your eyes on the field.</strong> The real cost of tapping a form is the play you did not see while you were looking down.</li>
+            <li><strong>Speed at the end of a match.</strong> One sentence fills most of the form, so you are ready before the next match is queued.</li>
+            <li><strong>Notes nobody normally writes.</strong> Saying "their intake jammed twice" takes two seconds. Typing it usually does not happen at all.</li>
+          </ul>
+          <h4 style="margin-top:14px;">Where it struggles, and what to do about it</h4>
+          <table class="help-table">
+            <thead><tr><th>The problem</th><th>What actually happens</th><th>The answer</th></tr></thead>
+            <tbody>
+              <tr><td>Loud stands</td><td>Phone microphones pick up the crowd as well as you</td><td>A cheap close-talk headset fixes this. Without one, accuracy drops in a packed venue</td></tr>
+              <tr><td>Speech recognition gets a word wrong</td><td>It will, sometimes</td><td>Nothing is ever submitted straight from your voice. The form is filled in front of you, every guessed field is badged, and you confirm it</td></tr>
+              <tr><td>iPhone users</td><td>Voice only works in Safari. Chrome on iOS cannot do it</td><td>Open the link in Safari, or type. Typing works in every browser</td></tr>
+              <tr><td>Firefox users</td><td>No speech recognition at all</td><td>Type, or use Chrome, Edge or Safari</td></tr>
+              <tr><td>No signal in the venue</td><td>Speech recognition needs a connection on most devices</td><td>Typing and the whole rest of the app work fully offline, and matches queue up and send themselves when signal returns</td></tr>
+              <tr><td>Scouters who hate talking</td><td>Some genuinely will not do it</td><td>Let them type. Mixed teams work fine because both paths produce identical rows</td></tr>
+              <tr><td>Battery drain</td><td>The microphone plus screen use more power than a paper sheet</td><td>Bring a power bank for a full day of qualifications</td></tr>
+            </tbody>
+          </table>
+          <div class="help-note" style="margin-top:14px;">
+            <strong>What this does not do.</strong> It does not watch the match for you, it does not replace a strategy lead reading the field, and it cannot invent data nobody recorded. It takes what a human saw and turns it into clean, comparable numbers faster than a keyboard can.
+          </div>
+        </section>
+
+        <section class="help-section">
           <h3>Quick Start</h3>
           <ol class="help-list">
             <li>Tap the maroon mic button and describe the match in plain English. You can also type into the box.</li>
@@ -224,6 +269,7 @@
           <h3>For the Host (spreadsheet owner) — one-time setup</h3>
           <p class="help-intro">The <strong>host</strong> is whoever owns the scouting Google Sheet. Do this once so scouters' matches flow straight into your Sheet.</p>
           <ol class="help-list">
+            <li><strong>Easiest way:</strong> tap <strong>&#9889; SETUP</strong> at the top, choose <strong>I am the Host</strong>, and work down the numbered steps. It copies the script for you, opens the right pages, and tests the connection live so you know it worked. Everything below is the same thing written out.</li>
             <li>Create a Google Sheet, add the script, and deploy it as a Web App — full click-by-click steps are in the project's <strong>SETUP-SHEET.md</strong> (and inside <code>apps-script/Code.gs</code>).</li>
             <li>In the Sheet's <strong>Config</strong> tab, set a <strong>Passcode</strong> (and optionally an Active Event + dates, so it only accepts data during your event).</li>
             <li>Open this app → <strong>⚙ SHEET</strong> → paste your Web App URL + passcode → <strong>SAVE</strong> → <strong>SEND TEST ROW</strong> to confirm it works.</li>
@@ -246,7 +292,7 @@
         <section class="help-section">
           <h3>For Scouters (filling in matches)</h3>
           <ol class="help-list">
-            <li><strong>Connect once:</strong> open the link your host sent (or tap <strong>⚙ SHEET</strong> and paste the URL + passcode they give you). The dot turns green when connected — you only do this one time.</li>
+            <li><strong>Start with &#9889; SETUP.</strong> Tap it at the top, choose <strong>I am a Scouter</strong>, and it walks you through your name, the event code, a microphone test and one practice match. Two minutes, once.</li>            <li><strong>Connect once:</strong> open the link your host sent (or tap <strong>⚙ SHEET</strong> and paste the URL + passcode they give you). The dot turns green when connected — you only do this one time.</li>
             <li><strong>Scout a match:</strong> describe it → <strong>AUTO-FILL</strong> → fix anything → <strong>GENERATE</strong>.</li>
             <li><strong>Send it:</strong> tap <strong>SUBMIT TO SHEET</strong> (or <strong>SAVE &amp; NEXT</strong>, which also submits). Your row appears in the host's Sheet right away.</li>
             <li><strong>Keep going for every match:</strong> tap <strong>SAVE &amp; NEXT MATCH</strong> — the form clears and the match number bumps up automatically, ready for your next one. Scout as many matches as you want; there is <strong>no limit</strong> and submitting one never locks you out.</li>
@@ -449,6 +495,59 @@
         <div class="help-note" style="margin-top:16px;">
           <strong>Note:</strong> keep the Prematch identity fields (Scout Name, Event Key, Match Type, Match #, Team #) so the Google Sheet can de-duplicate and the Analytics tab can group by team. The <strong>pts</strong> boxes on each field set the scoring — the in-app ANALYZE engine (OPR, predictions, pick list) reads them, so it re-tunes itself to whatever game you build here.
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== SETUP WIZARD ============================== -->
+  <div id="setup-overlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+    <div class="help-modal">
+      <div class="help-head">
+        <h2 id="setup-title">SET UP BOBCAT SCOUT</h2>
+        <button id="btn-setup-close" class="btn-help-close" aria-label="Close setup">&times;</button>
+      </div>
+      <div class="help-body">
+
+        <!-- ---------- Role picker ---------- -->
+        <div id="setup-roles" class="setup-roles">
+          <p class="help-intro" style="text-align:center;max-width:520px;margin:0 auto 18px;">
+            Nothing is set up yet, and that is fine. Pick the one that sounds like you and the app will walk you through it step by step.
+          </p>
+          <div class="setup-role-grid">
+            <button class="setup-role" data-role="scouter">
+              <span class="setup-role-emoji">&#128241;</span>
+              <span class="setup-role-title">I am a Scouter</span>
+              <span class="setup-role-sub">Someone sent me a link and I record matches in the stands.</span>
+              <span class="setup-role-time">About 2 minutes</span>
+            </button>
+            <button class="setup-role" data-role="host">
+              <span class="setup-role-emoji">&#128187;</span>
+              <span class="setup-role-title">I am the Host</span>
+              <span class="setup-role-sub">I own the team spreadsheet and I am setting this up for everyone.</span>
+              <span class="setup-role-time">About 15 minutes, one time</span>
+            </button>
+          </div>
+          <div class="help-note" style="margin-top:18px;">
+            <strong>Not sure?</strong> If you are reading this because a teammate texted you a link, you are a Scouter. Only one person on the team needs to be the Host.
+          </div>
+        </div>
+
+        <!-- ---------- Track ---------- -->
+        <div id="setup-track" class="hidden">
+          <div class="setup-topbar">
+            <button id="btn-setup-back" class="btn btn-ghost" style="padding:6px 10px;font-size:11px;">&larr; CHANGE ROLE</button>
+            <div class="setup-progress-wrap">
+              <div class="setup-progress"><div id="setup-progress-bar" class="setup-progress-bar"></div></div>
+              <span id="setup-progress-text" class="setup-progress-text">0 of 0 done</span>
+            </div>
+          </div>
+          <div id="setup-steps"></div>
+          <div id="setup-done-banner" class="setup-done hidden">
+            <strong>&#10003; You are ready to scout.</strong>
+            <span>Close this window and describe your first match. You can reopen setup anytime from the <strong>&#9889; SETUP</strong> button.</span>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

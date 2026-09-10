@@ -9,6 +9,17 @@ Scouts at a competition open this app on their phone, tap the mic, and describe 
 - **QR code** — the always-offline path (scan into the team's QRScout pipeline). Works with no internet.
 - **Submit to Sheet** — optional one-tap auto-submit straight into a team Google Sheet when the phone has signal. It queues offline and sends automatically when back online, and is protected by a passcode + server-side validation + event/date gating + duplicate-blocking. See **[SETUP-SHEET.md](SETUP-SHEET.md)**.
 
+## Getting started
+
+Open the app and tap **⚡ SETUP**. It asks whether you are a scouter or the host, then walks you down a
+numbered checklist — copying the Apps Script for you, opening the right Google pages, and sending a live
+test row so you know the connection actually works. A scouter is done in about two minutes; a host in
+about fifteen, once.
+
+Longer written guides: **[HOW-TO-USE.md](HOW-TO-USE.md)** (roles and data flow),
+**[SETUP-SHEET.md](SETUP-SHEET.md)** (the Google Sheet in detail),
+**[PILOT-PROPOSAL.md](PILOT-PROPOSAL.md)** (the honest pitch for adopting it, including what it is not).
+
 It's an installable **PWA**: open it once and it runs fully offline (essential at venues — the QR library is bundled, not loaded from a CDN), the in-progress match auto-saves through refreshes, and you can **Add to Home Screen** to use it like an app.
 
 Two modes (toggle at the top): **Match Scouting** (quantitative — auto/teleop/endgame) and **Pit Scouting** (qualitative — a robot's fixed capabilities, one row per team). Pit data routes to a separate **Pit** tab. The Sheet also auto-builds a live **Analytics** tab — a per-team info guide (matches, avg auto/teleop/total, climb %, avg driver/defense, reliability) that recomputes as data arrives; sort any column for a pick list.

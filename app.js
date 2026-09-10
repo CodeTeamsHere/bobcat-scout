@@ -779,33 +779,38 @@ function toggleSessionCard() {
 
 const TOUR_STEPS = [
   {
+    selector: '#btn-setup',
+    title: '1 · Set yourself up first',
+    body: 'Tap ⚡ SETUP any time you are stuck. It asks whether you are a scouter or the host and then walks you down a numbered checklist — your name, the event code, a mic test, and for hosts, the whole spreadsheet setup with the script copied for you.'
+  },
+  {
     selector: '.voice-row',
-    title: '1 · Describe the match',
+    title: '2 · Describe the match',
     body: 'Tap the maroon mic and just talk — or type — in plain English. Example: "Team 177, scored 4 in auto, climbed the mid rung." No special wording needed.'
   },
   {
     selector: '#btn-process',
-    title: '2 · Auto-fill the fields',
+    title: '3 · Auto-fill the fields',
     body: 'Tap AUTO-FILL FIELDS. The app reads your description and fills in the scouting form for you automatically.'
   },
   {
     selector: '#fields-container',
-    title: '3 · Review & fix',
+    title: '4 · Review & fix',
     body: 'Check the filled values. A green "AI" badge means it was auto-filled — tap any field to correct it. Fields marked with a red * are required.'
   },
   {
     selector: '#btn-generate',
-    title: '4 · Generate output',
+    title: '5 · Generate output',
     body: 'Once the required fields are set, tap GENERATE to get a scannable QR code (works with no internet) plus TSV and JSON for your QRScout pipeline.'
   },
   {
     selector: '#btn-sheet',
-    title: '5 · Send to the Sheet (optional)',
+    title: '6 · Send to the Sheet (optional)',
     body: 'If your host connected a Google Sheet — tap ⚙ SHEET, or just open the link they shared — each match auto-submits here, no scanning. Offline, it queues and sends later. The dot shows the status.'
   },
   {
     selector: '#btn-help',
-    title: '6 · Save & keep going',
+    title: '7 · Save & keep going',
     body: 'Use SAVE & NEXT MATCH — it saves, submits to the Sheet if connected, and bumps the match number automatically. Scout as many matches as you want — there is no limit. Reopen this walkthrough anytime from HELP.'
   }
 ];
@@ -2243,6 +2248,625 @@ function showScheduleMsg(msg, kind) {
 // INIT
 // =====================================================================
 
+// =====================================================================
+// SETUP WIZARD — zero-to-scouting, click by click
+// Two tracks: Scouter (2 min) and Host (one time, ~15 min).
+// Steps the app can verify tick themselves; the rest are manual
+// checkboxes so a host can stop halfway and come back later.
+// =====================================================================
+
+const SETUP_STORE = 'setup_state';
+const SCRIPT_URL = 'apps-script/Code.gs';   // same-origin on GitHub Pages
+let setupState = { role: '', done: {}, hideStrip: false, tested: false };
+
+function loadSetupState() {
+  try {
+    const raw = localStorage.getItem(SETUP_STORE);
+    if (raw) setupState = Object.assign(setupState, JSON.parse(raw));
+  } catch (e) {}
+  if (!setupState.done) setupState.done = {};
+}
+function saveSetupState() {
+  try { localStorage.setItem(SETUP_STORE, JSON.stringify(setupState)); } catch (e) {}
+}
+function ls(k) { try { return (localStorage.getItem(k) || '').trim(); } catch (e) { return ''; } }
+
+// ---------------------------------------------------------------- steps
+
+const SETUP_TRACKS = {
+  scouter: [
+    {
+      id: 'name',
+      title: 'Put your name in',
+      time: '10 sec',
+      auto: () => !!ls('scout_name'),
+      body: `<p>Every match you send is stamped with your name, so the team knows whose data is whose. Type the name your team knows you by.</p>`,
+      input: { key: 'scout_name', field: 'scoutName', label: 'Your name', placeholder: 'e.g. Krish' }
+    },
+    {
+      id: 'event',
+      title: 'Set the event code',
+      time: '15 sec',
+      auto: () => !!ls('event_key'),
+      body: `<p>The event code tells the spreadsheet which competition this data belongs to. Your host will give it to you. It looks like <code>2026ctwat</code>, which is the year plus a short code for the event.</p>
+             <p class="setup-dim">If the host sent you a setup link, this is probably already filled in.</p>`,
+      input: { key: 'event_key', field: 'eventKey', label: 'Event code', placeholder: 'e.g. 2026ctwat' }
+    },
+    {
+      id: 'connect',
+      title: 'Check you are connected',
+      time: '10 sec',
+      auto: () => !!ls('sheet_endpoint'),
+      body: `<p>When you are connected, every match you save goes straight into the team spreadsheet on its own. You never need a password for the spreadsheet itself, and you cannot open it. You can only send matches into it.</p>
+             <div id="setup-conn-state" class="setup-state"></div>
+             <p class="setup-dim">Not connected? Ask your host for the setup link and open it on this phone. You can still scout without it, because the app makes a QR code your host can scan instead.</p>`,
+      actions: [
+        { label: 'RECHECK', act: 'recheck', cls: 'btn-outline' },
+        { label: 'WE ARE USING QR INSTEAD', act: 'qronly', cls: 'btn-ghost' }
+      ]
+    },
+    {
+      id: 'mic',
+      title: 'Try the microphone',
+      time: '30 sec',
+      body: `<p>Tap the button, then say something like <em>"team one seventy seven scored four in auto and climbed high"</em>. Whatever you say shows up below. This is only a test and nothing gets saved.</p>
+             <div id="setup-mic-out" class="setup-state">Nothing heard yet.</div>
+             <p class="setup-dim">The microphone is optional. If you would rather type, tap <strong>I will type instead</strong> and the app works exactly the same.</p>`,
+      actions: [
+        { label: '&#127908; TEST MY MIC', act: 'mictest', cls: 'btn-primary' },
+        { label: 'I WILL TYPE INSTEAD', act: 'micskip', cls: 'btn-ghost' }
+      ]
+    },
+    {
+      id: 'practice',
+      title: 'Do one practice match',
+      time: '1 min',
+      body: `<p>This drops a sample match description into the box and fills the form from it, so you see the whole thing work before a real match starts. Nothing is sent anywhere.</p>
+             <p class="setup-dim">Read the filled in fields afterwards. Anything the app guessed gets a small green <strong>AI</strong> badge, and you can tap any field to fix it.</p>`,
+      actions: [{ label: '&#9654; RUN A PRACTICE MATCH', act: 'practice', cls: 'btn-primary' }]
+    }
+  ],
+  host: [
+    {
+      id: 'sheet',
+      title: 'Make the spreadsheet',
+      time: '1 min',
+      body: `<ol class="help-list">
+               <li>Tap the button below. A brand new blank Google Sheet opens.</li>
+               <li>Click the name in the top left corner where it says <strong>Untitled spreadsheet</strong>.</li>
+               <li>Rename it to something like <strong>Bobcat Scouting 2026</strong>.</li>
+             </ol>
+             <p class="setup-dim">Use the account you want to own the data. Whoever owns this sheet is the only person who can ever open it.</p>`,
+      actions: [{ label: '&#8599; OPEN A NEW GOOGLE SHEET', act: 'open:https://sheets.new', cls: 'btn-primary' }]
+    },
+    {
+      id: 'script',
+      title: 'Paste in the script',
+      time: '3 min',
+      body: `<ol class="help-list">
+               <li>Tap <strong>COPY THE SCRIPT</strong> below. It copies the whole thing to your clipboard.</li>
+               <li>Back in your spreadsheet, click <strong>Extensions</strong> in the top menu, then <strong>Apps Script</strong>. A code editor opens in a new tab.</li>
+               <li>Click once inside the code area, press <strong>Ctrl and A</strong> together to select everything, then press <strong>Delete</strong>. The editor should be completely empty.</li>
+               <li>Press <strong>Ctrl and V</strong> together to paste the script in.</li>
+               <li>Click the <strong>save</strong> icon near the top, the one shaped like a floppy disk.</li>
+             </ol>
+             <p class="setup-dim">On a Mac use Command instead of Ctrl.</p>
+             <div id="setup-script-msg" class="setup-state hidden"></div>`,
+      actions: [
+        { label: '&#128203; COPY THE SCRIPT', act: 'copyscript', cls: 'btn-primary' },
+        { label: 'VIEW IT INSTEAD', act: 'openscript', cls: 'btn-ghost' }
+      ]
+    },
+    {
+      id: 'run',
+      title: 'Run it once and approve it',
+      time: '2 min',
+      body: `<ol class="help-list">
+               <li>Still in the Apps Script editor, find the dropdown near the top that lists function names. Choose <strong>firstTimeSetup</strong>.</li>
+               <li>Click <strong>Run</strong>.</li>
+               <li>Google asks for permission. Click <strong>Review permissions</strong>, pick your Google account, click <strong>Advanced</strong>, then <strong>Go to (project name)</strong>, then <strong>Allow</strong>.</li>
+               <li>Go back to your spreadsheet tab. You should now see two new tabs at the bottom named <strong>Config</strong> and <strong>Data</strong>.</li>
+             </ol>
+             <div class="help-note">The scary looking warning screen is normal. Google shows it for any script that is not published in their store. This is your own script, running in your own account, writing to your own sheet.</div>`
+    },
+    {
+      id: 'config',
+      title: 'Pick a passcode',
+      time: '1 min',
+      body: `<ol class="help-list">
+               <li>In your spreadsheet, click the <strong>Config</strong> tab at the bottom.</li>
+               <li>In column B next to <strong>Passcode</strong>, make up a password such as <code>bobcat26</code>. Scouters never type this. It rides along inside the link you send them.</li>
+               <li>Next to <strong>Active Event</strong>, put your event code such as <code>2026ctwat</code>, or leave it blank to accept any event.</li>
+               <li><strong>Start Date</strong> and <strong>End Date</strong> are optional. Fill them in and the sheet only accepts data during your competition.</li>
+             </ol>
+             <p class="setup-dim">You can change any of this later by editing the Config tab. You never have to redeploy the script again.</p>`
+    },
+    {
+      id: 'deploy',
+      title: 'Publish the script',
+      time: '2 min',
+      body: `<p>This is the step people get wrong most often, so go slowly and match every dropdown exactly.</p>
+             <ol class="help-list">
+               <li>Back in the Apps Script tab, click <strong>Deploy</strong> in the top right, then <strong>New deployment</strong>.</li>
+               <li>Click the small <strong>gear icon</strong> next to "Select type" and choose <strong>Web app</strong>.</li>
+               <li><strong>Description</strong>: type <code>Bobcat Scout endpoint</code>.</li>
+               <li><strong>Execute as</strong>: choose <strong>Me</strong>.</li>
+               <li><strong>Who has access</strong>: choose <strong>Anyone</strong>.</li>
+               <li>Click <strong>Deploy</strong>, then copy the <strong>Web app URL</strong>. It is long and it ends in <code>/exec</code>.</li>
+             </ol>
+             <div class="help-note"><strong>Why "Anyone" is safe here.</strong> "Anyone" only means a phone is allowed to knock on the door. It gives nobody access to your spreadsheet. The script still checks the passcode, the event, the dates and the numbers before it writes a single row, and it runs as you, not as them.</div>`
+    },
+    {
+      id: 'connect',
+      title: 'Connect this app and test it',
+      time: '2 min',
+      auto: () => !!(ls('sheet_endpoint') && setupState.tested),
+      body: `<p>Paste the two things you just made, then send a test row and watch it land in the spreadsheet.</p>
+             <div class="setup-fieldrow">
+               <label>Web app URL</label>
+               <input type="text" id="setup-url" placeholder="https://script.google.com/macros/s/AKfy.../exec">
+             </div>
+             <div class="setup-fieldrow">
+               <label>Passcode</label>
+               <input type="text" id="setup-pass" placeholder="the same passcode you typed in the Config tab">
+             </div>
+             <div id="setup-conn-msg" class="setup-state hidden"></div>
+             <p class="setup-dim">A row called <strong>CONNECTION TEST</strong> appears in your Data tab. Delete it afterwards.</p>`,
+      actions: [{ label: 'SAVE AND TEST', act: 'savetest', cls: 'btn-primary' }]
+    },
+    {
+      id: 'share',
+      title: 'Send the link to your scouters',
+      time: '1 min',
+      auto: () => !!setupState.done.share,
+      body: `<p>One link sets up every scouter. It carries the address, the passcode and the event, so nobody has to type anything or be told a password.</p>
+             <ol class="help-list">
+               <li>Tap <strong>COPY SCOUT LINK</strong> and paste it into your team group chat.</li>
+               <li>Or tap <strong>SHOW QR</strong> and let people scan it off your screen or a printed poster.</li>
+               <li>Tell scouters to open the link once, then use the browser menu and <strong>Add to Home Screen</strong> so it behaves like a normal app.</li>
+             </ol>
+             <div id="setup-qr-out" class="setup-qr hidden"></div>`,
+      actions: [
+        { label: '&#128279; COPY SCOUT LINK', act: 'copylink', cls: 'btn-primary' },
+        { label: 'SHOW QR', act: 'showqr', cls: 'btn-outline' }
+      ]
+    },
+    {
+      id: 'form',
+      title: 'Build this year’s form',
+      time: '5 min',
+      optional: true,
+      auto: () => !!ls('custom_config'),
+      body: `<p>The app ships with this season’s game already built in, so you can skip this today. When next year’s game drops, this is the one step that makes everything else work again.</p>
+             <ol class="help-list">
+               <li>Tap <strong>OPEN THE FORM BUILDER</strong>.</li>
+               <li>Upload the new game manual as a PDF, or paste the scoring section as text.</li>
+               <li>Check every point value against the manual’s scoring table, fix anything wrong, then tap <strong>APPLY AND SAVE</strong>.</li>
+             </ol>
+             <div class="help-note">The point values you set here are what the ratings, the win predictions and the pick list are all built on. Nothing else needs to change.</div>`,
+      actions: [{ label: '&#128736; OPEN THE FORM BUILDER', act: 'builder', cls: 'btn-outline' }]
+    },
+    {
+      id: 'tba',
+      title: 'Turn on automatic team numbers',
+      time: '3 min',
+      optional: true,
+      auto: () => !!ls('tba_key'),
+      body: `<p>This is the single best thing you can do for data quality. With it on, a scouter picks the match number and their station and the team number fills itself in, so nobody can fat finger a team number again. It also unlocks real team names, official rankings and the accuracy check against real results.</p>
+             <ol class="help-list">
+               <li>Tap <strong>GET A FREE KEY</strong> and sign in to The Blue Alliance.</li>
+               <li>Scroll to <strong>Read API Keys</strong>, type any description, and click <strong>Add New Key</strong>.</li>
+               <li>Copy the long key it gives you and paste it below.</li>
+             </ol>
+             <div class="setup-fieldrow">
+               <label>Blue Alliance read key</label>
+               <input type="text" id="setup-tba" placeholder="paste the read key here">
+             </div>
+             <div id="setup-tba-msg" class="setup-state hidden"></div>
+             <p class="setup-dim">The key is free, it is read only, and it cannot change anything on The Blue Alliance.</p>`,
+      actions: [
+        { label: '&#8599; GET A FREE KEY', act: 'open:https://www.thebluealliance.com/account', cls: 'btn-outline' },
+        { label: 'SAVE KEY', act: 'savetba', cls: 'btn-primary' }
+      ]
+    },
+    {
+      id: 'login',
+      title: 'Lock it to your team’s accounts',
+      time: '5 min',
+      optional: true,
+      auto: () => !!ls('google_client_id'),
+      body: `<p>Optional and stricter. With this on, a scouter has to sign in with Google before anything they send is accepted, and every row records which account sent it. Most teams do not need this. Turn it on if you are worried about someone outside the team getting hold of the link.</p>
+             <ol class="help-list">
+               <li>In your spreadsheet’s <strong>Config</strong> tab, set <strong>Require Google Login</strong> to <code>yes</code>.</li>
+               <li>Fill in either <strong>Allowed Domain</strong> with your school’s email domain, or <strong>Allowed Emails</strong> with a comma separated list.</li>
+               <li>In this app, open <strong>SHEET</strong>, scroll to <strong>Google sign in</strong>, and tap <strong>Save and Enable</strong>. The Client ID is already filled in for you.</li>
+             </ol>
+             <div class="help-note">Sign ins last about an hour. When one expires a scouter taps the button again and anything waiting sends itself. Nothing is ever lost.</div>`,
+      actions: [{ label: 'OPEN SHEET SETTINGS', act: 'sheetdlg', cls: 'btn-outline' }]
+    }
+  ]
+};
+
+// ---------------------------------------------------------------- state
+
+function setupSteps() { return SETUP_TRACKS[setupState.role] || []; }
+function stepDone(st) {
+  if (st.auto && st.auto()) return true;
+  return !!setupState.done[st.id];
+}
+function setupCounts() {
+  const steps = setupSteps().filter((s) => !s.optional);
+  return { done: steps.filter(stepDone).length, total: steps.length };
+}
+
+// ---------------------------------------------------------------- render
+
+function renderSetup() {
+  const roles = $('setup-roles'), track = $('setup-track');
+  if (!setupState.role) {
+    roles.classList.remove('hidden');
+    track.classList.add('hidden');
+    return;
+  }
+  roles.classList.add('hidden');
+  track.classList.remove('hidden');
+
+  const steps = setupSteps();
+  const { done, total } = setupCounts();
+  $('setup-progress-bar').style.width = (total ? (done / total) * 100 : 0) + '%';
+  $('setup-progress-text').textContent = done + ' of ' + total + ' done';
+  $('setup-done-banner').classList.toggle('hidden', done < total);
+
+  let n = 0;
+  $('setup-steps').innerHTML = steps.map((st) => {
+    const ok = stepDone(st);
+    if (!st.optional) n++;
+    const num = st.optional ? '&#9734;' : String(n);
+    const acts = (st.actions || []).map((a) =>
+      `<button class="btn ${a.cls}" data-sact="${a.act}" data-step="${st.id}">${a.label}</button>`).join('');
+    const inp = st.input
+      ? `<div class="setup-fieldrow"><label>${st.input.label}</label>
+           <input type="text" data-sinput="${st.id}" placeholder="${st.input.placeholder}" value="${escapeHTML(ls(st.input.key))}"></div>`
+      : '';
+    const manual = st.auto ? '' :
+      `<button class="btn btn-ghost setup-mark" data-sdone="${st.id}">${ok ? '&#8617; NOT DONE YET' : '&#10003; MARK THIS DONE'}</button>`;
+    return `<div class="setup-step ${ok ? 'setup-ok' : ''}" data-step-id="${st.id}" data-step-num="${num}">
+      <div class="setup-step-head">
+        <span class="setup-num">${ok ? '&#10003;' : num}</span>
+        <div class="setup-step-title">
+          <strong>${st.title}</strong>
+          <span class="setup-time">${st.optional ? 'Optional &middot; ' : ''}${st.time}</span>
+        </div>
+      </div>
+      <div class="setup-step-body">${st.body}${inp}
+        <div class="setup-actions">${acts}${manual}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (setupState.role === 'host') {
+    const u = $('setup-url'), p = $('setup-pass'), t = $('setup-tba');
+    if (u) u.value = ls('sheet_endpoint');
+    if (p) p.value = ls('sheet_passcode');
+    if (t) t.value = ls('tba_key');
+  }
+  const cs = $('setup-conn-state');
+  if (cs) {
+    const on = !!ls('sheet_endpoint');
+    cs.className = 'setup-state ' + (on ? 'setup-state-ok' : 'setup-state-warn');
+    cs.textContent = on
+      ? '✓ Connected. Matches you save go straight into the team spreadsheet.'
+      : 'Not connected yet. You can still scout — the app makes a QR code your host can scan.';
+  }
+}
+
+// ---------------------------------------------------------------- actions
+
+function setupSay(id, msg, kind) {
+  const el = $(id);
+  if (!el) return;
+  el.className = 'setup-state ' + (kind === 'err' ? 'setup-state-err' : kind === 'warn' ? 'setup-state-warn' : 'setup-state-ok');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+async function copyScriptCode() {
+  setupSay('setup-script-msg', 'Fetching the script…', 'warn');
+  try {
+    const r = await fetch(SCRIPT_URL, { cache: 'no-cache' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const code = await r.text();
+    if (!/function\s+doGet/.test(code)) throw new Error('unexpected file');
+    await navigator.clipboard.writeText(code);
+    setupSay('setup-script-msg', '✓ Copied ' + Math.round(code.length / 1024) + ' KB. Now paste it into the Apps Script editor with Ctrl and V.', 'ok');
+  } catch (e) {
+    setupSay('setup-script-msg', 'Could not copy it automatically. Tap VIEW IT INSTEAD, then select all and copy by hand.', 'err');
+  }
+}
+
+let setupRec = null;
+function setupMicTest() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    setupSay('setup-mic-out', 'This browser has no built in speech recognition. On iPhone use Safari, on a computer use Chrome or Edge. Typing works everywhere.', 'warn');
+    return;
+  }
+  if (setupRec) { try { setupRec.stop(); } catch (e) {} setupRec = null; return; }
+  try {
+    setupRec = new SR();
+    setupRec.continuous = false;
+    setupRec.interimResults = true;
+    setupRec.lang = 'en-US';
+    setupSay('setup-mic-out', 'Listening… say anything.', 'warn');
+    setupRec.onresult = (ev) => {
+      let txt = '';
+      for (let i = 0; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
+      if (txt.trim()) {
+        setupSay('setup-mic-out', '✓ Heard: “' + txt.trim() + '”', 'ok');
+        setupState.done.mic = true;
+        saveSetupState();
+      }
+    };
+    setupRec.onerror = (ev) => {
+      const why = ev.error === 'not-allowed'
+        ? 'The browser blocked the microphone. Tap the lock icon next to the web address, allow the microphone, then reload.'
+        : ev.error === 'no-speech' ? 'Did not hear anything. Try again and speak up.'
+        : 'Microphone error: ' + ev.error + '. You can always type instead.';
+      setupSay('setup-mic-out', why, 'err');
+      setupRec = null;
+    };
+    setupRec.onend = () => { setupRec = null; refreshSetupUI(); };
+    setupRec.start();
+  } catch (e) {
+    setupSay('setup-mic-out', 'Could not start the microphone. You can always type instead.', 'err');
+    setupRec = null;
+  }
+}
+
+async function setupSaveTest() {
+  const url = ($('setup-url').value || '').trim();
+  const pass = ($('setup-pass').value || '').trim();
+  if (!url) { setupSay('setup-conn-msg', 'Paste the web app URL first.', 'err'); return; }
+  if (!/\/exec\/?$/.test(url)) {
+    setupSay('setup-conn-msg', 'That URL does not end in /exec. Go back to Deploy and copy the Web app URL, not the editor address.', 'err');
+    return;
+  }
+  $('sheet-url').value = url;
+  $('sheet-pass').value = pass;
+  saveSheetConfig();
+  setupSay('setup-conn-msg', 'Sending a test row…', 'warn');
+  const test = { scoutName: 'CONNECTION TEST', eventKey: fields.eventKey || 'test', matchType: 'pm', matchNumber: 1, teamNumber: 177, _id: 'test-' + Date.now().toString(36) };
+  try {
+    const resp = await jsonpSubmit(buildPayload(test));
+    if (resp && resp.ok) {
+      setupState.tested = true; saveSetupState();
+      setupSay('setup-conn-msg', '✓ It works. A row called CONNECTION TEST is now in your Data tab — delete it whenever you like.', 'ok');
+    } else if (resp && resp.status === 'queued') {
+      setupState.tested = true; saveSetupState();
+      setupSay('setup-conn-msg', '✓ Sent. The sheet took a moment to answer, so check the Data tab for a CONNECTION TEST row. If it is there you are all set.', 'ok');
+    } else {
+      setupSay('setup-conn-msg', 'The sheet answered but turned it away: ' + ((resp && resp.error) || 'rejected') + '. Usually the passcode here does not match the one in the Config tab.', 'err');
+    }
+  } catch (e) {
+    setupSay('setup-conn-msg', 'Could not reach the sheet. Check that the deployment says Who has access: Anyone, and that you copied the URL ending in /exec.', 'err');
+  }
+  refreshSetupUI();
+}
+
+function scoutLinkFromStorage() {
+  const url = ls('sheet_endpoint'), pass = ls('sheet_passcode');
+  if (!url) return '';
+  let link = location.origin + location.pathname + '?sheet=' + encodeURIComponent(url) + '&key=' + encodeURIComponent(pass);
+  const tk = ls('tba_key'); if (tk) link += '&tba=' + encodeURIComponent(tk);
+  const gid = ls('google_client_id'); if (gid) link += '&gid=' + encodeURIComponent(gid);
+  return link;
+}
+
+function setupShowQR() {
+  const box = $('setup-qr-out');
+  const link = scoutLinkFromStorage();
+  if (!link) { setupSay('setup-conn-msg', 'Connect the sheet first, in the step above.', 'err'); return; }
+  box.innerHTML = '';
+  box.classList.remove('hidden');
+  if (typeof qrcode !== 'function') { box.textContent = 'QR library not loaded — use COPY SCOUT LINK instead.'; return; }
+  try {
+    const qr = qrcode(0, 'M'); qr.addData(link); qr.make();
+    const count = qr.getModuleCount(), quiet = 4, cell = Math.max(2, Math.floor(300 / (count + quiet * 2)));
+    const dim = cell * (count + quiet * 2);
+    const c = document.createElement('canvas'); c.width = dim; c.height = dim;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, dim, dim);
+    ctx.fillStyle = '#1F1F1F';
+    for (let r = 0; r < count; r++) for (let k = 0; k < count; k++) if (qr.isDark(r, k)) ctx.fillRect((k + quiet) * cell, (r + quiet) * cell, cell, cell);
+    c.style.cssText = 'width:100%;max-width:260px;height:auto;image-rendering:pixelated;';
+    box.appendChild(c);
+    const p = document.createElement('p');
+    p.className = 'setup-dim';
+    p.style.marginTop = '8px';
+    p.textContent = 'Scouters scan this to connect. Anyone holding it can submit matches, so share it inside your team only.';
+    box.appendChild(p);
+    setupState.done.share = true; saveSetupState(); refreshSetupUI();
+  } catch (e) { box.textContent = 'Could not build the QR — use COPY SCOUT LINK instead.'; }
+}
+
+function handleSetupAction(act, stepId) {
+  if (act.indexOf('open:') === 0) { window.open(act.slice(5), '_blank', 'noopener'); return; }
+  switch (act) {
+    case 'copyscript': copyScriptCode(); break;
+    case 'openscript': window.open(SCRIPT_URL, '_blank', 'noopener'); break;
+    case 'recheck': renderSetup(); refreshSetupUI(); break;
+    case 'qronly':
+      setupState.done.connect = true; saveSetupState();
+      setupSay('setup-conn-state', 'Fine. Scout the match, tap GENERATE, and show the QR code to your host so they can scan it into the spreadsheet.', 'ok');
+      refreshSetupUI();
+      break;
+    case 'mictest': setupMicTest(); break;
+    case 'micskip':
+      setupState.done.mic = true; saveSetupState();
+      setupSay('setup-mic-out', 'No problem. Type your match into the big box and every feature works the same.', 'ok');
+      refreshSetupUI();
+      break;
+    case 'practice': closeSetup(); runPracticeMatch(); break;
+    case 'savetest': setupSaveTest(); break;
+    case 'copylink': {
+      const link = scoutLinkFromStorage();
+      if (!link) { setupSay('setup-conn-msg', 'Connect the sheet first, in the step above.', 'err'); return; }
+      navigator.clipboard.writeText(link).then(
+        () => { setupState.done.share = true; saveSetupState(); refreshSetupUI(); alert('Scout link copied. Paste it into your team chat.'); },
+        () => { window.prompt('Copy this link and send it to your scouters:', link); }
+      );
+      break;
+    }
+    case 'showqr': setupShowQR(); break;
+    case 'builder': closeSetup(); openBuilder(); break;
+    case 'sheetdlg': closeSetup(); openSheetDialog(); break;
+    case 'savetba': {
+      const v = ($('setup-tba').value || '').trim();
+      if (v.length < 20) { setupSay('setup-tba-msg', 'That does not look like a full key. Copy the whole thing from the Read API Keys section.', 'err'); return; }
+      try { localStorage.setItem('tba_key', v); } catch (e) {}
+      if ($('tba-key')) $('tba-key').value = v;
+      setupSay('setup-tba-msg', '✓ Saved. Set the event code on the main form, then use LOAD MATCH SCHEDULE in SHEET settings to pull the schedule.', 'ok');
+      refreshSetupUI();
+      break;
+    }
+  }
+}
+
+function runPracticeMatch() {
+  const btn = $('btn-sample');
+  if (btn) btn.click();
+  setTimeout(() => { const p = $('btn-process'); if (p && !p.disabled) p.click(); }, 250);
+  setTimeout(() => {
+    const fc = $('fields-container');
+    if (fc) fc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 700);
+  setupState.done.practice = true; saveSetupState(); refreshSetupUI();
+}
+
+function markStep(id, val) {
+  setupState.done[id] = val;
+  saveSetupState();
+  refreshSetupUI();
+}
+
+// ---------------------------------------------------------------- shell
+
+function openSetup() {
+  loadSetupState();
+  renderSetup();
+  $('setup-overlay').classList.remove('hidden');
+  document.body.classList.add('no-scroll');
+}
+function closeSetup() {
+  $('setup-overlay').classList.add('hidden');
+  document.body.classList.remove('no-scroll');
+  if (setupRec) { try { setupRec.stop(); } catch (e) {} setupRec = null; }
+  refreshSetupUI();
+}
+
+// Update the open wizard's ticks and progress without rebuilding it, so a
+// half-typed URL or key in a step doesn't get wiped out mid-edit.
+function refreshSetupProgress() {
+  const track = $('setup-track');
+  if (!track || track.classList.contains('hidden')) return;
+  const byId = {};
+  setupSteps().forEach((st) => { byId[st.id] = st; });
+  document.querySelectorAll('#setup-steps .setup-step').forEach((card) => {
+    const st = byId[card.getAttribute('data-step-id')];
+    if (!st) return;
+    const ok = stepDone(st);
+    card.classList.toggle('setup-ok', ok);
+    const num = card.querySelector('.setup-num');
+    if (num) num.innerHTML = ok ? '&#10003;' : card.getAttribute('data-step-num');
+    const mark = card.querySelector('[data-sdone]');
+    if (mark) mark.innerHTML = ok ? '&#8617; NOT DONE YET' : '&#10003; MARK THIS DONE';
+  });
+  const { done, total } = setupCounts();
+  $('setup-progress-bar').style.width = (total ? (done / total) * 100 : 0) + '%';
+  $('setup-progress-text').textContent = done + ' of ' + total + ' done';
+  $('setup-done-banner').classList.toggle('hidden', done < total);
+}
+
+function refreshSetupUI() {
+  refreshSetupProgress();
+  const badge = $('setup-badge'), strip = $('ready-strip');
+  if (!badge || !strip) return;
+  if (!setupState.role) {
+    badge.textContent = '!';
+    badge.classList.remove('hidden');
+    strip.classList.toggle('hidden', !!setupState.hideStrip);
+    $('ready-title').textContent = 'Start here';
+    $('ready-sub').textContent = 'Tell the app whether you are a scouter or the host and it walks you through the rest.';
+    $('btn-ready-go').textContent = 'OPEN SETUP';
+    return;
+  }
+  const { done, total } = setupCounts();
+  const left = total - done;
+  if (left > 0) {
+    badge.textContent = String(left);
+    badge.classList.remove('hidden');
+    strip.classList.toggle('hidden', !!setupState.hideStrip);
+    $('ready-title').textContent = left + (left === 1 ? ' step left' : ' steps left');
+    $('ready-sub').textContent = setupState.role === 'host'
+      ? 'Finish setup so your scouters’ matches land in the spreadsheet.'
+      : 'Finish setup so your matches send themselves.';
+    $('btn-ready-go').textContent = 'FINISH SETUP';
+  } else {
+    badge.classList.add('hidden');
+    strip.classList.add('hidden');
+  }
+}
+
+function wireSetup() {
+  loadSetupState();
+  $('btn-setup').addEventListener('click', openSetup);
+  $('btn-setup-close').addEventListener('click', closeSetup);
+  $('setup-overlay').addEventListener('click', (e) => { if (e.target === $('setup-overlay')) closeSetup(); });
+  $('btn-setup-back').addEventListener('click', () => {
+    setupState.role = ''; saveSetupState(); renderSetup(); refreshSetupUI();
+  });
+  $('btn-ready-go').addEventListener('click', openSetup);
+  $('btn-ready-hide').addEventListener('click', () => {
+    setupState.hideStrip = true; saveSetupState();
+    $('ready-strip').classList.add('hidden');
+  });
+
+  document.querySelectorAll('.setup-role').forEach((b) => {
+    b.addEventListener('click', () => {
+      setupState.role = b.getAttribute('data-role');
+      setupState.hideStrip = false;
+      saveSetupState();
+      renderSetup();
+      refreshSetupUI();
+    });
+  });
+
+  $('setup-steps').addEventListener('click', (e) => {
+    const a = e.target.closest('[data-sact]');
+    if (a) { handleSetupAction(a.getAttribute('data-sact'), a.getAttribute('data-step')); return; }
+    const d = e.target.closest('[data-sdone]');
+    if (d) { const id = d.getAttribute('data-sdone'); markStep(id, !setupState.done[id]); }
+  });
+
+  $('setup-steps').addEventListener('change', (e) => {
+    const inp = e.target.closest('[data-sinput]');
+    if (!inp) return;
+    const st = setupSteps().find((s) => s.id === inp.getAttribute('data-sinput'));
+    if (!st || !st.input) return;
+    const v = inp.value.trim();
+    try { localStorage.setItem(st.input.key, v); } catch (err) {}
+    fields[st.input.field] = v;
+    renderAllFields();
+    updateGenerateButton();
+    refreshSetupUI();
+  });
+
+  // Very first visit: open the wizard instead of dropping people into a blank form.
+  if (!setupState.role && !ls('sheet_endpoint') && !ls('scout_name')) {
+    setTimeout(openSetup, 400);
+  }
+}
+
 async function init() {
   // Load config (a custom one the host built for this season, else the built-in game)
   try {
@@ -2302,6 +2926,8 @@ async function init() {
   flushQueue();
   initGoogleSignIn();
   registerServiceWorker();
+  wireSetup();
+  refreshSetupUI();
 }
 
 document.addEventListener('DOMContentLoaded', init);

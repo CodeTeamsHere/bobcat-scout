@@ -16,6 +16,24 @@ The app lives at **https://codeteamshere.github.io/bobcat-scout** — anyone can
 
 ---
 
+## Fastest path: the built-in setup wizard
+
+You do not have to read this whole file. Open the app, tap **⚡ SETUP** at the top, and pick whether you
+are a Scouter or the Host. It walks you down a numbered checklist, ticks off each step as you finish it,
+and remembers where you stopped.
+
+| | Scouter track | Host track |
+|---|---|---|
+| **Time** | About 2 minutes, once | About 15 minutes, once |
+| **Steps** | Name → event code → connection check → mic test → one practice match | Sheet → script → authorize → passcode → deploy → connect and live-test → share the link |
+| **Nice touches** | A real mic test that shows what it heard, plus an "I will type instead" escape hatch | Copies the whole Apps Script to your clipboard, opens the right Google pages, and sends a real test row so you know it worked |
+| **Optional extras** | — | Build this year's form from the game manual, auto-fill team numbers from The Blue Alliance, lock submissions to your team's Google accounts |
+
+Everything below is the same information written out longhand, for when you want to read ahead or
+follow along on a second screen.
+
+---
+
 # How it works & who can access what
 
 Scouters can **send** matches into your Sheet, but they **never get access to the Sheet itself** — they can't open it, read other rows, or edit anything. Here's the path every match takes:
