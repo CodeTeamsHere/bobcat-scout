@@ -16,6 +16,24 @@ numbered checklist — copying the Apps Script for you, opening the right Google
 test row so you know the connection actually works. A scouter is done in about two minutes; a host in
 about fifteen, once.
 
+## Running the tests
+
+The voice parser is the part that fails quietly — a pattern that stops matching does not
+throw, it just leaves a field blank or fills the wrong one. There is a regression suite for it:
+
+```bash
+node tools/test-parser.js
+```
+
+It needs no dependencies and runs in under a second. Add a case whenever you touch a pattern
+in `parseTranscript`.
+
+To run the app locally with no browser caching (so an edit shows up on reload):
+
+```bash
+python tools/devserver.py
+```
+
 Longer written guides: **[HOW-TO-USE.md](HOW-TO-USE.md)** (roles and data flow),
 **[SETUP-SHEET.md](SETUP-SHEET.md)** (the Google Sheet in detail),
 **[PILOT-PROPOSAL.md](PILOT-PROPOSAL.md)** (the honest pitch for adopting it, including what it is not).

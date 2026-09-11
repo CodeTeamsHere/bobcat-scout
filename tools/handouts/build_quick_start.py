@@ -146,9 +146,9 @@ def col(x, title, items):
 y1 = col(pdf.l_margin, 'Good to know', [
     ('No signal?', 'Keep scouting. It saves everything on your phone and sends it the moment you are back online. Nothing is ever lost.'),
     ('One scouter, many matches.', 'There is no limit. Save and next, over and over, all event.'),
-    ('You cannot break anything.', 'You can only send matches in. You have no access to the spreadsheet itself.'),
 ])
 y2 = col(pdf.l_margin + colw + 8, 'If something goes wrong', [
+    ('Nothing being heard?', 'Check the mute switch on your headset cable first. The Logitech H390 has one, and it is the most common cause.'),
     ('Mic does nothing?', 'On iPhone open the link in Safari, not Chrome. On a computer use Chrome, Edge, or Safari. Firefox has no voice.'),
     ('Browser blocked it?', 'Tap the lock icon next to the web address, allow the microphone, then reload.'),
     ('Still stuck?', 'Type into the big box instead and carry on. Every feature works the same.'),

@@ -60,9 +60,125 @@ function generateTSV(fieldVals, withHeader) {
 // Same logic as the React prototype, ported to plain JS.
 // =====================================================================
 
+// ---------------------------------------------------------------------
+// Spoken numbers. Browser speech recognition hands back "four in auto" and
+// "team one seventy seven" at least as often as it hands back digits, so
+// every number pattern below would miss unless we digitise them first.
+// ---------------------------------------------------------------------
+
+const NUM_UNITS = {
+  zero: 0, oh: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6,
+  seven: 7, eight: 8, nine: 9
+};
+const NUM_TEENS = {
+  ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15,
+  sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19
+};
+const NUM_TENS = {
+  twenty: 20, thirty: 30, forty: 40, fourty: 40, fifty: 50, sixty: 60,
+  seventy: 70, eighty: 80, ninety: 90
+};
+// "one" on its own is usually the word, not the number ("no one climbed").
+const BARE_ONE_GUARD = /^(no|any|each|some|every|only|which|that|another|either|neither)$/;
+
+function numWordValue(w) {
+  if (w in NUM_UNITS) return NUM_UNITS[w];
+  if (w in NUM_TEENS) return NUM_TEENS[w];
+  if (w in NUM_TENS) return NUM_TENS[w];
+  return null;
+}
+
+/* Turn runs of number words into digits.
+
+   Team numbers are read the way people actually say them — as chunks that get
+   concatenated, not summed. "one seventy seven" is 177, not 78. "eleven
+   fourteen" is 1114. "two fifty four" is 254. Plain counts fall out of the
+   same rule: "four" -> 4, "eighteen" -> 18, "twenty one" -> 21.
+   "hundred" and "thousand" are handled as multipliers so "eleven hundred
+   fourteen" also lands on 1114. */
+function normalizeNumberWords(text) {
+  const tokens = text.split(/(\s+|[,.;!?])/);
+  const out = [];
+  let i = 0;
+
+  const wordAt = (k) => (tokens[k] || '').toLowerCase().replace(/[^a-z]/g, '');
+  const isSep = (k) => /^(\s+|[,.;!?])$/.test(tokens[k] || '');
+
+  while (i < tokens.length) {
+    if (isSep(i) || !tokens[i]) { out.push(tokens[i]); i++; continue; }
+
+    const w = wordAt(i);
+    if (numWordValue(w) === null && w !== 'hundred' && w !== 'thousand') {
+      out.push(tokens[i]); i++; continue;
+    }
+
+    // Walk the whole run of number words (separators inside the run are skipped,
+    // but a comma or period ends it — "team 177, match 14" must stay two numbers).
+    const runStart = i;
+    const chunks = [];
+    let guarded = false;
+    let j = i;
+    while (j < tokens.length) {
+      if (/^[,.;!?]$/.test(tokens[j])) break;
+      if (isSep(j)) { j++; continue; }
+      const a = wordAt(j);
+      const av = numWordValue(a);
+      if (av === null && a !== 'hundred' && a !== 'thousand') break;
+
+      if (a === 'hundred' || a === 'thousand') {
+        const mult = a === 'hundred' ? 100 : 1000;
+        const prev = chunks.pop();
+        chunks.push(String((prev ? parseInt(prev, 10) : 1) * mult));
+        j++;
+        continue;
+      }
+
+      // tens + unit reads as one chunk: "seventy seven" -> 77
+      if (a in NUM_TENS) {
+        let k = j + 1;
+        while (k < tokens.length && isSep(k) && !/^[,.;!?]$/.test(tokens[k])) k++;
+        const b = wordAt(k);
+        if (b && b in NUM_UNITS && NUM_UNITS[b] !== 0) {
+          chunks.push(String(NUM_TENS[a] + NUM_UNITS[b]));
+          j = k + 1;
+          continue;
+        }
+      }
+      if (a === 'one' && chunks.length === 0) {
+        // is this a lone "one" used as a pronoun?
+        let p = runStart - 1;
+        while (p >= 0 && isSep(p)) p--;
+        if (p >= 0 && BARE_ONE_GUARD.test(wordAt(p))) { guarded = true; break; }
+      }
+      chunks.push(String(av));
+      j++;
+    }
+
+    if (guarded || !chunks.length) { out.push(tokens[i]); i++; continue; }
+
+    // A run that is a single small value stays a single value; longer runs
+    // concatenate, which is how team numbers are spoken.
+    let digits = chunks.length === 1 ? chunks[0] : chunks.join('');
+    // strip the padding "eleven hundred" leaves behind: 1100 + 14 -> 1114
+    if (chunks.length > 1 && /00$/.test(chunks[0])) {
+      const head = parseInt(chunks[0], 10);
+      const tail = chunks.slice(1).join('');
+      if (tail.length <= String(head).length - 1) {
+        digits = String(head + parseInt(tail, 10));
+      }
+    }
+    out.push(digits);
+    // the run swallowed the whitespace that ended it; put one space back so
+    // "one one one four on blue" stays "1114 on blue", not "1114on blue"
+    if (j > 0 && isSep(j - 1) && !/^[,.;!?]$/.test(tokens[j - 1])) out.push(' ');
+    i = j;
+  }
+  return out.join('');
+}
+
 function parseTranscript(text, initialState) {
   const original = text;
-  const t = text.toLowerCase();
+  const t = normalizeNumberWords(text.toLowerCase());
   const result = Object.assign({}, initialState);
   const conf = {};
 
@@ -122,6 +238,8 @@ function parseTranscript(text, initialState) {
   const teamPatterns = [
     /team\s*(?:number|#)?\s*(\d{1,5})\b/i,
     /\bscouting\s+(?:team\s+)?(\d{2,5})\b/i,
+    // terse call: "177 red 2" / "1114 on blue"
+    /\b(\d{1,5})\s+(?:on\s+)?(?:red|blue)\b/i,
   ];
   for (const p of teamPatterns) {
     const m = t.match(p);
@@ -151,7 +269,9 @@ function parseTranscript(text, initialState) {
   const stationPatterns = [
     /driver\s*station\s*(\d)/i,
     /station\s*(\d)/i,
-    /(?:red|blue)\s*(\d)\b/i,
+    // \b matters: without it "scored 3" matches as "red 3" and silently
+    // sets the driver station on any sentence containing a score.
+    /\b(?:red|blue)\s*(\d)\b/i,
     /\bd\s*(\d)\b/i,
   ];
   for (const p of stationPatterns) {
@@ -191,20 +311,40 @@ function parseTranscript(text, initialState) {
   }
 
   // ---- Auto scoring ----
+  // The count is said before the word "auto" as often as after it
+  // ("four in auto" vs "in auto they made four"), so check both directly
+  // instead of only scanning forward from the keyword.
+  // The gap is letters-only on purpose. \w would let "team 177 scored 3 in
+  // auto" match starting at 177 and record the team number as the score.
+  const AUTO_BEFORE = /(\d+)\s+(?:[a-z]+\s+){0,2}?(?:in|during|for)\s+(?:the\s+)?auto(?:nomous)?\b/i;
+  const AUTO_AFTER = /\bauto(?:nomous)?\b(?:[^.?!]{0,60}?)(?:made|scored|put in|hit|got|sank|banked)\s*(\d+)/i;
+  const autoHit = t.match(AUTO_BEFORE) || t.match(AUTO_AFTER);
+  if (autoHit) { result.autoHubMade = parseInt(autoHit[1]); conf.autoHubMade = 'high'; }
+
   const autoSection = t.match(/\b(auto|autonomous)\b[\s\S]{0,200}/i);
   if (autoSection) {
     const as = autoSection[0];
-    const autoMade = as.match(/(?:made|scored|put in|hit)\s*(\d+)/i) || as.match(/(\d+)\s*(?:in auto|made|scored)/i);
-    if (autoMade) { result.autoHubMade = parseInt(autoMade[1]); conf.autoHubMade = 'high'; }
-    if (/\b(left|mobility|leave|exit)\b/i.test(as)) { result.autoLeft = true; conf.autoLeft = 'high'; }
+    if (conf.autoHubMade === undefined) {
+      const autoMade = as.match(/(?:made|scored|put in|hit)\s*(\d+)/i) || as.match(/(\d+)\s*(?:in auto|made|scored)/i);
+      if (autoMade) { result.autoHubMade = parseInt(autoMade[1]); conf.autoHubMade = 'high'; }
+    }
+    // "left the line" yes; "started on the left" no
+    if (/\b(?:left|leave|exited|exit)\s*(?:the\s*)?(?:line|tarmac|zone|community|starting)?\b/i.test(as)
+        && !/\b(?:on|from|to)\s+the\s+left\b/i.test(as)) { result.autoLeft = true; conf.autoLeft = 'high'; }
+    else if (/\bmobility\b/i.test(as)) { result.autoLeft = true; conf.autoLeft = 'high'; }
     if (/\bclimb(ed)?\s*(in\s*auto|level\s*1|l1|low\s*rung)/i.test(as)) {
       result.autoClimb = 'level1'; conf.autoClimb = 'high';
     }
   }
 
   // ---- Teleop ----
+  const TELE_BEFORE = /(\d+)\s+(?:[a-z]+\s+){0,2}?(?:in|during)\s+(?:the\s+)?tele\s*-?\s*op(?:erated)?\b/i;
+  const TELE_AFTER = /\btele\s*-?\s*op(?:erated)?\b(?:[^.?!]{0,60}?)(?:made|scored|put in|hit|got|sank|banked)\s*(\d+)/i;
+  const teleHit = t.match(TELE_BEFORE) || t.match(TELE_AFTER);
+  if (teleHit) { result.teleopHubMade = parseInt(teleHit[1]); conf.teleopHubMade = 'high'; }
+
   const teleopIdx = t.search(/\b(teleop|tele op|teleoperated)\b/i);
-  if (teleopIdx >= 0) {
+  if (teleopIdx >= 0 && conf.teleopHubMade === undefined) {
     const ts = t.slice(teleopIdx, teleopIdx + 400);
     // "made 18", "scored 18", "18 made", "got 18 in"
     const teleMade = ts.match(/(?:made|scored|put in|hit)\s*(\d+)/i) || ts.match(/(\d+)\s*(?:made|scored|in the hub)/i);
@@ -216,15 +356,28 @@ function parseTranscript(text, initialState) {
     result.noShow = true; conf.noShow = 'high';
   }
 
+  // Sentiment has to stay inside its own clause. A flat character window lets
+  // "passing was amazing, driver was rough" rate the driver a 5, so stop at
+  // the nearest comma or full stop on each side.
+  const clauseWindow = (idx, len, back, fwd) => {
+    let a = Math.max(0, idx - back);
+    let b = Math.min(t.length, idx + len + fwd);
+    const left = t.slice(a, idx);
+    const lb = Math.max(left.lastIndexOf(','), left.lastIndexOf('.'), left.lastIndexOf(';'));
+    if (lb >= 0) a += lb + 1;
+    const right = t.slice(idx + len, b);
+    const rb = right.search(/[,.;!?]/);
+    if (rb >= 0) b = idx + len + rb;
+    return t.slice(a, b);
+  };
+
   // ---- Passing & pickup effectiveness (1–5 from sentiment near keyword) ----
   const rateAround = (keywords) => {
     for (const kw of keywords) {
       const re = new RegExp(kw, 'gi');
       let m;
       while ((m = re.exec(t)) !== null) {
-        const start = Math.max(0, m.index - 60);
-        const end = Math.min(t.length, m.index + m[0].length + 60);
-        const ctx = t.slice(start, end);
+        const ctx = clauseWindow(m.index, m[0].length, 40, 50);
         if (/\bpretty\s+good\b/i.test(ctx)) return 4;
         if (/\b(amazing|incredible|elite|insane|fantastic|excellent|perfect|flawless|great|awesome)\b/i.test(ctx)) return 5;
         if (/\bgood\b/i.test(ctx)) return 5;
@@ -242,7 +395,10 @@ function parseTranscript(text, initialState) {
   if (passRating !== null) { result.passingEffectiveness = passRating; conf.passingEffectiveness = 'high'; }
 
   // ---- Fallback ----
-  if (conf.teleopHubMade === undefined && conf.autoHubMade === undefined) {
+  // Only guess "teleop" for a bare count when auto was never mentioned —
+  // otherwise "scored 2 in auto" silently lands in the wrong column.
+  if (conf.teleopHubMade === undefined && conf.autoHubMade === undefined
+      && !/\bauto(?:nomous)?\b/i.test(t)) {
     const anyMade = t.match(/(?:made|scored)\s*(\d+)/i);
     if (anyMade) { result.teleopHubMade = parseInt(anyMade[1]); conf.teleopHubMade = 'medium'; }
   }
@@ -253,9 +409,14 @@ function parseTranscript(text, initialState) {
   if (/\b(floor|ground|off the ground|loose fuel|scooped|neutral zone)\b/i.test(t)) { result.pickedFromFloor = true; conf.pickedFromFloor = 'high'; }
 
   // ---- Endgame climb ----
-  if (/\blevel\s*3\b|\bl3\b|\bhigh rung\b/i.test(t)) { result.endgameClimb = 'level3'; conf.endgameClimb = 'high'; }
-  else if (/\blevel\s*2\b|\bl2\b|\bmid rung\b/i.test(t)) { result.endgameClimb = 'level2'; conf.endgameClimb = 'high'; }
-  else if (/\blevel\s*1\b|\bl1\b|\blow rung\b/i.test(t)) { result.endgameClimb = 'level1'; conf.endgameClimb = 'high'; }
+  // "climbed high" is how scouters actually say it, so match the bare
+  // high/mid/low wording as well as the rung/level phrasing.
+  const CLIMB_L3 = /\blevel\s*3\b|\bl3\b|\b(?:high|top)\s*(?:rung|bar)\b|\bclimb(?:ed|ing)?\s*(?:up\s*)?(?:to\s*)?(?:the\s*)?(?:high|top)\b|\bhigh\s*climb\b/i;
+  const CLIMB_L2 = /\blevel\s*2\b|\bl2\b|\b(?:mid|middle)\s*(?:rung|bar)\b|\bclimb(?:ed|ing)?\s*(?:up\s*)?(?:to\s*)?(?:the\s*)?(?:mid|middle)\b|\bmid\s*climb\b/i;
+  const CLIMB_L1 = /\blevel\s*1\b|\bl1\b|\blow\s*(?:rung|bar)\b|\bclimb(?:ed|ing)?\s*(?:up\s*)?(?:to\s*)?(?:the\s*)?low\b|\blow\s*climb\b/i;
+  if (CLIMB_L3.test(t)) { result.endgameClimb = 'level3'; conf.endgameClimb = 'high'; }
+  else if (CLIMB_L2.test(t)) { result.endgameClimb = 'level2'; conf.endgameClimb = 'high'; }
+  else if (CLIMB_L1.test(t)) { result.endgameClimb = 'level1'; conf.endgameClimb = 'high'; }
   else if (/\bparked\b/i.test(t)) { result.endgameClimb = 'parked'; conf.endgameClimb = 'high'; }
   else if (/\b(tried to climb|attempted.*climb|climb.*fail|fell off)\b/i.test(t)) { result.endgameClimb = 'attempted_failed'; conf.endgameClimb = 'high'; }
   else if (/\bno climb|didn't climb|did not climb\b/i.test(t)) { result.endgameClimb = 'none'; conf.endgameClimb = 'high'; }
@@ -266,7 +427,7 @@ function parseTranscript(text, initialState) {
   const driverMention = t.match(/\bdriv(?:er|ing|e)\b|\bdrove\b/i);
   if (driverMention) {
     const di = driverMention.index;
-    const dctx = t.slice(Math.max(0, di - 40), Math.min(t.length, di + driverMention[0].length + 40));
+    const dctx = clauseWindow(di, driverMention[0].length, 30, 40);
     if (/\b(elite|amazing|incredible|insane|fantastic|flawless|phenomenal)\b/i.test(dctx)) { result.driverSkill = 5; conf.driverSkill = 'high'; }
     else if (/\b(great|really good|very good|smooth|strong|excellent|clean)\b/i.test(dctx)) { result.driverSkill = 4; conf.driverSkill = 'high'; }
     else if (/\b(solid|decent|fine|okay|ok|competent|average)\b/i.test(dctx)) { result.driverSkill = 3; conf.driverSkill = 'medium'; }
@@ -457,34 +618,132 @@ function updateGenerateButton() {
 
 // =====================================================================
 // VOICE
+//
+// Two things break voice scouting in a real venue, and neither throws:
+//   1. Every mobile browser ends recognition after a few seconds of silence,
+//      whatever `continuous` says. A scouter who pauses to watch the field
+//      comes back to a mic that quietly switched itself off.
+//   2. The headset is muted at the cable, or the OS is still listening to the
+//      laptop's built-in mic. Nothing appears, and there is no clue why.
+// So: restart automatically while the scouter still wants to record, name the
+// microphone actually in use, and speak up when nothing is being heard.
 // =====================================================================
+
+let wantRecording = false;      // what the scouter asked for, vs. what the engine is doing
+let micRestarts = 0;            // consecutive restarts, to catch a restart loop
+let lastResultAt = 0;
+let silenceTimer = null;
+let micDeviceLabel = '';        // e.g. "Logitech USB Headset H390"
+let micProbed = false;
+
+const HEADSET_HINT = /headset|headphone|h390|h340|h650|usb audio|wireless|airpods|buds|bluetooth/i;
+
+/* Whenever the transcript box is emptied or replaced we must resync the
+   recogniser's buffer. Otherwise the next spoken word re-appends everything
+   that was just cleared — which, on SAVE & NEXT, drags the previous match's
+   notes into the new one. */
+function resetTranscriptBuffer() {
+  baseTranscript = $('transcript') ? $('transcript').value : '';
+  if (baseTranscript.length > 0 && !baseTranscript.endsWith(' ')) baseTranscript += ' ';
+}
 
 function setupVoice() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
     $('mic-button').disabled = true;
-    showMicError('Voice input not supported in this browser. Type into the box instead.');
+    showMicError('Voice input is not supported in this browser. On an iPhone use Safari; on a computer use Chrome, Edge or Safari. You can always type into the box instead.');
     return;
   }
   $('mic-button').addEventListener('click', () => {
-    if (isRecording) stopRecording();
+    if (wantRecording) stopRecording();
     else startRecording();
   });
+}
+
+/* Ask the browser which input it is actually going to use. The Web Speech API
+   gives no way to pick a device — it follows the system default — so the most
+   useful thing we can do is tell the scouter which one that is. */
+async function probeMicDevice() {
+  if (micProbed) return micDeviceLabel;
+  micProbed = true;
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return '';
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const track = stream.getAudioTracks()[0];
+    micDeviceLabel = (track && track.label) ? track.label : '';
+    stream.getTracks().forEach((t) => t.stop());   // release it before recognition opens its own
+  } catch (e) {
+    micDeviceLabel = '';
+  }
+  return micDeviceLabel;
+}
+
+/* If a headset is plugged in but the system default is something else, the
+   scouter will be recording crowd noise without knowing it. */
+async function headsetNotSelectedWarning() {
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return '';
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const inputs = devices.filter((d) => d.kind === 'audioinput' && d.label);
+    if (inputs.length < 2 || !micDeviceLabel) return '';
+    const usingHeadset = HEADSET_HINT.test(micDeviceLabel);
+    const headsetAvailable = inputs.some((d) => HEADSET_HINT.test(d.label));
+    if (headsetAvailable && !usingHeadset) {
+      return 'A headset is plugged in, but this device is still listening through “' +
+        micDeviceLabel + '”. Set the headset as your default microphone in your system sound settings, then reload.';
+    }
+  } catch (e) {}
+  return '';
 }
 
 function startRecording() {
   hideMicError();
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) return;
+
+  wantRecording = true;
+  micRestarts = 0;
+  lastResultAt = Date.now();
+
+  baseTranscript = $('transcript').value;
+  if (baseTranscript.length > 0 && !baseTranscript.endsWith(' ')) baseTranscript += ' ';
+
+  beginRecognition();
+  try {
+    recognition.start();
+  } catch (e) {
+    wantRecording = false;
+    showMicError('Could not start the microphone. Close any other app using it (Zoom, Meet, a recorder), then try again — or type into the box.');
+    finishRecording();
+    return;
+  }
+  setRecordingState(true);
+  showMicStatus('Listening…', 'live');
+
+  // Naming the device is best-effort and must never delay or block recording.
+  // It opens a second, short-lived audio stream, so give recognition a moment
+  // to take the microphone first — then we only look, and let go immediately.
+  setTimeout(() => { if (wantRecording) probeMicDevice().then(afterMicProbe); }, 700);
+  startSilenceWatch();
+}
+
+async function afterMicProbe() {
+  if (!wantRecording) return;
+  if (micDeviceLabel) showMicStatus('Listening through ' + micDeviceLabel, 'live');
+  const warn = await headsetNotSelectedWarning();
+  if (warn && wantRecording) showMicStatus(warn, 'warn');
+}
+
+function beginRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
   recognition.continuous = true;
   recognition.interimResults = true;
   recognition.lang = 'en-US';
 
-  baseTranscript = $('transcript').value;
-  if (baseTranscript.length > 0 && !baseTranscript.endsWith(' ')) baseTranscript += ' ';
-
   recognition.onresult = (event) => {
+    lastResultAt = Date.now();
+    micRestarts = 0;
     let interim = '';
     let final = '';
     for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -494,33 +753,84 @@ function startRecording() {
     }
     if (final) baseTranscript += final;
     $('transcript').value = baseTranscript + interim;
+    if (wantRecording) {
+      showMicStatus(micDeviceLabel ? 'Hearing you · ' + micDeviceLabel : 'Hearing you…', 'live');
+    }
     updateProcessButton();
   };
 
   recognition.onerror = (e) => {
-    if (e.error === 'not-allowed') {
-      showMicError('Microphone permission denied. Enable it in your browser settings.');
-    } else if (e.error === 'no-speech') {
-      // silent
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      wantRecording = false;
+      showMicError('The browser blocked the microphone. Tap the lock icon next to the web address, allow the microphone, then reload. Full per-device steps are under HELP. You can type into the box instead.');
+      finishRecording();
+    } else if (e.error === 'no-speech' || e.error === 'aborted') {
+      // Normal on a pause — onend restarts us.
+    } else if (e.error === 'audio-capture') {
+      wantRecording = false;
+      showMicError('No microphone was found. Check that your headset is plugged in, then reload. You can type into the box instead.');
+      finishRecording();
+    } else if (e.error === 'network') {
+      wantRecording = false;
+      showMicError('Speech recognition needs a connection and this device is offline. Type the match in instead — everything else works offline, and your matches still queue and send later.');
+      finishRecording();
     } else {
-      showMicError('Voice error: ' + e.error + '. Type into the box instead.');
+      showMicStatus('Voice hiccup (' + e.error + '). Still listening.', 'warn');
     }
-    setRecordingState(false);
   };
 
-  recognition.onend = () => setRecordingState(false);
+  // Mobile browsers end the session on their own after a pause. Restart it so
+  // the scouter can keep talking through the whole match.
+  recognition.onend = () => {
+    if (!wantRecording) { finishRecording(); return; }
+    micRestarts++;
+    if (micRestarts > 12) {
+      wantRecording = false;
+      showMicError('Voice kept dropping out on this device. Type the match in instead — it works exactly the same.');
+      finishRecording();
+      return;
+    }
+    try {
+      beginRecognition();
+      recognition.start();
+    } catch (e) {
+      // Chrome throws if start() lands too close to the previous stop; try once more.
+      setTimeout(() => {
+        if (!wantRecording) return;
+        try { beginRecognition(); recognition.start(); }
+        catch (err) { wantRecording = false; showMicError('Could not keep the microphone open. Type into the box instead.'); finishRecording(); }
+      }, 350);
+    }
+  };
+}
 
-  try {
-    recognition.start();
-    setRecordingState(true);
-  } catch(e) {
-    showMicError('Could not start recording.');
-  }
+function startSilenceWatch() {
+  stopSilenceWatch();
+  silenceTimer = setInterval(async () => {
+    if (!wantRecording) { stopSilenceWatch(); return; }
+    const quiet = Date.now() - lastResultAt;
+    if (quiet > 9000 && !$('transcript').value.trim()) {
+      const extra = /h390|logitech/i.test(micDeviceLabel)
+        ? ' The H390 has a mute switch on the cable — check it is not muted.'
+        : ' If your headset has a mute switch or button, check it.';
+      showMicStatus('Not hearing anything yet.' + extra, 'warn');
+    }
+  }, 3000);
+}
+function stopSilenceWatch() {
+  if (silenceTimer) { clearInterval(silenceTimer); silenceTimer = null; }
 }
 
 function stopRecording() {
-  if (recognition) recognition.stop();
+  wantRecording = false;
+  if (recognition) { try { recognition.stop(); } catch (e) {} }
+  finishRecording();
+}
+
+function finishRecording() {
+  stopSilenceWatch();
   setRecordingState(false);
+  hideMicStatus();
 }
 
 function setRecordingState(rec) {
@@ -533,6 +843,18 @@ function setRecordingState(rec) {
     btn.classList.remove('recording');
     btn.setAttribute('aria-label', 'Start recording');
   }
+}
+
+function showMicStatus(msg, kind) {
+  const el = $('mic-status');
+  if (!el) return;
+  $('mic-status-text').textContent = msg;
+  el.className = 'mic-status ' + (kind === 'warn' ? 'mic-status-warn' : 'mic-status-live');
+  el.classList.remove('hidden');
+}
+function hideMicStatus() {
+  const el = $('mic-status');
+  if (el) el.classList.add('hidden');
 }
 
 function showMicError(msg) {
@@ -691,6 +1013,7 @@ function resetMatch() {
   confidence = {};
   currentMatchId = newMatchId();
   $('transcript').value = '';
+  resetTranscriptBuffer();
   $('output-section').classList.add('hidden');
   $('generate-row').classList.remove('hidden');
   const ss = $('submit-status'); if (ss) ss.classList.add('hidden');
@@ -707,6 +1030,7 @@ function clearAll() {
   confidence = {};
   currentMatchId = newMatchId();
   $('transcript').value = '';
+  resetTranscriptBuffer();
   $('output-section').classList.add('hidden');
   $('generate-row').classList.remove('hidden');
   hideMicError();
@@ -1587,6 +1911,7 @@ function applyConfig() {
   confidence = {};
   currentMatchId = newMatchId();
   if ($('transcript')) $('transcript').value = '';
+  resetTranscriptBuffer();
   renderAllFields();
   syncFormUI();
   updateProcessButton();
@@ -1838,10 +2163,12 @@ function wireUI() {
   $('btn-process').addEventListener('click', processTranscript);
   $('btn-sample').addEventListener('click', () => {
     $('transcript').value = SAMPLE_TEXT;
+    resetTranscriptBuffer();
     updateProcessButton();
   });
   $('btn-clear-transcript').addEventListener('click', () => {
     $('transcript').value = '';
+  resetTranscriptBuffer();
     updateProcessButton();
   });
   $('btn-clear-all').addEventListener('click', clearAll);
@@ -2026,6 +2353,7 @@ function setForm(form) {
   $('generate-row').classList.remove('hidden');
   const ss = $('submit-status'); if (ss) ss.classList.add('hidden');
   if ($('transcript')) $('transcript').value = '';
+  resetTranscriptBuffer();
   renderAllFields();
   syncFormUI();
   updateProcessButton();
@@ -2918,7 +3246,7 @@ async function init() {
   renderAllFields();
   wireUI();
   syncFormUI();
-  if (draft && draft.transcript) $('transcript').value = draft.transcript;
+  if (draft && draft.transcript) { $('transcript').value = draft.transcript; resetTranscriptBuffer(); }
   updateProcessButton();
   updateGenerateButton();
   updateSessionBar();

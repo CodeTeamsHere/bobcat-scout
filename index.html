@@ -105,6 +105,11 @@
           </button>
           <textarea id="transcript" placeholder='Tap mic and talk, or type. Example: "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4 in the hub and left the line. Teleop 18 scored, pickup was pretty good, passing was amazing. Climbed the mid rung. Smooth driver."'></textarea>
         </div>
+        <div id="mic-status" class="mic-status hidden" role="status" aria-live="polite">
+          <span id="mic-status-dot" class="mic-status-dot"></span>
+          <span id="mic-status-text"></span>
+        </div>
+
         <div id="mic-error" class="error-banner hidden">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
           <span id="mic-error-text"></span>
@@ -233,13 +238,15 @@
           <ul class="help-list">
             <li><strong>Keeping your eyes on the field.</strong> The real cost of tapping a form is the play you did not see while you were looking down.</li>
             <li><strong>Speed at the end of a match.</strong> One sentence fills most of the form, so you are ready before the next match is queued.</li>
+            <li><strong>It keeps listening through a pause.</strong> Every mobile browser shuts the microphone off after a few seconds of quiet. The app notices and restarts it, so you can watch a whole match and talk when you are ready.</li>
             <li><strong>Notes nobody normally writes.</strong> Saying "their intake jammed twice" takes two seconds. Typing it usually does not happen at all.</li>
           </ul>
           <h4 style="margin-top:14px;">Where it struggles, and what to do about it</h4>
           <table class="help-table">
             <thead><tr><th>The problem</th><th>What actually happens</th><th>The answer</th></tr></thead>
             <tbody>
-              <tr><td>Loud stands</td><td>Phone microphones pick up the crowd as well as you</td><td>A cheap close-talk headset fixes this. Without one, accuracy drops in a packed venue</td></tr>
+              <tr><td>Loud stands</td><td>Phone microphones pick up the crowd as well as you</td><td>A close-talk headset fixes this. We use the <strong>Logitech H390</strong>, about $34, wired USB with a boom mic. Without one, accuracy drops in a packed venue</td></tr>
+              <tr><td>Nothing is being heard</td><td>Usually the headset is muted at the cable, or the computer is still listening to its own built-in mic</td><td>The app names the microphone it is actually using while you record, and warns you if a headset is plugged in but not selected. The H390's mute switch is on the cable</td></tr>
               <tr><td>Speech recognition gets a word wrong</td><td>It will, sometimes</td><td>Nothing is ever submitted straight from your voice. The form is filled in front of you, every guessed field is badged, and you confirm it</td></tr>
               <tr><td>iPhone users</td><td>Voice only works in Safari. Chrome on iOS cannot do it</td><td>Open the link in Safari, or type. Typing works in every browser</td></tr>
               <tr><td>Firefox users</td><td>No speech recognition at all</td><td>Type, or use Chrome, Edge or Safari</td></tr>

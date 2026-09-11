@@ -21,7 +21,7 @@ It is built, it is live, and it costs nothing to run.
 | **The ask** | Two or three scouters run Bobcat Scout at one event, on the same matches as our normal scouting |
 | **What normal scouting does** | Exactly what it does today. Nothing changes. Nothing is turned off |
 | **What we get at the end** | Two records of the same matches, so we can compare speed and accuracy with real numbers instead of opinions |
-| **Cost to try it** | The software is free. The only spend is a few headsets |
+| **Cost to try it** | The software is free. The only spend is headsets, about $34 each |
 | **Risk if it fails** | None. Our existing data was never interrupted |
 
 If it wins on the numbers, we expand it next event. If it does not, we stop and we have lost nothing but a few hours of one student's time, which is already spent.
@@ -69,6 +69,10 @@ Good. Keep using it. This pilot is designed so that both run at once on the same
 ### "Speech recognition will not work in a loud venue."
 This is the single biggest real risk, and we should test it rather than argue about it. The mitigation is a close-talk headset, which is what pit crews and sportscasters use in exactly this environment. Without a headset, accuracy does drop in a packed venue. That is why headsets are the one thing this proposal actually asks the team to buy, and why the pilot is designed to measure it.
 
+**The specific headset: the Logitech H390.** It is a wired USB headset with a noise cancelling boom microphone that sits right at the corner of your mouth, which is exactly the geometry that keeps crowd noise out. It runs about **$34 each**, list price $39.99. Three of them for a pilot is roughly **$100**. A full scouting squad of six is roughly **$200**. It is wired USB, so there is no pairing, no charging, and no battery to die halfway through qualifications, and it works on a laptop out of the box.
+
+One practical note worth knowing before anyone reports it as a bug: the H390 has a **mute switch on the cable**. If a scouter says nothing appears on screen, that switch is the first thing to check. The app watches for this and says so on screen after a few seconds of silence.
+
 ### "Our scouters will not want to talk into a headset."
 Then they should type, and the app works exactly the same. Voice is an option, not a requirement, and mixed teams work fine because both paths produce identical rows. It is also worth being specific about what "talking" means here. It is not play by play. It is one short sentence after the match ends, roughly five seconds, said quietly into a headset that nobody else can hear.
 
@@ -104,7 +108,7 @@ Two checks are built in. First, it holds back a quarter of the matches, predicts
 There is a setup walkthrough built into the app. A scouter picks "I am a scouter," fills in a name and event code, tests the microphone, and runs one practice match. That is about two minutes and it happens once. Hosts get a separate walkthrough that copies the script, opens the right pages, and tests the connection live.
 
 ### "What does it actually cost?"
-The software is free forever. Hosting is free. The Blue Alliance data is free. The only real cost is headsets, and cheap noise isolating ones are enough. Phones are the ones scouters already have in their pockets.
+The software is free forever. Hosting is free. The Blue Alliance data is free. The only real cost is the headsets, at about $34 each for the Logitech H390. Three for a pilot is roughly $100, and a full squad of six is roughly $200. Phones are the ones scouters already have in their pockets, and there is nothing to renew next year.
 
 ### "Are we allowed to use this?"
 It records our own observations of public matches and reads public data from The Blue Alliance's official API using a free key. Custom scouting apps are standard practice across FRC.
@@ -131,7 +135,7 @@ At the end of the pilot event we should be able to answer these with numbers, no
 
 1. **Demo to the leads.** Fifteen minutes. Show a live match entry by voice, show the row landing in the spreadsheet, show the pick list. Take the hard questions.
 2. **Pick the pilot group.** Two or three scouters who are willing to be honest about whether it is worse.
-3. **Buy the headsets.** Small order, cheap models, one per pilot scouter.
+3. **Buy the headsets.** Three Logitech H390 units, about $100 total, one per pilot scouter.
 4. **Preseason training session.** Everyone runs the two minute in app walkthrough and does one practice match. No slides needed.
 5. **Handoff.** At least two members other than the author set the whole thing up from scratch, so the team is not dependent on one person.
 6. **First event.** Run it in parallel. Collect both datasets.

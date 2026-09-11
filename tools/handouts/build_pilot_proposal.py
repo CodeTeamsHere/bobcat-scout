@@ -178,7 +178,7 @@ table([
     ['The ask', 'Two or three scouters run Bobcat Scout at one event, on the same matches as our normal scouting'],
     ['Normal scouting', 'Does exactly what it does today. Nothing changes, nothing is turned off'],
     ['What we get', 'Two records of the same matches, so speed and accuracy are measured, not argued'],
-    ['Cost to try it', 'The software is free. The only spend is a few cheap headsets'],
+    ['Cost to try it', 'The software is free. The only spend is headsets, about $34 each'],
     ['Risk if it fails', 'None. Our existing data was never interrupted'],
 ], [34, W - 34], head=False)
 
@@ -216,7 +216,12 @@ qa('"We already have a scouting app that works."',
 qa('"Speech recognition will not work in a loud venue."',
    'This is the single biggest real risk, and we should test it rather than argue about it. Close-talk '
    'headsets are the fix, which is what pit crews use in exactly this environment. Without one, accuracy '
-   'does drop in a packed venue. That is why headsets are the one thing this proposal asks the team to buy.')
+   'does drop in a packed venue. That is why headsets are the one thing this proposal asks the team to buy. '
+   'Specifically the Logitech H390: a wired USB headset with a noise cancelling boom mic, about $34 each. '
+   'Three for a pilot is roughly $100, a full squad of six roughly $200. Wired means no pairing, no '
+   'charging, and no battery to die halfway through qualifications. Note for whoever fields the first '
+   'support question: the H390 has a mute switch on the cable, and the app now says so on screen when it '
+   'has heard nothing for a few seconds.')
 
 qa('"Our scouters will not want to talk into a headset."',
    'Then they type, and the app works the same. Mixed teams are fine because both paths write identical rows. '
@@ -258,7 +263,8 @@ qa('"How do we know the analytics are not just made up numbers?"',
 qa('"How long does training take, and what does it cost?"',
    'There is a setup walkthrough inside the app. A scouter enters a name and event code, tests the microphone, '
    'and runs one practice match. That is about two minutes, once. The software, the hosting, and the Blue '
-   'Alliance data are all free. Headsets are the only real cost, and phones are the ones scouters already carry.')
+   'Alliance data are all free. The headsets are the only real cost, about $34 each, and phones are the ones '
+   'scouters already carry. Nothing renews next year.')
 
 pdf.add_page()
 eyebrow('How we decide, measurably')
@@ -281,7 +287,7 @@ steps = [
     ('Demo to the leads', 'Fifteen minutes. A live match entry by voice, the row landing in the spreadsheet, '
                           'and the pick list. Take the hard questions.'),
     ('Pick the pilot group', 'Two or three scouters who will be honest about whether it is worse.'),
-    ('Buy the headsets', 'A small order of cheap noise-isolating models, one per pilot scouter.'),
+    ('Buy the headsets', 'Three Logitech H390 units, about $100 total, one per pilot scouter.'),
     ('Preseason training', 'Everyone runs the two-minute walkthrough inside the app and does one practice match.'),
     ('Handoff', 'At least two members other than the author set the whole thing up from scratch.'),
     ('First event', 'Run it in parallel with normal scouting. Collect both datasets.'),

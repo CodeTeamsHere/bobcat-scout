@@ -1166,3 +1166,37 @@ footer {
   .ready-text { flex: 1 1 100%; }
   .ready-strip .btn { flex: 1 1 auto; }
 }
+
+/* --- live microphone status (which device, and whether it is hearing you) --- */
+.mic-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  border: 1px solid var(--border);
+  background: var(--cream);
+  color: var(--gray);
+}
+.mic-status-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--gray);
+}
+.mic-status-live { background: var(--success-bg); border-color: #cfe6d7; color: var(--success); }
+.mic-status-live .mic-status-dot { background: #46d369; animation: micPulse 1.4s ease-in-out infinite; }
+.mic-status-warn { background: var(--gold-soft); border-color: var(--gold); color: var(--warning); }
+.mic-status-warn .mic-status-dot { background: var(--gold-bright); }
+
+@keyframes micPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: .45; transform: scale(.8); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mic-status-live .mic-status-dot { animation: none; }
+}

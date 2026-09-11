@@ -142,6 +142,15 @@ fill(c, {
     'Text 10': 'Normal scouting never stops, so nothing is lost if we say no.',
 })
 
+# name the actual headset on the existing "what we need to run it" slide
+gear = prs.slides[6]
+fill(gear, {
+    'Text 1': 'About $100 to try it.',
+    'Text 5': '$34',
+    'Text 6': 'Logitech H390',
+    'Text 7': 'Wired USB, noise cancelling boom mic. No pairing, no battery.',
+})
+
 # widen the narrow boxes the cloned text now overflows
 from pptx.util import Inches
 for name, w in (('Text 5', Inches(3.0)), ('Text 11', Inches(3.0))):
