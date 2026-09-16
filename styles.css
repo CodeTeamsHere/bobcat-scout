@@ -822,8 +822,6 @@ footer {
 /* Match / Pit mode toggle */
 /* Pit scouting removed — just game (match) scouting on one page.
    (Hidden, not deleted, so it can be flipped back on later if ever needed.) */
-.mode-bar { display: none; }
-#bf-pit { display: none; }
 .mode-btn {
   flex: 1; padding: 12px; border: 1px solid var(--border); background: var(--white);
   color: var(--gray); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; border-radius: 2px;
@@ -832,56 +830,21 @@ footer {
 .mode-btn.mode-active { background: var(--maroon); color: var(--white); border-color: var(--maroon); }
 
 /* Form builder */
-.b-formsel { display: flex; gap: 8px; margin-bottom: 14px; }
-.b-formsel-btn {
   flex: 1; padding: 10px; border: 1px solid var(--border); background: var(--white); color: var(--gray);
   font-size: 11px; font-weight: 700; letter-spacing: 1px; border-radius: 2px;
 }
-.b-formsel-btn.b-mode-active { background: var(--maroon); color: var(--white); border-color: var(--maroon); }
-.b-section { border: 1px solid var(--border); border-radius: 4px; padding: 12px; margin-bottom: 12px; background: var(--cream); }
-.b-sec-head { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
-.b-sec-name { flex: 1; font-weight: 700; padding: 8px 10px; border: 1px solid var(--border); border-radius: 2px; font-size: 13px; }
-.b-field {
   display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
   padding: 8px; background: var(--white); border: 1px solid var(--border); border-radius: 2px; margin-bottom: 6px;
 }
-.b-field .b-title { flex: 2; min-width: 140px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 2px; font-size: 13px; }
-.b-field .b-type { flex: 1; min-width: 110px; padding: 7px; border: 1px solid var(--border); border-radius: 2px; font-size: 12px; }
-.b-field .b-opts { flex: 1 1 100%; min-height: 54px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 2px; font-size: 12px; resize: vertical; }
-.b-minmax { font-size: 11px; color: var(--gray); display: inline-flex; align-items: center; gap: 4px; }
-.b-mm { width: 56px; padding: 6px; border: 1px solid var(--border); border-radius: 2px; font-size: 12px; }
-.b-req { font-size: 11px; color: var(--gray); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
-.b-icon { width: 30px; height: 30px; border: 1px solid var(--border); background: var(--white); border-radius: 2px; color: var(--gray); font-size: 13px; flex-shrink: 0; }
-.b-icon:hover { background: var(--cream); }
-.b-icon.b-del { color: var(--error); border-color: var(--error); }
-.b-add { width: 100%; margin-top: 4px; }
-.b-add-sec { width: 100%; }
-.b-paste { margin-top: 14px; font-size: 13px; color: var(--gray); }
-.b-paste summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
-.b-paste textarea { width: 100%; min-height: 120px; margin-top: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 2px; font-family: "SF Mono", Consolas, monospace; font-size: 12px; }
 .builder-warn { margin-top: 14px; padding: 10px 12px; border-radius: 2px; background: var(--gold-soft); color: var(--warning); font-size: 13px; line-height: 1.5; }
 
 /* per-field scoring inputs */
-.b-pts { font-size: 11px; color: var(--maroon); font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; background: var(--gold-soft); border: 1px solid var(--gold); padding: 2px 6px; border-radius: 3px; }
-.b-optpts { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; padding: 7px 8px; background: var(--gold-soft); border: 1px solid var(--gold); border-radius: 3px; }
-.b-optpt { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--maroon); font-weight: 600; }
-.b-optpt-k { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.b-optpt input { width: 50px; }
 
 /* import-from-manual card */
-.b-import { border: 1px solid var(--gold); background: linear-gradient(180deg, var(--gold-soft), #fff); border-radius: 6px; padding: 14px 16px; margin-bottom: 16px; }
-.b-import-head { font-weight: 800; color: var(--maroon); font-size: 15px; margin-bottom: 6px; }
-.b-import-sub { font-size: 13px; color: var(--gray); line-height: 1.5; margin-bottom: 10px; }
-.b-import-net { color: var(--warning); font-weight: 600; }
 #manual-text-wrap { margin-top: 10px; }
 #manual-text { width: 100%; min-height: 120px; padding: 10px; border: 1px solid var(--border); border-radius: 2px; font-size: 12px; resize: vertical; }
-.b-import-status { margin-top: 10px; padding: 8px 11px; border-radius: 2px; font-size: 13px; line-height: 1.45; background: var(--white); border: 1px solid var(--border); }
-.b-import-status.b-import-ok { color: var(--success); border-color: var(--success); background: var(--success-bg); }
-.b-import-status.b-import-err { color: var(--error); border-color: var(--error); background: var(--error-bg); }
 
 /* "review before you save" banner shown on AI/imported drafts */
-.b-review-banner { position: sticky; top: 0; z-index: 5; margin: 0 0 12px; padding: 10px 13px; border-radius: 4px; font-size: 13px; line-height: 1.5; color: var(--warning); background: var(--gold-soft); border: 1px solid var(--gold); border-left: 4px solid var(--gold); }
-.b-review-pts { display: inline-block; font-weight: 700; color: var(--maroon); background: #fff; border: 1px solid var(--gold); border-radius: 3px; padding: 0 4px; }
 
 /* ==========================================================
    Analytics & Strategy engine (ANALYZE)
@@ -1199,4 +1162,106 @@ footer {
 }
 @media (prefers-reduced-motion: reduce) {
   .mic-status-live .mic-status-dot { animation: none; }
+}
+
+/* =====================================================================
+   FIELD TYPES that mirror the team's QRScout form
+   ===================================================================== */
+
+/* Some controls want the full width of the grid, not one narrow column. */
+.field-wide { grid-column: 1 / -1; }
+
+.field-help {
+  display: block;
+  margin: -2px 0 6px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--gray);
+}
+
+/* --- big +/- counter: readable and hittable without looking down --- */
+.counter {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--white);
+  padding: 12px;
+}
+.count-value {
+  text-align: center;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--maroon);
+  font-variant-numeric: tabular-nums;
+}
+.count-pad {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.count-btn {
+  min-height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--charcoal);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  touch-action: manipulation;
+}
+.count-btn:active { transform: translateY(1px); }
+.count-btn.count-plus {
+  background: var(--maroon);
+  border-color: var(--maroon);
+  color: var(--white);
+}
+
+/* --- multi-select chips: faster than a dropdown with gloves on --- */
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  padding: 9px 13px;
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--charcoal);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  touch-action: manipulation;
+}
+.chip:hover { border-color: var(--maroon); }
+.chip-on {
+  background: var(--maroon);
+  border-color: var(--maroon);
+  color: var(--white);
+  font-weight: 600;
+}
+
+/* --- free-text notes --- */
+.field-wide textarea {
+  width: 100%;
+  padding: 11px 12px;
+  font-size: 16px;                 /* 16px keeps iOS from zooming on focus */
+  font-family: inherit;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--charcoal);
+  resize: vertical;
+}
+.field-wide textarea:focus {
+  outline: none;
+  border-color: var(--maroon);
+  box-shadow: 0 0 0 3px rgba(123, 31, 43, .1);
+}
+
+@media (max-width: 480px) {
+  .count-value { font-size: 40px; }
+  .count-btn { min-height: 52px; font-size: 16px; }
+  .chip { min-height: 42px; }
 }

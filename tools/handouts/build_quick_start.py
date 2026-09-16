@@ -74,11 +74,11 @@ steps = [
     ('Open the link your host sent you',
      'Or scan the code on the right. Then use your browser menu and Add to Home Screen so it opens like a normal app.'),
     ('Tap the SETUP button at the top',
-     'Choose "I am a scouter". It asks for your name and the event code, tests your microphone, and runs one practice match with you.'),
+     'Choose "I am a scouter". It asks for your name, tests your microphone, and runs one practice match with you. Everything else is already set up for you.'),
     ('Describe the match out loud, or type it',
      'Tap the maroon mic and talk in plain English. "Team 177, four in auto, climbed high, driver was smooth." Typing works exactly the same.'),
     ('Tap AUTO-FILL FIELDS and check the form',
-     'Anything the app guessed gets a small green AI badge. Tap any field to fix it. Fields with a red star are required.'),
+     'Check what it filled in and tap any field to fix it. Fields with a red star are required.'),
     ('Tap SAVE AND NEXT MATCH',
      'It saves, sends it to the team spreadsheet, and bumps the match number for you. Repeat for every match, all day.'),
 ]

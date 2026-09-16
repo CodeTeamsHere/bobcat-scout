@@ -1,95 +1,641 @@
 {
-  "title": "Bobcat Scout — REBUILT 2026",
+  "title": "REBUILT 2026",
   "delimiter": "\t",
+  "game": {
+    "name": "REBUILT",
+    "year": 2026,
+    "note": "Fields mirror Team 177's REBUILT QRScout form. Keep the codes stable — the Sheet columns and the analytics engine key on them.",
+    "display": {
+      "autoCountCode": "autoFuel",
+      "teleCountCode": "teleFuel",
+      "defenseCode": "teleDefenseEff",
+      "climbCode": "endClimbed",
+      "climbLevels": [
+        "level1",
+        "level2",
+        "level3"
+      ]
+    }
+  },
   "sections": [
     {
       "name": "Prematch",
       "fields": [
-        { "title": "Scout Name", "type": "text", "code": "scoutName", "required": true, "preserve": true, "placeholder": "Your name" },
-        { "title": "Event Key", "type": "text", "code": "eventKey", "required": true, "preserve": true, "placeholder": "2026ctwat" },
-        { "title": "Match #", "type": "number", "code": "matchNumber", "required": true, "default": 1, "min": 1, "max": 200 },
-        { "title": "Match Type", "type": "select", "code": "matchType", "default": "qm", "options": [{"k":"qm","v":"Qualification"},{"k":"pm","v":"Practice"},{"k":"sf","v":"Playoff"}] },
-        { "title": "Team #", "type": "number", "code": "teamNumber", "required": true, "default": 177, "min": 1, "max": 99999 },
-        { "title": "Alliance", "type": "select", "code": "alliance", "preserve": true, "default": "red", "options": [{"k":"red","v":"Red"},{"k":"blue","v":"Blue"}] },
-        { "title": "Driver Station", "type": "select", "code": "driverStation", "default": "1", "options": [{"k":"1","v":"1"},{"k":"2","v":"2"},{"k":"3","v":"3"}] },
-        { "title": "No Show", "type": "boolean", "code": "noShow", "default": false, "fail": true },
-        { "title": "Starting Position", "type": "select", "code": "startingPosition", "default": "unknown", "options": [{"k":"wall","v":"Wall side"},{"k":"center","v":"Center"},{"k":"field","v":"Field side"},{"k":"unknown","v":"Unknown"}] },
-        { "title": "Preloaded Fuel", "type": "number", "code": "preloadedFuel", "default": 0, "min": 0, "max": 8 }
+        {
+          "title": "Abbreviated Scouter Name",
+          "type": "text",
+          "code": "scoutName",
+          "required": true,
+          "preserve": true,
+          "placeholder": "Your name"
+        },
+        {
+          "title": "Event Key",
+          "type": "text",
+          "code": "eventKey",
+          "required": true,
+          "preserve": true,
+          "placeholder": "2026ctwat",
+          "help": "Set once per competition. The Sheet uses it to keep events apart."
+        },
+        {
+          "title": "Match Number",
+          "type": "number",
+          "code": "matchNumber",
+          "required": true,
+          "default": 1,
+          "min": 1,
+          "max": 200,
+          "placeholder": "Enter match number"
+        },
+        {
+          "title": "Match Type",
+          "type": "select",
+          "code": "matchType",
+          "default": "qm",
+          "options": [
+            {
+              "k": "qm",
+              "v": "Qualification"
+            },
+            {
+              "k": "pm",
+              "v": "Practice"
+            },
+            {
+              "k": "sf",
+              "v": "Playoff"
+            }
+          ]
+        },
+        {
+          "title": "Team and Robot",
+          "type": "number",
+          "code": "teamNumber",
+          "required": true,
+          "default": 177,
+          "min": 1,
+          "max": 99999,
+          "placeholder": "Enter team number"
+        },
+        {
+          "title": "Starting Position",
+          "type": "select",
+          "code": "startingPosition",
+          "required": true,
+          "default": "",
+          "help": "1, 2, 3 are red. 4, 5, 6 are blue. The alliance is worked out from this.",
+          "options": [
+            {
+              "k": "",
+              "v": "—"
+            },
+            {
+              "k": "1",
+              "v": "1 (Depot Side)"
+            },
+            {
+              "k": "2",
+              "v": "2"
+            },
+            {
+              "k": "3",
+              "v": "3 (Outpost Side)"
+            },
+            {
+              "k": "4",
+              "v": "4 (Outpost Side)"
+            },
+            {
+              "k": "5",
+              "v": "5"
+            },
+            {
+              "k": "6",
+              "v": "6 (Depot Side)"
+            }
+          ]
+        },
+        {
+          "title": "Alliance",
+          "type": "select",
+          "code": "alliance",
+          "hidden": true,
+          "preserve": true,
+          "default": "",
+          "options": [
+            {
+              "k": "",
+              "v": "—"
+            },
+            {
+              "k": "red",
+              "v": "Red"
+            },
+            {
+              "k": "blue",
+              "v": "Blue"
+            }
+          ]
+        },
+        {
+          "title": "No Show",
+          "type": "boolean",
+          "code": "noShow",
+          "fail": true
+        }
       ]
     },
     {
-      "name": "Auto",
+      "name": "Autonomous",
       "fields": [
-        { "title": "Left Starting Line", "type": "boolean", "code": "autoLeft", "default": false, "points": 3 },
-        { "title": "Auto Fuel Scored", "type": "number", "code": "autoHubMade", "default": 0, "min": 0, "points": 1 },
-        { "title": "Auto Climb", "type": "select", "code": "autoClimb", "default": "none", "options": [{"k":"none","v":"No climb"},{"k":"level1","v":"Low Rung (L1)"},{"k":"attempted_failed","v":"Attempted, failed"}], "optionPoints": {"level1": 15} }
+        {
+          "title": "Scored in Auto",
+          "type": "boolean",
+          "code": "autoScored"
+        },
+        {
+          "title": "Fuel Scored",
+          "type": "counter",
+          "code": "autoFuel",
+          "default": 0,
+          "min": 0,
+          "max": 200,
+          "steps": [
+            1,
+            5,
+            10
+          ],
+          "points": 1
+        },
+        {
+          "title": "How Scored",
+          "type": "select",
+          "code": "autoHowScored",
+          "default": "none",
+          "options": [
+            {
+              "k": "none",
+              "v": "No Scoring"
+            },
+            {
+              "k": "stationary",
+              "v": "While Stationary"
+            },
+            {
+              "k": "driving",
+              "v": "While Driving"
+            },
+            {
+              "k": "both",
+              "v": "Both"
+            }
+          ]
+        },
+        {
+          "title": "Pickup Fuel",
+          "type": "boolean",
+          "code": "autoPickup"
+        },
+        {
+          "title": "Pickup Fuel From",
+          "type": "multiselect",
+          "code": "autoPickupFrom",
+          "options": [
+            {
+              "k": "none",
+              "v": "No Pickup"
+            },
+            {
+              "k": "depot",
+              "v": "Depot"
+            },
+            {
+              "k": "midfield",
+              "v": "MidField"
+            },
+            {
+              "k": "hpzone",
+              "v": "Human Player Zone"
+            },
+            {
+              "k": "floor",
+              "v": "Floor"
+            }
+          ]
+        },
+        {
+          "title": "Climbed",
+          "type": "select",
+          "code": "autoClimbed",
+          "default": "none",
+          "options": [
+            {
+              "k": "none",
+              "v": "No Climb"
+            },
+            {
+              "k": "level1",
+              "v": "Level 1"
+            },
+            {
+              "k": "level2",
+              "v": "Level 2"
+            },
+            {
+              "k": "level3",
+              "v": "Level 3"
+            },
+            {
+              "k": "failed",
+              "v": "Failed Climb"
+            }
+          ],
+          "optionPoints": {
+            "level1": 15,
+            "level2": 20,
+            "level3": 30
+          }
+        },
+        {
+          "title": "Where Climbed",
+          "type": "select",
+          "code": "autoWhereClimbed",
+          "default": "",
+          "options": [
+            {
+              "k": "",
+              "v": "—"
+            }
+          ],
+          "needsOptions": "Dropdown was cut off in the reference screenshot — paste the real choices."
+        },
+        {
+          "title": "Double (Buddy) Climbed in Auto",
+          "type": "boolean",
+          "code": "autoBuddyClimb"
+        },
+        {
+          "title": "Auto Path",
+          "type": "multiselect",
+          "code": "autoPath",
+          "options": [
+            {
+              "k": "bump_bump_sweep",
+              "v": "Bump to Bump (sweep)"
+            },
+            {
+              "k": "trench_trench_sweep",
+              "v": "Trench to Trench (sweep)"
+            },
+            {
+              "k": "bump_trench_sweep",
+              "v": "Bump to Trench (sweep)"
+            },
+            {
+              "k": "trench_bump_sweep",
+              "v": "Trench to Bump (sweep)"
+            },
+            {
+              "k": "preload_only",
+              "v": "Shoot Pre-Load Only"
+            },
+            {
+              "k": "straight_depot",
+              "v": "Straight to Depot"
+            },
+            {
+              "k": "straight_outpost",
+              "v": "Straight to Outpost"
+            },
+            {
+              "k": "bump_bump_same",
+              "v": "Bump to Bump (Same Side)"
+            },
+            {
+              "k": "trench_trench_same",
+              "v": "Trench to Trench (Same Side)"
+            }
+          ]
+        },
+        {
+          "title": "Auto Shooting Locations",
+          "type": "multiselect",
+          "code": "autoShootLoc",
+          "options": [
+            {
+              "k": "left_near_depot",
+              "v": "Left side hub near Depot"
+            },
+            {
+              "k": "left_mid_depot",
+              "v": "Left side hub in the middle of hub and Depot"
+            },
+            {
+              "k": "left_near_hub",
+              "v": "Left side hub near hub"
+            },
+            {
+              "k": "left_near_bump",
+              "v": "Left side hub near bump"
+            },
+            {
+              "k": "left_near_trench",
+              "v": "Left side hub near trench"
+            },
+            {
+              "k": "mid_near_hub",
+              "v": "Middle hub near hub"
+            },
+            {
+              "k": "mid_mid_tower",
+              "v": "Middle hub in the middle of hub and Tower"
+            },
+            {
+              "k": "mid_near_tower",
+              "v": "Middle hub near Tower"
+            }
+          ],
+          "needsOptions": "The screenshot's list scrolled past the middle-hub entries — paste the full list."
+        },
+        {
+          "title": "Auto Comments (if their path isn't mentioned in Auto Path)",
+          "type": "textarea",
+          "code": "autoComments",
+          "placeholder": "Anything about their auto the options above don't cover"
+        }
       ]
     },
     {
       "name": "Teleop",
       "fields": [
-        { "title": "Teleop Fuel Scored", "type": "number", "code": "teleopHubMade", "default": 0, "min": 0, "points": 1 },
-        { "title": "Intake: Depot", "type": "boolean", "code": "pickedFromDepot", "default": false },
-        { "title": "Intake: Outpost Chute (HP)", "type": "boolean", "code": "pickedFromHP", "default": false },
-        { "title": "Intake: Neutral Zone (floor)", "type": "boolean", "code": "pickedFromFloor", "default": false },
-        { "title": "Pickup Effectiveness (1-5)", "type": "range", "code": "pickupEffectiveness", "default": 3, "min": 1, "max": 5 },
-        { "title": "Passing / Feeding (1-5)", "type": "range", "code": "passingEffectiveness", "default": 3, "min": 1, "max": 5 }
+        {
+          "title": "Fuel Scored",
+          "type": "counter",
+          "code": "teleFuel",
+          "default": 0,
+          "min": 0,
+          "max": 300,
+          "steps": [
+            1,
+            5,
+            10
+          ],
+          "points": 1
+        },
+        {
+          "title": "% Scoring Effectiveness",
+          "type": "range",
+          "code": "teleScoringPct",
+          "default": 0,
+          "min": 0,
+          "max": 100,
+          "step": 5
+        },
+        {
+          "title": "How Scored",
+          "type": "select",
+          "code": "teleHowScored",
+          "default": "none",
+          "options": [
+            {
+              "k": "none",
+              "v": "No Scoring"
+            },
+            {
+              "k": "stationary",
+              "v": "While Stationary"
+            },
+            {
+              "k": "driving",
+              "v": "While Driving"
+            },
+            {
+              "k": "both",
+              "v": "Both"
+            }
+          ]
+        },
+        {
+          "title": "Tele Shooting Locations",
+          "type": "multiselect",
+          "code": "teleShootLoc",
+          "options": [
+            {
+              "k": "left_near_depot",
+              "v": "Left side hub near Depot"
+            },
+            {
+              "k": "left_near_hub",
+              "v": "Left side hub near hub"
+            },
+            {
+              "k": "mid_near_hub",
+              "v": "Middle hub near hub"
+            },
+            {
+              "k": "mid_near_tower",
+              "v": "Middle hub near Tower"
+            }
+          ],
+          "needsOptions": "Dropdown wasn't opened in the reference screenshot — paste the real choices."
+        },
+        {
+          "title": "Pickup Locations",
+          "type": "multiselect",
+          "code": "telePickupLoc",
+          "options": [
+            {
+              "k": "none",
+              "v": "No Pickup"
+            },
+            {
+              "k": "depot",
+              "v": "Depot"
+            },
+            {
+              "k": "midfield",
+              "v": "MidField"
+            },
+            {
+              "k": "hpzone",
+              "v": "Human Player Zone"
+            },
+            {
+              "k": "floor",
+              "v": "Floor"
+            }
+          ],
+          "needsOptions": "Assumed the same list as auto pickup — confirm or paste the real one."
+        },
+        {
+          "title": "Pickup Effectiveness",
+          "type": "range",
+          "code": "telePickupEff",
+          "default": 0,
+          "min": 0,
+          "max": 5,
+          "step": 1
+        },
+        {
+          "title": "Passed Fuel During Match?",
+          "type": "multiselect",
+          "code": "telePassed",
+          "options": [
+            {
+              "k": "none",
+              "v": "No passing"
+            },
+            {
+              "k": "center",
+              "v": "Center"
+            },
+            {
+              "k": "oppzone",
+              "v": "Opp Zone"
+            },
+            {
+              "k": "scattered",
+              "v": "Scattered"
+            },
+            {
+              "k": "intentional",
+              "v": "Intentional"
+            }
+          ]
+        },
+        {
+          "title": "Passing Effectiveness",
+          "type": "range",
+          "code": "telePassingEff",
+          "default": 0,
+          "min": 0,
+          "max": 5,
+          "step": 1
+        },
+        {
+          "title": "Trench Capability",
+          "type": "boolean",
+          "code": "teleTrench"
+        },
+        {
+          "title": "Played Defense?",
+          "type": "select",
+          "code": "telePlayedDefense",
+          "default": "no",
+          "options": [
+            {
+              "k": "yes",
+              "v": "Yes"
+            },
+            {
+              "k": "no",
+              "v": "No"
+            },
+            {
+              "k": "attempted",
+              "v": "Attempted"
+            }
+          ]
+        },
+        {
+          "title": "Defense Effectiveness",
+          "type": "range",
+          "code": "teleDefenseEff",
+          "default": 0,
+          "min": 0,
+          "max": 5,
+          "step": 1
+        }
       ]
     },
     {
       "name": "Endgame",
       "fields": [
-        { "title": "Endgame Climb", "type": "select", "code": "endgameClimb", "default": "none", "options": [{"k":"none","v":"No climb"},{"k":"parked","v":"Parked"},{"k":"level1","v":"Low Rung (L1)"},{"k":"level2","v":"Mid Rung (L2)"},{"k":"level3","v":"High Rung (L3)"},{"k":"attempted_failed","v":"Attempted, failed"}], "optionPoints": {"parked": 2, "level1": 10, "level2": 20, "level3": 30} },
-        { "title": "Climb Time (sec)", "type": "number", "code": "climbSeconds", "default": 0, "min": 0, "max": 120 }
-      ]
-    },
-    {
-      "name": "Qualitative",
-      "fields": [
-        { "title": "Driver Skill (1-5)", "type": "range", "code": "driverSkill", "default": 3, "min": 1, "max": 5 },
-        { "title": "Defense Rating (1-5)", "type": "range", "code": "defenseRating", "default": 1, "min": 1, "max": 5 },
-        { "title": "Was Defended", "type": "boolean", "code": "wasDefended", "default": false },
-        { "title": "Tipped / Fell Over", "type": "boolean", "code": "tipped", "default": false, "fail": true },
-        { "title": "Died / Disabled", "type": "boolean", "code": "disabled", "default": false, "fail": true },
-        { "title": "Card Status", "type": "select", "code": "cardStatus", "default": "none", "options": [{"k":"none","v":"None"},{"k":"yellow","v":"Yellow"},{"k":"red","v":"Red"}] },
-        { "title": "Comments", "type": "text", "code": "comments", "default": "" }
-      ]
-    }
-  ],
-  "pitSections": [
-    {
-      "name": "Pit Scouting — Team Info",
-      "fields": [
-        { "title": "Scout Name", "type": "text", "code": "scoutName", "required": true, "preserve": true, "placeholder": "Your name" },
-        { "title": "Event Key", "type": "text", "code": "eventKey", "required": true, "preserve": true, "placeholder": "2026ctwat" },
-        { "title": "Team #", "type": "number", "code": "teamNumber", "required": true, "default": 0, "min": 1, "max": 99999 }
-      ]
-    },
-    {
-      "name": "Robot",
-      "fields": [
-        { "title": "Drivetrain", "type": "select", "code": "pitDrivetrain", "default": "unknown", "options": [{"k":"swerve","v":"Swerve"},{"k":"tank","v":"Tank / WCD"},{"k":"mecanum","v":"Mecanum"},{"k":"other","v":"Other"},{"k":"unknown","v":"Unknown"}] },
-        { "title": "Weight (lbs)", "type": "number", "code": "pitWeight", "default": 0, "min": 0, "max": 200 },
-        { "title": "Programming", "type": "select", "code": "pitLanguage", "default": "unknown", "options": [{"k":"java","v":"Java"},{"k":"cpp","v":"C++"},{"k":"python","v":"Python"},{"k":"labview","v":"LabVIEW"},{"k":"other","v":"Other"},{"k":"unknown","v":"Unknown"}] }
-      ]
-    },
-    {
-      "name": "Capabilities",
-      "fields": [
-        { "title": "Climb Capability", "type": "select", "code": "pitClimb", "default": "unknown", "options": [{"k":"none","v":"No climb"},{"k":"low","v":"Low Rung"},{"k":"mid","v":"Mid Rung"},{"k":"high","v":"High Rung"},{"k":"unknown","v":"Unknown"}] },
-        { "title": "Auto Capability", "type": "select", "code": "pitAuto", "default": "unknown", "options": [{"k":"none","v":"None"},{"k":"leave","v":"Leaves line only"},{"k":"score","v":"Scores fuel"},{"k":"score_climb","v":"Scores + climbs"},{"k":"unknown","v":"Unknown"}] },
-        { "title": "Primary Intake", "type": "select", "code": "pitIntake", "default": "unknown", "options": [{"k":"floor","v":"Neutral Zone (floor)"},{"k":"depot","v":"Depot"},{"k":"outpost","v":"Outpost Chute (HP)"},{"k":"multiple","v":"Multiple"},{"k":"none","v":"No intake"},{"k":"unknown","v":"Unknown"}] },
-        { "title": "Fuel Capacity (held)", "type": "number", "code": "pitFuelCapacity", "default": 0, "min": 0, "max": 100 },
-        { "title": "Fits Under Trench", "type": "boolean", "code": "pitFitsTrench", "default": false },
-        { "title": "Crosses Bump", "type": "boolean", "code": "pitCrossesBump", "default": false }
-      ]
-    },
-    {
-      "name": "Assessment",
-      "fields": [
-        { "title": "Scoring Speed (1-5)", "type": "range", "code": "pitScoringSpeed", "default": 3, "min": 1, "max": 5 },
-        { "title": "Build Quality / Reliability (1-5)", "type": "range", "code": "pitReliability", "default": 3, "min": 1, "max": 5 },
-        { "title": "Notes", "type": "text", "code": "pitNotes", "default": "" }
+        {
+          "title": "Climbed",
+          "type": "select",
+          "code": "endClimbed",
+          "default": "none",
+          "options": [
+            {
+              "k": "none",
+              "v": "No Climb"
+            },
+            {
+              "k": "level1",
+              "v": "Level 1"
+            },
+            {
+              "k": "level2",
+              "v": "Level 2"
+            },
+            {
+              "k": "level3",
+              "v": "Level 3"
+            },
+            {
+              "k": "failed",
+              "v": "Failed Climb"
+            }
+          ],
+          "optionPoints": {
+            "level1": 10,
+            "level2": 20,
+            "level3": 30
+          }
+        },
+        {
+          "title": "Where Climbed",
+          "type": "select",
+          "code": "endWhereClimbed",
+          "default": "",
+          "options": [
+            {
+              "k": "",
+              "v": "—"
+            }
+          ],
+          "needsOptions": "Dropdown was cut off in the reference screenshot — paste the real choices."
+        },
+        {
+          "title": "Number of Alliance Robots Climbed",
+          "type": "range",
+          "code": "endAllianceClimbs",
+          "default": 0,
+          "min": 0,
+          "max": 3,
+          "step": 1
+        },
+        {
+          "title": "Crossed Into Opposite Zone?",
+          "type": "boolean",
+          "code": "endCrossedZone"
+        },
+        {
+          "title": "Mechanical Issue?",
+          "type": "boolean",
+          "code": "endMechIssue",
+          "fail": true
+        },
+        {
+          "title": "Died?",
+          "type": "boolean",
+          "code": "endDied",
+          "fail": true
+        },
+        {
+          "title": "Tipped / Fell Over",
+          "type": "boolean",
+          "code": "endTipped",
+          "fail": true
+        },
+        {
+          "title": "Comments (eg: penalties / defense / uniqueness)",
+          "type": "textarea",
+          "code": "comments",
+          "placeholder": "Penalties, defense, anything unusual"
+        }
       ]
     }
   ]

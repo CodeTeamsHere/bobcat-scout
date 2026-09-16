@@ -17,12 +17,12 @@ let isRecording = false;
 let recognition = null;
 let baseTranscript = '';      // text before this recording started
 let activeTab = 'qr';
-let currentForm = 'match';    // 'match' (quantitative) or 'pit' (qualitative robot info)
 
-function activeSections() { return currentForm === 'pit' ? (CONFIG.pitSections || []) : CONFIG.sections; }
+
+function activeSections() { return CONFIG.sections || []; }
 function applyForm() { ALL_FIELDS = activeSections().flatMap(s => s.fields); FIELD_ORDER = ALL_FIELDS.map(f => f.code); }
 
-const SAMPLE_TEXT = "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4 in the hub and left the line. Teleop they scored 18, picked from the neutral zone and the outpost chute. Pickup was pretty good, passing was amazing. Endgame climbed the mid rung. Smooth driver. Got defended a bit but no issues.";
+const SAMPLE_TEXT = "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2. In auto they scored 4 and picked up from the depot. Teleop they scored 18 shooting while driving, picked up off the floor and from the outpost chute. Pickup was pretty good, passing was amazing, about 60 percent. Played defense well. Went under the trench. Climbed the mid rung, 2 alliance robots climbed. No issues.";
 
 // =====================================================================
 // HELPERS
@@ -34,9 +34,10 @@ function $$(sel) { return document.querySelectorAll(sel); }
 function initialFieldState() {
   const state = {};
   ALL_FIELDS.forEach(f => {
-    if (f.default !== undefined) state[f.code] = f.default;
+    if (f.type === 'multiselect') state[f.code] = [];
+    else if (f.default !== undefined) state[f.code] = f.default;
     else if (f.type === 'boolean') state[f.code] = false;
-    else if (f.type === 'number' || f.type === 'range') state[f.code] = 0;
+    else if (f.type === 'number' || f.type === 'range' || f.type === 'counter') state[f.code] = 0;
     else state[f.code] = '';
   });
   return state;
@@ -183,181 +184,16 @@ function parseTranscript(text, initialState) {
   const conf = {};
 
   const titleCase = s => s.replace(/\b\w/g, c => c.toUpperCase());
-
-  // ---- Scout name ----
-  const scoutPatterns = [
-    /(?:scouter|scout)\s*(?:name\s*)?(?:is|:|=)\s*([a-z][a-z\s'-]{1,30}?)(?=[,.]|\s+(?:and|event|match|team|alliance|station|for|at|preload|in auto|teleop|scouting|\d)|$)/i,
-    /my\s+name\s+is\s+([a-z][a-z\s'-]{1,30}?)(?=[,.]|\s+(?:and|event|match|team|alliance|station|for|at|preload|\d)|$)/i,
-    /this\s+is\s+([a-z][a-z'-]{1,20})\s+scouting/i,
-    /i\s*am\s+([a-z][a-z'-]{1,20})(?=[,.]|\s+(?:scouting|and|event|match|team)|$)/i,
-    /^([a-z][a-z'-]{1,20})\s+scouting\b/i,
-  ];
-  for (const p of scoutPatterns) {
-    const m = original.match(p);
-    if (m && m[1]) {
-      result.scoutName = titleCase(m[1].trim());
-      conf.scoutName = 'high';
-      break;
-    }
-  }
-
-  // ---- Event key ----
-  const eventPatterns = [
-    /event\s*(?:key\s*)?(?:is|:|=)?\s*(\d{4}[a-z]{3,10})/i,
-    /\b(20\d{2}[a-z]{3,10})\b/,
-  ];
-  for (const p of eventPatterns) {
-    const m = t.match(p);
-    if (m && m[1]) {
-      result.eventKey = m[1].toLowerCase();
-      conf.eventKey = 'high';
-      break;
-    }
-  }
-
-  // ---- Match number ----
-  const mn = t.match(/(?:match\s*(?:number|#)?\s*|qm\s*)(\d{1,3})\b/i);
-  if (mn) {
-    const n = parseInt(mn[1]);
-    if (n > 0 && n <= 200) {
-      result.matchNumber = n;
-      conf.matchNumber = 'high';
-    }
-  }
-
-  // ---- Match type ----
-  if (/\b(playoff|elim|elimination|finals|semifinal|bracket)\b/i.test(t)) {
-    result.matchType = 'sf'; conf.matchType = 'high';
-  } else if (/\bpractice\s+match\b/i.test(t) || /\bpm\s*\d/i.test(t)) {
-    result.matchType = 'pm'; conf.matchType = 'high';
-  } else if (/\b(qualification|qual|qm)\b/i.test(t)) {
-    result.matchType = 'qm'; conf.matchType = 'medium';
-  }
-
-  // ---- Team number ----
-  const teamPatterns = [
-    /team\s*(?:number|#)?\s*(\d{1,5})\b/i,
-    /\bscouting\s+(?:team\s+)?(\d{2,5})\b/i,
-    // terse call: "177 red 2" / "1114 on blue"
-    /\b(\d{1,5})\s+(?:on\s+)?(?:red|blue)\b/i,
-  ];
-  for (const p of teamPatterns) {
-    const m = t.match(p);
-    if (m && m[1]) {
-      const n = parseInt(m[1]);
-      if (n >= 1 && n <= 99999) {
-        result.teamNumber = n;
-        conf.teamNumber = 'high';
-        break;
-      }
-    }
-  }
-
-  // ---- Alliance ----
-  const redMatch = t.match(/\b(?:red\s*(?:alliance|\d)|alliance\s*(?:is\s*)?red|on\s*red)\b/i);
-  const blueMatch = t.match(/\b(?:blue\s*(?:alliance|\d)|alliance\s*(?:is\s*)?blue|on\s*blue)\b/i);
-  if (redMatch && !blueMatch) {
-    result.alliance = 'red'; conf.alliance = 'high';
-  } else if (blueMatch && !redMatch) {
-    result.alliance = 'blue'; conf.alliance = 'high';
-  } else if (redMatch && blueMatch) {
-    result.alliance = redMatch.index < blueMatch.index ? 'red' : 'blue';
-    conf.alliance = 'medium';
-  }
-
-  // ---- Driver station ----
-  const stationPatterns = [
-    /driver\s*station\s*(\d)/i,
-    /station\s*(\d)/i,
-    // \b matters: without it "scored 3" matches as "red 3" and silently
-    // sets the driver station on any sentence containing a score.
-    /\b(?:red|blue)\s*(\d)\b/i,
-    /\bd\s*(\d)\b/i,
-  ];
-  for (const p of stationPatterns) {
-    const m = t.match(p);
-    if (m && m[1]) {
-      const n = m[1];
-      if (n === '1' || n === '2' || n === '3') {
-        result.driverStation = n;
-        conf.driverStation = 'high';
-        break;
-      }
-    }
-  }
-
-  // ---- Starting position ----
-  if (/\b(wall\s*side|on\s+the\s+wall|wall\s+start)\b/i.test(t)) {
-    result.startingPosition = 'wall'; conf.startingPosition = 'high';
-  } else if (/\bcenter\s*(?:start|position)?\b/i.test(t)) {
-    result.startingPosition = 'center'; conf.startingPosition = 'high';
-  } else if (/\b(field\s*side|far\s*side)\b/i.test(t)) {
-    result.startingPosition = 'field'; conf.startingPosition = 'high';
-  }
-
-  // ---- Preloaded fuel ----
-  // Look only RIGHT of "preload" to avoid grabbing earlier numbers (team #, station, etc.)
-  const preloadMatch = t.match(/preload(?:ed)?(?:\s*(?:with|of))?\s*(\d{1,2})\b/i);
-  if (preloadMatch) {
-    result.preloadedFuel = Math.min(parseInt(preloadMatch[1]), 8);
-    conf.preloadedFuel = 'high';
-  } else {
-    // Alt phrasing: "with 3 preloaded"
-    const preBeforeMatch = t.match(/(\d{1,2})\s*preload(?:ed)?/i);
-    if (preBeforeMatch) {
-      result.preloadedFuel = Math.min(parseInt(preBeforeMatch[1]), 8);
-      conf.preloadedFuel = 'high';
-    }
-  }
-
-  // ---- Auto scoring ----
-  // The count is said before the word "auto" as often as after it
-  // ("four in auto" vs "in auto they made four"), so check both directly
-  // instead of only scanning forward from the keyword.
-  // The gap is letters-only on purpose. \w would let "team 177 scored 3 in
-  // auto" match starting at 177 and record the team number as the score.
-  const AUTO_BEFORE = /(\d+)\s+(?:[a-z]+\s+){0,2}?(?:in|during|for)\s+(?:the\s+)?auto(?:nomous)?\b/i;
-  const AUTO_AFTER = /\bauto(?:nomous)?\b(?:[^.?!]{0,60}?)(?:made|scored|put in|hit|got|sank|banked)\s*(\d+)/i;
-  const autoHit = t.match(AUTO_BEFORE) || t.match(AUTO_AFTER);
-  if (autoHit) { result.autoHubMade = parseInt(autoHit[1]); conf.autoHubMade = 'high'; }
-
-  const autoSection = t.match(/\b(auto|autonomous)\b[\s\S]{0,200}/i);
-  if (autoSection) {
-    const as = autoSection[0];
-    if (conf.autoHubMade === undefined) {
-      const autoMade = as.match(/(?:made|scored|put in|hit)\s*(\d+)/i) || as.match(/(\d+)\s*(?:in auto|made|scored)/i);
-      if (autoMade) { result.autoHubMade = parseInt(autoMade[1]); conf.autoHubMade = 'high'; }
-    }
-    // "left the line" yes; "started on the left" no
-    if (/\b(?:left|leave|exited|exit)\s*(?:the\s*)?(?:line|tarmac|zone|community|starting)?\b/i.test(as)
-        && !/\b(?:on|from|to)\s+the\s+left\b/i.test(as)) { result.autoLeft = true; conf.autoLeft = 'high'; }
-    else if (/\bmobility\b/i.test(as)) { result.autoLeft = true; conf.autoLeft = 'high'; }
-    if (/\bclimb(ed)?\s*(in\s*auto|level\s*1|l1|low\s*rung)/i.test(as)) {
-      result.autoClimb = 'level1'; conf.autoClimb = 'high';
-    }
-  }
-
-  // ---- Teleop ----
-  const TELE_BEFORE = /(\d+)\s+(?:[a-z]+\s+){0,2}?(?:in|during)\s+(?:the\s+)?tele\s*-?\s*op(?:erated)?\b/i;
-  const TELE_AFTER = /\btele\s*-?\s*op(?:erated)?\b(?:[^.?!]{0,60}?)(?:made|scored|put in|hit|got|sank|banked)\s*(\d+)/i;
-  const teleHit = t.match(TELE_BEFORE) || t.match(TELE_AFTER);
-  if (teleHit) { result.teleopHubMade = parseInt(teleHit[1]); conf.teleopHubMade = 'high'; }
-
-  const teleopIdx = t.search(/\b(teleop|tele op|teleoperated)\b/i);
-  if (teleopIdx >= 0 && conf.teleopHubMade === undefined) {
-    const ts = t.slice(teleopIdx, teleopIdx + 400);
-    // "made 18", "scored 18", "18 made", "got 18 in"
-    const teleMade = ts.match(/(?:made|scored|put in|hit)\s*(\d+)/i) || ts.match(/(\d+)\s*(?:made|scored|in the hub)/i);
-    if (teleMade) { result.teleopHubMade = parseInt(teleMade[1]); conf.teleopHubMade = 'high'; }
-  }
-
-  // ---- No show ----
-  if (/\b(no\s*show|did(n'?t| not)\s+show(?:\s+up)?|never\s+showed|absent|didn'?t\s+come\s+out)\b/i.test(t)) {
-    result.noShow = true; conf.noShow = 'high';
-  }
+  const set = (code, value, level) => { result[code] = value; conf[code] = level || 'high'; };
+  const addMulti = (code, key) => {
+    const cur = Array.isArray(result[code]) ? result[code].slice() : [];
+    if (cur.indexOf(key) < 0) cur.push(key);
+    result[code] = cur;
+    conf[code] = 'high';
+  };
 
   // Sentiment has to stay inside its own clause. A flat character window lets
-  // "passing was amazing, driver was rough" rate the driver a 5, so stop at
+  // "passing was amazing, defense was rough" rate the defense a 5, so stop at
   // the nearest comma or full stop on each side.
   const clauseWindow = (idx, len, back, fwd) => {
     let a = Math.max(0, idx - back);
@@ -371,7 +207,7 @@ function parseTranscript(text, initialState) {
     return t.slice(a, b);
   };
 
-  // ---- Passing & pickup effectiveness (1–5 from sentiment near keyword) ----
+  // 0-5 rating from the words around a keyword.
   const rateAround = (keywords) => {
     for (const kw of keywords) {
       const re = new RegExp(kw, 'gi');
@@ -389,70 +225,244 @@ function parseTranscript(text, initialState) {
     }
     return null;
   };
-  const pickupRating = rateAround(['picking\\s+up', 'pickup', 'pick\\s+up', 'intake', 'intaking']);
-  if (pickupRating !== null) { result.pickupEffectiveness = pickupRating; conf.pickupEffectiveness = 'high'; }
-  const passRating = rateAround(['passing', 'passes', '\\bpass\\b']);
-  if (passRating !== null) { result.passingEffectiveness = passRating; conf.passingEffectiveness = 'high'; }
 
-  // ---- Fallback ----
-  // Only guess "teleop" for a bare count when auto was never mentioned —
-  // otherwise "scored 2 in auto" silently lands in the wrong column.
-  if (conf.teleopHubMade === undefined && conf.autoHubMade === undefined
-      && !/\bauto(?:nomous)?\b/i.test(t)) {
-    const anyMade = t.match(/(?:made|scored)\s*(\d+)/i);
-    if (anyMade) { result.teleopHubMade = parseInt(anyMade[1]); conf.teleopHubMade = 'medium'; }
+  // Their form asks how a team scored: stationary, driving, or both. Match the
+  // phrase rather than the verb, because "shooting while driving" and "scored
+  // on the move" are the same answer.
+  const HOW_DRIVING = /\b(?:while\s+(?:driving|moving)|on the move|shooting\s+and\s+driving)\b/i;
+  const HOW_STATIONARY = /\b(?:while\s+(?:stationary|stopped|still)|from\s+a\s+stop|sitting still|stationary)\b/i;
+
+  // ---- Scout name ----
+  const scoutPatterns = [
+    /(?:scouter|scout)\s*(?:name\s*)?(?:is|:|=)\s*([a-z][a-z\s'-]{1,30}?)(?=[,.]|\s+(?:and|event|match|team|alliance|station|position|for|at|in auto|teleop|scouting|\d)|$)/i,
+    /my\s+name\s+is\s+([a-z][a-z\s'-]{1,30}?)(?=[,.]|\s+(?:and|event|match|team|alliance|station|position|for|at|\d)|$)/i,
+    /this\s+is\s+([a-z][a-z'-]{1,20})\s+scouting/i,
+    /i\s*am\s+([a-z][a-z'-]{1,20})(?=[,.]|\s+(?:scouting|and|event|match|team)|$)/i,
+    /^([a-z][a-z'-]{1,20})\s+scouting\b/i
+  ];
+  for (const p of scoutPatterns) {
+    const m = original.match(p);
+    if (m && m[1]) { set('scoutName', titleCase(m[1].trim())); break; }
   }
 
-  // ---- Pickup sources ----
-  if (/\bdepot\b/i.test(t)) { result.pickedFromDepot = true; conf.pickedFromDepot = 'high'; }
-  if (/\b(human player|hp|chute|outpost)\b/i.test(t)) { result.pickedFromHP = true; conf.pickedFromHP = 'high'; }
-  if (/\b(floor|ground|off the ground|loose fuel|scooped|neutral zone)\b/i.test(t)) { result.pickedFromFloor = true; conf.pickedFromFloor = 'high'; }
+  // ---- Event key ----
+  for (const p of [/event\s*(?:key\s*)?(?:is|:|=)?\s*(\d{4}[a-z]{3,10})/i, /\b(20\d{2}[a-z]{3,10})\b/]) {
+    const m = t.match(p);
+    if (m && m[1]) { set('eventKey', m[1].toLowerCase()); break; }
+  }
 
-  // ---- Endgame climb ----
+  // ---- Match number ----
+  const mn = t.match(/(?:match\s*(?:number|#)?\s*|qm\s*)(\d{1,3})\b/i);
+  if (mn) {
+    const n = parseInt(mn[1], 10);
+    if (n > 0 && n <= 200) set('matchNumber', n);
+  }
+
+  // ---- Match type ----
+  if (/\b(playoff|elim|elimination|finals|semifinal|bracket)\b/i.test(t)) set('matchType', 'sf');
+  else if (/\bpractice\s+match\b/i.test(t) || /\bpm\s*\d/i.test(t)) set('matchType', 'pm');
+  else if (/\b(qualification|qual|qm)\b/i.test(t)) set('matchType', 'qm', 'medium');
+
+  // ---- Team number ----
+  for (const p of [
+    /team\s*(?:number|#)?\s*(\d{1,5})\b/i,
+    /\bscouting\s+(?:team\s+)?(\d{2,5})\b/i,
+    /\b(\d{1,5})\s+(?:on\s+)?(?:red|blue)\b/i
+  ]) {
+    const m = t.match(p);
+    if (m && m[1]) {
+      const n = parseInt(m[1], 10);
+      if (n >= 1 && n <= 99999) { set('teamNumber', n); break; }
+    }
+  }
+
+  // ---- Starting position (1-3 red, 4-6 blue; alliance falls out of it) ----
+  // \b matters before red|blue: without it "scored 3" matches as "red 3".
+  let slot = '';
+  const posDirect = t.match(/\b(?:starting\s*)?(?:position|slot|spot)\s*(?:is\s*)?([1-6])\b/i);
+  if (posDirect) {
+    slot = posDirect[1];
+  } else {
+    const redAt = t.match(/\bred\s*(?:alliance\s*)?([1-3])\b/i);
+    const blueAt = t.match(/\bblue\s*(?:alliance\s*)?([1-3])\b/i);
+    if (redAt) slot = redAt[1];
+    else if (blueAt) slot = String(parseInt(blueAt[1], 10) + 3);
+  }
+  if (slot) {
+    set('startingPosition', slot);
+    set('alliance', parseInt(slot, 10) <= 3 ? 'red' : 'blue');
+  } else {
+    const red = t.match(/\b(?:red\s*alliance|alliance\s*(?:is\s*)?red|on\s*red)\b/i);
+    const blue = t.match(/\b(?:blue\s*alliance|alliance\s*(?:is\s*)?blue|on\s*blue)\b/i);
+    if (red && !blue) set('alliance', 'red');
+    else if (blue && !red) set('alliance', 'blue');
+  }
+
+  // ---- No show ----
+  if (/\b(no\s*show|did(n'?t| not)\s+show(?:\s+up)?|never\s+showed|absent|didn'?t\s+come\s+out)\b/i.test(t)) {
+    set('noShow', true);
+  }
+
+  // ================================================================ AUTO
+  // The count is said before the word "auto" as often as after it
+  // ("four in auto" vs "in auto they made four"). The gap is letters-only on
+  // purpose: \w would let "team 177 scored 3 in auto" match starting at 177
+  // and record the team number as the score.
+  const AUTO_BEFORE = /(\d+)\s+(?:[a-z]+\s+){0,2}?(?:in|during|for)\s+(?:the\s+)?auto(?:nomous)?\b/i;
+  const AUTO_AFTER = /\bauto(?:nomous)?\b(?:[^.?!]{0,60}?)(?:made|scored|put in|hit|got|sank|banked)\s*(\d+)/i;
+  const AUTO_NEAR = /\bauto(?:nomous)?\b[^.?!\d]{0,14}(\d+)/i;
+  const autoHit = t.match(AUTO_BEFORE) || t.match(AUTO_AFTER) || t.match(AUTO_NEAR);
+  if (autoHit) {
+    const n = parseInt(autoHit[1], 10);
+    set('autoFuel', n);
+    if (n > 0) set('autoScored', true);
+  }
+  if (/\b(?:scored|shot|made)\s+in\s+auto\b/i.test(t)) set('autoScored', true);
+
+  // Stop at the end of the auto sentence. A fixed character window runs on
+  // into the teleop description and picks up its pickup locations as auto's.
+  const autoIdx = t.search(/\bauto(?:nomous)?\b/i);
+  let autoCtx = '';
+  if (autoIdx >= 0) {
+    const rest = t.slice(autoIdx, autoIdx + 260);
+    const stop = rest.search(/[.?!]/);
+    autoCtx = stop >= 0 ? rest.slice(0, stop) : rest;
+  }
+
+  if (autoCtx) {
+    if (HOW_DRIVING.test(autoCtx) && HOW_STATIONARY.test(autoCtx)) set('autoHowScored', 'both');
+    else if (HOW_DRIVING.test(autoCtx)) set('autoHowScored', 'driving');
+    else if (HOW_STATIONARY.test(autoCtx)) set('autoHowScored', 'stationary');
+
+    if (/\b(pick(?:ed|ing)?\s*up|intake[d]?|collected|grabbed)\b/i.test(autoCtx)) set('autoPickup', true);
+    if (/\bdepot\b/i.test(autoCtx)) addMulti('autoPickupFrom', 'depot');
+    if (/\b(human player|hp|chute|outpost)\b/i.test(autoCtx)) addMulti('autoPickupFrom', 'hpzone');
+    if (/\b(floor|ground|loose fuel|scooped)\b/i.test(autoCtx)) addMulti('autoPickupFrom', 'floor');
+    if (/\b(midfield|mid field|neutral zone)\b/i.test(autoCtx)) addMulti('autoPickupFrom', 'midfield');
+
+    if (/\bbuddy\s*climb|double\s*climb/i.test(t)) set('autoBuddyClimb', true);
+    if (/\bpre\s*-?\s*load\s*only\b/i.test(t)) addMulti('autoPath', 'preload_only');
+    if (/\bstraight\s+to\s+(?:the\s+)?depot\b/i.test(t)) addMulti('autoPath', 'straight_depot');
+    if (/\bstraight\s+to\s+(?:the\s+)?outpost\b/i.test(t)) addMulti('autoPath', 'straight_outpost');
+
+  }
+
+  // The climb level can be named before "auto" as easily as after it
+  // ("climbed level 1 in auto"), so look on both sides of the keyword.
+  const AUTO_CLIMB_BEFORE = /climb\w*[^.?!]{0,30}?\b(level\s*[123]|l[123]|high|top|mid|middle|low)\b[^.?!]{0,20}?\bin\s+auto\b/i;
+  // Attribution has to be explicit, and a comma ends it — so "4 in auto,
+  // climbed high" stays an endgame climb, which is both the common case and
+  // the safer default.
+  // "in auto climbed high" is genuinely ambiguous out loud, so require a real
+  // subject in between ("in auto THEY climbed high"). Auto climbs score more
+  // than endgame climbs, so guessing auto would inflate a team's rating —
+  // endgame is the safer reading when the sentence does not commit.
+  const AUTO_CLIMB_AFTER = /\bauto(?:nomous)?\b\s+(?:they|it|and|then|the\s+robot|robot)\s+climb\w*\s*(?:up\s*)?(?:to\s*)?(?:the\s*)?(level\s*[123]|l[123]|high|top|mid|middle|low)\b/i;
+  const ac = t.match(AUTO_CLIMB_BEFORE) || t.match(AUTO_CLIMB_AFTER);
+  if (ac) {
+    const w = ac[1].toLowerCase().replace(/\s+/g, '');
+    if (/3|high|top/.test(w)) set('autoClimbed', 'level3');
+    else if (/2|mid|middle/.test(w)) set('autoClimbed', 'level2');
+    else set('autoClimbed', 'level1');
+  }
+
+  // ============================================================== TELEOP
+  const TELE_BEFORE = /(\d+)\s+(?:[a-z]+\s+){0,2}?(?:in|during)\s+(?:the\s+)?tele\s*-?\s*op(?:erated)?\b/i;
+  const TELE_AFTER = /\btele\s*-?\s*op(?:erated)?\b(?:[^.?!]{0,60}?)(?:made|scored|put in|hit|got|sank|banked)\s*(\d+)/i;
+  const TELE_NEAR = /\btele\s*-?\s*op(?:erated)?\b[^.?!\d]{0,14}(\d+)/i;
+  const teleHit = t.match(TELE_BEFORE) || t.match(TELE_AFTER) || t.match(TELE_NEAR);
+  if (teleHit) set('teleFuel', parseInt(teleHit[1], 10));
+
+  // A bare count with no auto mentioned anywhere is a teleop count.
+  if (conf.teleFuel === undefined && conf.autoFuel === undefined && !/\bauto(?:nomous)?\b/i.test(t)) {
+    const anyMade = t.match(/(?:made|scored)\s*(\d+)/i);
+    if (anyMade) set('teleFuel', parseInt(anyMade[1], 10), 'medium');
+  }
+
+  const teleIdx = t.search(/\btele\s*-?\s*op(?:erated)?\b/i);
+  let teleCtx = t;
+  if (teleIdx >= 0) {
+    const rest = t.slice(teleIdx, teleIdx + 320);
+    const stop = rest.search(/[.?!]/);
+    teleCtx = stop >= 0 ? rest.slice(0, stop) : rest;
+  }
+  if (HOW_DRIVING.test(teleCtx) && HOW_STATIONARY.test(teleCtx)) set('teleHowScored', 'both');
+  else if (HOW_DRIVING.test(teleCtx)) set('teleHowScored', 'driving');
+  else if (HOW_STATIONARY.test(teleCtx)) set('teleHowScored', 'stationary');
+
+  const pct = t.match(/(\d{1,3})\s*(?:%|percent)\b/i);
+  if (pct) {
+    const n = parseInt(pct[1], 10);
+    if (n >= 0 && n <= 100) set('teleScoringPct', n);
+  }
+
+  if (/\bdepot\b/i.test(t)) addMulti('telePickupLoc', 'depot');
+  if (/\b(human player|hp|chute|outpost)\b/i.test(t)) addMulti('telePickupLoc', 'hpzone');
+  if (/\b(floor|ground|off the ground|loose fuel|scooped)\b/i.test(t)) addMulti('telePickupLoc', 'floor');
+  if (/\b(midfield|mid field|neutral zone)\b/i.test(t)) addMulti('telePickupLoc', 'midfield');
+
+  const pickupRating = rateAround(['picking\\s+up', 'pickup', 'pick\\s+up', 'intake', 'intaking']);
+  if (pickupRating !== null) set('telePickupEff', pickupRating);
+  const passRating = rateAround(['passing', 'passes', '\\bpass\\b', 'feeding']);
+  if (passRating !== null) set('telePassingEff', passRating);
+
+  if (/\bno\s+passing\b|\b(?:did\s+not|did\s*n'?t)\s+pass\b|\bnever\s+passed\b/i.test(t)) addMulti('telePassed', 'none');
+  else {
+    if (/\bpass\w*\b[^.?!]{0,30}\bcenter\b|\bcenter\b[^.?!]{0,20}\bpass/i.test(t)) addMulti('telePassed', 'center');
+    if (/\bopp(?:onent)?\s*zone\b/i.test(t)) addMulti('telePassed', 'oppzone');
+    if (/\bscattered\b/i.test(t)) addMulti('telePassed', 'scattered');
+    if (/\bintentional(?:ly)?\b/i.test(t)) addMulti('telePassed', 'intentional');
+  }
+
+  if (/\btrench\b/i.test(t) && !/\b(?:can ?not|couldn'?t|could not|no)\s+(?:go\s+)?(?:under\s+)?(?:the\s+)?trench\b/i.test(t)) {
+    set('teleTrench', true);
+  }
+
+  // ---- Defense ----
+  if (/\b(tried|attempt\w*)\b[^.?!]{0,25}\bdefense\b|\bdefense\b[^.?!]{0,25}\b(attempt\w*)\b/i.test(t)) {
+    set('telePlayedDefense', 'attempted');
+  } else if (/\b(no defense|did ?n'?t play defense|played no defense)\b/i.test(t)) {
+    set('telePlayedDefense', 'no');
+  } else if (/\bdefen[cs]e\b/i.test(t)) {
+    set('telePlayedDefense', 'yes');
+  }
+  const defRating = rateAround(['defen[cs]e', 'defended']);
+  if (defRating !== null && result.telePlayedDefense === 'yes') set('teleDefenseEff', defRating);
+
+  // ============================================================= ENDGAME
   // "climbed high" is how scouters actually say it, so match the bare
   // high/mid/low wording as well as the rung/level phrasing.
   const CLIMB_L3 = /\blevel\s*3\b|\bl3\b|\b(?:high|top)\s*(?:rung|bar)\b|\bclimb(?:ed|ing)?\s*(?:up\s*)?(?:to\s*)?(?:the\s*)?(?:high|top)\b|\bhigh\s*climb\b/i;
   const CLIMB_L2 = /\blevel\s*2\b|\bl2\b|\b(?:mid|middle)\s*(?:rung|bar)\b|\bclimb(?:ed|ing)?\s*(?:up\s*)?(?:to\s*)?(?:the\s*)?(?:mid|middle)\b|\bmid\s*climb\b/i;
   const CLIMB_L1 = /\blevel\s*1\b|\bl1\b|\blow\s*(?:rung|bar)\b|\bclimb(?:ed|ing)?\s*(?:up\s*)?(?:to\s*)?(?:the\s*)?low\b|\blow\s*climb\b/i;
-  if (CLIMB_L3.test(t)) { result.endgameClimb = 'level3'; conf.endgameClimb = 'high'; }
-  else if (CLIMB_L2.test(t)) { result.endgameClimb = 'level2'; conf.endgameClimb = 'high'; }
-  else if (CLIMB_L1.test(t)) { result.endgameClimb = 'level1'; conf.endgameClimb = 'high'; }
-  else if (/\bparked\b/i.test(t)) { result.endgameClimb = 'parked'; conf.endgameClimb = 'high'; }
-  else if (/\b(tried to climb|attempted.*climb|climb.*fail|fell off)\b/i.test(t)) { result.endgameClimb = 'attempted_failed'; conf.endgameClimb = 'high'; }
-  else if (/\bno climb|didn't climb|did not climb\b/i.test(t)) { result.endgameClimb = 'none'; conf.endgameClimb = 'high'; }
+  const CLIMB_FAIL = /\b(tried to climb|attempted\s+(?:a\s+)?climb|climb\w*\s+fail\w*|failed\s+(?:the\s+)?climb|fell off)\b/i;
+  const CLIMB_NONE = /\bno climb\b|\bdid ?n'?t climb\b|\bdid not climb\b|\bnever climbed\b/i;
 
-  // ---- Driver skill ----
-  // Only judge sentiment words that appear NEAR a "driver/driving/drove" mention,
-  // so unrelated praise (e.g. "passing was amazing") can't inflate the driver rating.
-  const driverMention = t.match(/\bdriv(?:er|ing|e)\b|\bdrove\b/i);
-  if (driverMention) {
-    const di = driverMention.index;
-    const dctx = clauseWindow(di, driverMention[0].length, 30, 40);
-    if (/\b(elite|amazing|incredible|insane|fantastic|flawless|phenomenal)\b/i.test(dctx)) { result.driverSkill = 5; conf.driverSkill = 'high'; }
-    else if (/\b(great|really good|very good|smooth|strong|excellent|clean)\b/i.test(dctx)) { result.driverSkill = 4; conf.driverSkill = 'high'; }
-    else if (/\b(solid|decent|fine|okay|ok|competent|average)\b/i.test(dctx)) { result.driverSkill = 3; conf.driverSkill = 'medium'; }
-    else if (/\b(rough|struggled|messy|shaky|sloppy|jerky)\b/i.test(dctx)) { result.driverSkill = 2; conf.driverSkill = 'high'; }
-    else if (/\b(crashed|awful|terrible|horrible|could ?n'?t drive|could not drive)\b/i.test(dctx)) { result.driverSkill = 1; conf.driverSkill = 'high'; }
+  // One climb, already attributed to auto, is not also an endgame climb.
+  const climbMentions = (t.match(/climb/gi) || []).length;
+  const climbWasAuto = conf.autoClimbed !== undefined && climbMentions <= 1;
+
+  if (climbWasAuto) { /* recorded as the auto climb above */ }
+  else if (CLIMB_FAIL.test(t)) set('endClimbed', 'failed');
+  else if (CLIMB_NONE.test(t)) set('endClimbed', 'none');
+  else if (CLIMB_L3.test(t)) set('endClimbed', 'level3');
+  else if (CLIMB_L2.test(t)) set('endClimbed', 'level2');
+  else if (CLIMB_L1.test(t)) set('endClimbed', 'level1');
+
+  const buddies = t.match(/(\d)\s*(?:of\s*(?:our|the)\s*)?(?:alliance\s*)?(?:robots?|bots?)\s*climbed/i);
+  if (buddies) {
+    const n = parseInt(buddies[1], 10);
+    if (n >= 0 && n <= 3) set('endAllianceClimbs', n);
   }
 
-  // ---- Defense ----
-  if (/\b(played\s*(great|strong|heavy)\s*defense|dominant defense|lockdown defense)\b/i.test(t)) { result.defenseRating = 5; conf.defenseRating = 'high'; }
-  else if (/\b(played.*defense.*well|good defense)\b/i.test(t)) { result.defenseRating = 4; conf.defenseRating = 'high'; }
-  else if (/\b(played some defense|some defense)\b/i.test(t)) { result.defenseRating = 3; conf.defenseRating = 'medium'; }
-  else if (/\b(tried.*defense|weak defense|bad defense)\b/i.test(t)) { result.defenseRating = 2; conf.defenseRating = 'medium'; }
-
-  // ---- Was defended ----
-  if (/\b(got defended|played defense on|defended against|smacked around|hit by)\b/i.test(t)) {
-    result.wasDefended = true; conf.wasDefended = 'high';
+  if (/\bcross\w*\s+(?:in)?to\s+(?:the\s+)?(?:opposite|other|opp)\s+zone\b/i.test(t)) set('endCrossedZone', true);
+  if (/\b(tipped|fell over|flipped|tipped over)\b/i.test(t)) set('endTipped', true);
+  if (/\b(died|went dead|bot died|stopped working|lost power|disabled)\b/i.test(t)) set('endDied', true);
+  if (/\b(mechanical (?:issue|problem|failure)|broke|broken|jam+ed|fell apart|chain came off|arm broke)\b/i.test(t)) {
+    set('endMechIssue', true);
   }
 
-  // ---- Tipped / disabled / cards ----
-  if (/\b(tipped|fell over|flipped)\b/i.test(t)) { result.tipped = true; conf.tipped = 'high'; }
-  if (/\b(broke|died|disabled|stopped working|went dead|bot died)\b/i.test(t)) { result.disabled = true; conf.disabled = 'high'; }
-  if (/\bred card\b/i.test(t)) { result.cardStatus = 'red'; conf.cardStatus = 'high'; }
-  else if (/\byellow card\b|\bcarded\b/i.test(t)) { result.cardStatus = 'yellow'; conf.cardStatus = 'high'; }
-
-  // Always copy the raw transcript into comments
+  // The raw description is always kept as the comment.
   result.comments = text.trim().slice(0, 500);
   conf.comments = 'high';
 
@@ -463,12 +473,10 @@ function parseTranscript(text, initialState) {
 // FIELD RENDERING
 // =====================================================================
 
+// The old "AI" chip is gone by request. Confidence is still tracked, so the
+// marker can come back later as a neutral review cue if the team wants one.
 function confBadgeHTML(code) {
-  const c = confidence[code];
-  if (!c || c === 'user') return '';
-  const map = { high: ['conf-high', 'AI'], medium: ['conf-medium', '?'], low: ['conf-low', '!'] };
-  if (!map[c]) return '';
-  return `<span class="conf-badge ${map[c][0]}">${map[c][1]}</span>`;
+  return '';
 }
 
 function escapeHTML(s) {
@@ -480,7 +488,8 @@ function escapeHTML(s) {
 function renderFieldHTML(f) {
   const val = fields[f.code];
   const reqMark = f.required ? '<span class="req">*</span>' : '';
-  const labelHTML = `<label class="field-label">${escapeHTML(f.title)}${reqMark} ${confBadgeHTML(f.code)}</label>`;
+  const helpHTML = f.help ? `<span class="field-help">${escapeHTML(f.help)}</span>` : '';
+  const labelHTML = `<label class="field-label">${escapeHTML(f.title)}${reqMark} ${confBadgeHTML(f.code)}</label>${helpHTML}`;
 
   if (f.type === 'text') {
     return `<div data-field="${f.code}">${labelHTML}<input type="text" data-input="${f.code}" value="${escapeHTML(val || '')}" placeholder="${escapeHTML(f.placeholder || '')}"></div>`;
@@ -505,10 +514,33 @@ function renderFieldHTML(f) {
   if (f.type === 'range') {
     return `<div data-field="${f.code}">${labelHTML}
       <div class="range-row">
-        <input type="range" data-input="${f.code}" value="${val == null ? f.default : val}" min="${f.min}" max="${f.max}" step="1">
+        <input type="range" data-input="${f.code}" value="${val == null ? f.default : val}" min="${f.min}" max="${f.max}" step="${f.step || 1}">
         <span class="range-value" data-range-value="${f.code}">${val == null ? f.default : val}</span>
       </div>
     </div>`;
+  }
+  if (f.type === 'textarea') {
+    return `<div data-field="${f.code}" class="field-wide">${labelHTML}<textarea data-input="${f.code}" rows="3" placeholder="${escapeHTML(f.placeholder || '')}">${escapeHTML(val || '')}</textarea></div>`;
+  }
+  // Big +/- pad. Scouters are watching the field, not the screen, so the
+  // targets are deliberately large and the running total is the biggest thing.
+  if (f.type === 'counter') {
+    const steps = f.steps || [1, 5, 10];
+    const minus = steps.map(n => `<button type="button" class="count-btn" data-count="${f.code}" data-delta="-${n}">&minus;${n}</button>`).join('');
+    const plus = steps.map(n => `<button type="button" class="count-btn count-plus" data-count="${f.code}" data-delta="${n}">+${n}</button>`).join('');
+    return `<div data-field="${f.code}" class="field-wide">${labelHTML}
+      <div class="counter">
+        <div class="count-value" data-count-value="${f.code}">${val == null ? 0 : val}</div>
+        <div class="count-pad">${minus}${plus}</div>
+      </div>
+    </div>`;
+  }
+  if (f.type === 'multiselect') {
+    const chosen = Array.isArray(val) ? val : [];
+    const chips = (f.options || []).map(o =>
+      `<button type="button" class="chip ${chosen.indexOf(o.k) >= 0 ? 'chip-on' : ''}" data-multi="${f.code}" data-key="${escapeHTML(o.k)}" aria-pressed="${chosen.indexOf(o.k) >= 0}">${escapeHTML(o.v)}</button>`
+    ).join('');
+    return `<div data-field="${f.code}" class="field-wide">${labelHTML}<div class="chip-row">${chips}</div></div>`;
   }
   return '';
 }
@@ -519,7 +551,9 @@ function renderAllFields() {
   activeSections().forEach(sec => {
     html += `<div class="section-header">${escapeHTML(sec.name.toUpperCase())}</div>`;
     html += `<div class="field-grid">`;
-    sec.fields.forEach(f => { html += renderFieldHTML(f); });
+    // `hidden` fields stay in FIELD_ORDER (the Sheet and the analytics still
+    // want the column) but are derived rather than typed, so don't draw them.
+    sec.fields.forEach(f => { if (!f.hidden) html += renderFieldHTML(f); });
     html += `</div>`;
   });
   container.innerHTML = html;
@@ -533,7 +567,7 @@ function attachFieldListeners() {
       const code = el.getAttribute('data-input');
       const field = ALL_FIELDS.find(f => f.code === code);
       let v = el.value;
-      if (field.type === 'number') v = parseInt(v) || 0;
+      if (field.type === 'number' || field.type === 'counter') v = parseInt(v) || 0;
       if (field.type === 'range') {
         v = parseInt(v) || field.default;
         const valSpan = document.querySelector(`[data-range-value="${code}"]`);
@@ -550,6 +584,34 @@ function attachFieldListeners() {
       setField(code, !fields[code]);
       const toggleEl = el.querySelector('.toggle');
       if (toggleEl) toggleEl.classList.toggle('on', fields[code]);
+    });
+  });
+
+  // Counter pads
+  $$('[data-count]').forEach(el => {
+    el.addEventListener('click', () => {
+      const code = el.getAttribute('data-count');
+      const f = ALL_FIELDS.find(x => x.code === code) || {};
+      const lo = f.min === undefined ? 0 : f.min;
+      const hi = f.max === undefined ? 999 : f.max;
+      const next = Math.max(lo, Math.min(hi, (parseInt(fields[code], 10) || 0) + parseInt(el.getAttribute('data-delta'), 10)));
+      setField(code, next);
+      const out = document.querySelector(`[data-count-value="${code}"]`);
+      if (out) out.textContent = next;
+    });
+  });
+
+  // Multi-select chips
+  $$('[data-multi]').forEach(el => {
+    el.addEventListener('click', () => {
+      const code = el.getAttribute('data-multi');
+      const key = el.getAttribute('data-key');
+      const cur = Array.isArray(fields[code]) ? fields[code].slice() : [];
+      const at = cur.indexOf(key);
+      if (at >= 0) cur.splice(at, 1); else cur.push(key);
+      setField(code, cur);
+      el.classList.toggle('chip-on', at < 0);
+      el.setAttribute('aria-pressed', String(at < 0));
     });
   });
 }
@@ -574,9 +636,13 @@ function setField(code, value) {
     try { localStorage.setItem('event_key', value); } catch(e) {}
   }
 
+  // Starting position 1-3 is red, 4-6 is blue, so the alliance never has to be
+  // asked for separately — and can't disagree with the slot.
+  if (code === 'startingPosition') fields.alliance = slotToAlliance(value);
+
   updateGenerateButton();
   saveDraft();
-  if (code === 'matchNumber' || code === 'alliance' || code === 'driverStation' || code === 'matchType' || code === 'eventKey') {
+  if (code === 'matchNumber' || code === 'startingPosition' || code === 'matchType' || code === 'eventKey') {
     maybeAutoFillTeam();
   }
 }
@@ -1298,16 +1364,46 @@ function newMatchId() {
 
 function isSheetConnected() { return !!sheetEndpoint; }
 
+// team-config.js carries the settings for the whole team. When it is filled
+// in, nobody has to configure anything on their own phone and the settings
+// page is hidden — the values here win over anything stored on the device.
+function teamPreset() {
+  return (window.TEAM_CONFIG && typeof window.TEAM_CONFIG === 'object') ? window.TEAM_CONFIG : {};
+}
+function presetValue(key) {
+  const v = teamPreset()[key];
+  return typeof v === 'string' ? v.trim() : '';
+}
+function isPreset() { return !!presetValue('sheetUrl'); }
+
 function loadSheetConfig() {
+  try {
+    pendingQueue = JSON.parse(localStorage.getItem('pending_submissions') || '[]');
+  } catch (e) { pendingQueue = []; }
+  if (isPreset()) {
+    sheetEndpoint = presetValue('sheetUrl');
+    sheetPasscode = presetValue('passcode');
+    return;
+  }
   try {
     sheetEndpoint = localStorage.getItem('sheet_endpoint') || '';
     sheetPasscode = localStorage.getItem('sheet_passcode') || '';
-    pendingQueue = JSON.parse(localStorage.getItem('pending_submissions') || '[]');
-  } catch (e) { pendingQueue = []; }
+  } catch (e) {}
+}
+
+// Hide every trace of the settings page once the team preset is in place,
+// so a scouter never sees a screen full of URLs and passcodes.
+function applyPresetUI() {
+  if (!isPreset()) return;
+  const btn = $('btn-sheet');
+  if (btn) btn.classList.add('hidden');
+  const dlg = $('sheet-overlay');
+  if (dlg) dlg.classList.add('hidden');
 }
 
 // A lead can share a link like  ...?sheet=<webAppUrl>&key=<passcode>  to auto-connect a scout's phone.
 function applyUrlConfig() {
+  if (isPreset()) return;          // the team preset is the single source of truth
   const p = new URLSearchParams(location.search);
   const url = p.get('sheet'), key = p.get('key'), tba = p.get('tba'), gid = p.get('gid');
   let changed = false;
@@ -1341,7 +1437,7 @@ function validateForSubmit(d) {
 }
 
 // Game-agnostic "fat-finger" guard: flag number/range values that fall outside the
-// field's configured min/max (set per game in the Form Builder), or are implausibly
+// field's configured min/max (set per game in config.json), or are implausibly
 // high when no max is set. Soft check — it asks the scouter to confirm, never silently
 // drops data. Catches the classic "50 scored in a 30-second period" mis-tap for ANY game.
 function getSanityWarnings() {
@@ -1375,7 +1471,6 @@ function buildPayload(data) {
     _id: data._id || currentMatchId || newMatchId()
   };
   if (googleTokenValid()) extra.idToken = googleIdToken;   // max-security mode
-  if (currentForm === 'pit') extra._form = 'pit';          // route to the Pit sheet
   else extra._scoring = analyticsModel();                  // let the Sheet re-tune its Analytics tab to this game
   return Object.assign(clean, extra);
 }
@@ -1592,7 +1687,7 @@ function googleEnabled() { return !!googleClientId; }
 
 function loadGoogleConfig() {
   try {
-    googleClientId = localStorage.getItem('google_client_id') || '';
+    googleClientId = presetValue('googleClientId') || localStorage.getItem('google_client_id') || '';
     googleIdToken = localStorage.getItem('google_token') || '';
     googleEmail = localStorage.getItem('google_email') || '';
   } catch (e) {}
@@ -1666,7 +1761,7 @@ function googleSignOut() {
 }
 
 // =====================================================================
-// CONFIG LOADING — built-in game (config.json) OR a custom one saved on this device
+// CONFIG LOADING — this season's form, shipped with the app
 // =====================================================================
 
 let defaultConfig = null;
@@ -1679,470 +1774,18 @@ async function fetchDefaultConfig() {
   return defaultConfig;
 }
 
+// One config for everyone. The season's form lives in config.json and ships
+// with the app, so every scouter is guaranteed to be on the identical form —
+// there is nothing per-device to drift, and nothing for a scouter to edit.
+// New game: the form is rebuilt in config.json and redeployed, once.
 async function loadConfig() {
-  const def = await fetchDefaultConfig();
-  try {
-    const custom = localStorage.getItem('custom_config');
-    if (custom) {
-      const c = JSON.parse(custom);
-      if (c && Array.isArray(c.sections)) return c;
-    }
-  } catch (e) {}
-  return def;
+  return await fetchDefaultConfig();
 }
 
 // Hand the live config (with its scoring point-values) to the Analytics engine
 // so OPR / predictions / pick-list re-derive points for whatever game is loaded.
 function syncAnalyticsConfig() {
   try { if (window.ANALYTICS && ANALYTICS.setConfig) ANALYTICS.setConfig(CONFIG); } catch (e) {}
-}
-
-// =====================================================================
-// FORM BUILDER — define this year's game fields with no code; the boxes rebuild live
-// =====================================================================
-
-let builderConfig = null;
-let builderForm = 'match';
-let draftFromImport = false;   // true right after an AI/JSON import → show the "review point values" banner
-
-// Identity columns are never scored — don't clutter them with a "pts" box.
-const NONSCORING_CODES = ['scoutName', 'eventKey', 'matchNumber', 'matchType', 'teamNumber', 'alliance', 'driverStation'];
-
-const FIELD_TYPES = [['text', 'Text'], ['number', 'Number'], ['boolean', 'Yes/No toggle'], ['select', 'Dropdown'], ['range', 'Rating slider']];
-
-function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
-
-function slug(title, existing) {
-  let base = String(title || 'field').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ')
-    .map((w, i) => i === 0 ? w : (w ? w.charAt(0).toUpperCase() + w.slice(1) : '')).join('');
-  if (!base) base = 'field';
-  if (!/^[a-z]/.test(base)) base = 'f' + base;
-  let code = base, n = 2;
-  while (existing && existing.indexOf(code) !== -1) { code = base + n; n++; }
-  return code;
-}
-
-function builderSections() {
-  const key = builderForm === 'pit' ? 'pitSections' : 'sections';
-  if (!Array.isArray(builderConfig[key])) builderConfig[key] = [];
-  return builderConfig[key];
-}
-
-function normalizeField(f) {
-  if (f.type === 'select') {
-    if (!Array.isArray(f.options) || !f.options.length) f.options = [{ k: 'option1', v: 'Option 1' }];
-    if (f.default == null) f.default = f.options[0].k;
-  } else if (f.type === 'range') {
-    if (f.min == null) f.min = 1; if (f.max == null) f.max = 5;
-    f.default = f.default != null ? f.default : Math.round((Number(f.min) + Number(f.max)) / 2);
-  } else if (f.type === 'number') {
-    if (f.default == null) f.default = 0;
-  } else if (f.type === 'boolean') {
-    f.default = !!f.default;
-  } else {
-    f.default = f.default != null ? f.default : '';
-  }
-}
-
-function openBuilder() {
-  builderConfig = deepClone(CONFIG);
-  if (!Array.isArray(builderConfig.sections)) builderConfig.sections = [];
-  if (!Array.isArray(builderConfig.pitSections)) builderConfig.pitSections = [];
-  builderForm = 'match';
-  draftFromImport = false;
-  $('builder-msg').classList.add('hidden');
-  if ($('manual-status')) $('manual-status').classList.add('hidden');
-  if ($('builder-paste')) $('builder-paste').value = '';
-  renderBuilder();
-  $('builder-overlay').classList.remove('hidden');
-  document.body.classList.add('no-scroll');
-}
-function closeBuilder() {
-  $('builder-overlay').classList.add('hidden');
-  document.body.classList.remove('no-scroll');
-}
-
-// Per-field scoring inputs (match form only) — these write the point values the
-// Analytics engine reads, so a new game's math works without touching code.
-function scoringControls(f, i, j) {
-  if (f.code && NONSCORING_CODES.indexOf(f.code) !== -1) return '';   // identity fields aren't scored
-  const d = 'data-sec="' + i + '" data-fld="' + j + '"';
-  if (f.type === 'number') {   // ranges are subjective 1-5 ratings, not point-scored → no pts box
-    return '<span class="b-pts" title="Points each one is worth (e.g. 1 per ball)">pts ea <input type="number" step="any" class="b-mm" ' + d + ' data-prop="points" value="' + (f.points != null ? f.points : '') + '" placeholder="—"></span>';
-  }
-  if (f.type === 'boolean') {
-    return '<span class="b-pts" title="Points if YES (leave blank if not scored)">pts if yes <input type="number" step="any" class="b-mm" ' + d + ' data-prop="points" value="' + (f.points != null ? f.points : '') + '" placeholder="—"></span>'
-      + '<label class="b-req" title="Tick if YES means the robot broke down / no-showed / tipped — used for the reliability score"><input type="checkbox" ' + d + ' data-prop="fail"' + (f.fail ? ' checked' : '') + '> breakdown</label>';
-  }
-  if (f.type === 'select') {
-    const opts = f.options || [];
-    if (!opts.length) return '';
-    const op = f.optionPoints || {};
-    return '<div class="b-optpts" title="Points for each choice (e.g. L3 climb = 30)">' + opts.map(o =>
-      '<span class="b-optpt"><span class="b-optpt-k">' + escapeHTML(o.v) + '</span><input type="number" step="any" class="b-mm" ' + d + ' data-prop="optpts" data-optk="' + escapeHTML(o.k) + '" value="' + (op[o.k] != null ? op[o.k] : '') + '" placeholder="0"></span>'
-    ).join('') + '</div>';
-  }
-  return '';
-}
-
-function renderBuilder() {
-  $('bf-match').classList.toggle('b-mode-active', builderForm === 'match');
-  $('bf-pit').classList.toggle('b-mode-active', builderForm === 'pit');
-  const secs = builderSections();
-  let h = '';
-  if (draftFromImport && builderForm === 'match') {
-    h += '<div class="b-review-banner">⚠ <strong>Review before you save.</strong> This form was drafted from your manual — read every <span class="b-review-pts">pts</span> value below and fix any the AI misread, then tap APPLY &amp; SAVE. The scoring drives the whole ANALYZE engine.</div>';
-  }
-  secs.forEach((sec, i) => {
-    h += '<div class="b-section">';
-    h += '<div class="b-sec-head">'
-      + '<input class="b-sec-name" data-sec="' + i + '" data-prop="name" value="' + escapeHTML(sec.name || '') + '" placeholder="Section name (e.g. Auto)">'
-      + '<button class="b-icon" data-action="sec-up" data-sec="' + i + '" title="Move up">↑</button>'
-      + '<button class="b-icon" data-action="sec-down" data-sec="' + i + '" title="Move down">↓</button>'
-      + '<button class="b-icon b-del" data-action="del-section" data-sec="' + i + '" title="Delete section">✕</button>'
-      + '</div>';
-    (sec.fields || []).forEach((f, j) => {
-      h += '<div class="b-field">';
-      h += '<input class="b-title" data-sec="' + i + '" data-fld="' + j + '" data-prop="title" value="' + escapeHTML(f.title || '') + '" placeholder="Field label (e.g. Goals Scored)">';
-      h += '<select class="b-type" data-sec="' + i + '" data-fld="' + j + '" data-prop="type">'
-        + FIELD_TYPES.map(t => '<option value="' + t[0] + '"' + (f.type === t[0] ? ' selected' : '') + '>' + t[1] + '</option>').join('')
-        + '</select>';
-      if (f.type === 'select') {
-        const opts = (f.options || []).map(o => o.v).join('\n');
-        h += '<textarea class="b-opts" data-sec="' + i + '" data-fld="' + j + '" data-prop="options" placeholder="One choice per line">' + escapeHTML(opts) + '</textarea>';
-      } else if (f.type === 'number' || f.type === 'range') {
-        h += '<span class="b-minmax">min <input type="number" class="b-mm" data-sec="' + i + '" data-fld="' + j + '" data-prop="min" value="' + (f.min != null ? f.min : '') + '"> '
-          + 'max <input type="number" class="b-mm" data-sec="' + i + '" data-fld="' + j + '" data-prop="max" value="' + (f.max != null ? f.max : '') + '"></span>';
-      }
-      if (builderForm === 'match') h += scoringControls(f, i, j);
-      h += '<label class="b-req"><input type="checkbox" data-sec="' + i + '" data-fld="' + j + '" data-prop="required"' + (f.required ? ' checked' : '') + '> required</label>';
-      h += '<button class="b-icon" data-action="fld-up" data-sec="' + i + '" data-fld="' + j + '" title="Move up">↑</button>';
-      h += '<button class="b-icon" data-action="fld-down" data-sec="' + i + '" data-fld="' + j + '" title="Move down">↓</button>';
-      h += '<button class="b-icon b-del" data-action="del-field" data-sec="' + i + '" data-fld="' + j + '" title="Delete field">✕</button>';
-      h += '</div>';
-    });
-    h += '<button class="btn btn-ghost b-add" data-action="add-field" data-sec="' + i + '">+ Add field</button>';
-    h += '</div>';
-  });
-  h += '<button class="btn btn-outline b-add-sec" data-action="add-section">+ Add section</button>';
-  $('builder-body').innerHTML = h;
-}
-
-function onBuilderEdit(e) {
-  const el = e.target, prop = el.getAttribute('data-prop');
-  if (!prop) return;
-  const si = el.getAttribute('data-sec'), fi = el.getAttribute('data-fld');
-  const secs = builderSections();
-  if (!secs[si]) return;
-  if (prop === 'name') { secs[si].name = el.value; return; }
-  const f = secs[si].fields[fi];
-  if (!f) return;
-  if (prop === 'title') f.title = el.value;
-  else if (prop === 'type') { f.type = el.value; normalizeField(f); renderBuilder(); }
-  else if (prop === 'required') f.required = el.checked;
-  else if (prop === 'min') f.min = el.value === '' ? undefined : Number(el.value);
-  else if (prop === 'max') f.max = el.value === '' ? undefined : Number(el.value);
-  else if (prop === 'points') f.points = el.value === '' ? undefined : Number(el.value);
-  else if (prop === 'fail') f.fail = el.checked;
-  else if (prop === 'optpts') {
-    const k = el.getAttribute('data-optk');
-    f.optionPoints = f.optionPoints || {};
-    if (el.value === '') delete f.optionPoints[k]; else f.optionPoints[k] = Number(el.value);
-  }
-  else if (prop === 'options') {
-    f.options = el.value.split('\n').map(s => s.trim()).filter(Boolean).map(v => ({ k: slug(v), v: v }));
-    if (e.type === 'change') renderBuilder();   // refresh the per-choice point inputs once they finish typing
-  }
-}
-
-function onBuilderClick(e) {
-  const btn = e.target.closest('[data-action]');
-  if (!btn) return;
-  const action = btn.getAttribute('data-action');
-  const si = parseInt(btn.getAttribute('data-sec'), 10);
-  const fi = parseInt(btn.getAttribute('data-fld'), 10);
-  const secs = builderSections();
-  if (action === 'add-section') secs.push({ name: 'New Section', fields: [] });
-  else if (action === 'del-section') { if (!confirm('Delete this whole section?')) return; secs.splice(si, 1); }
-  else if (action === 'sec-up') { if (si > 0) { const t = secs[si]; secs[si] = secs[si - 1]; secs[si - 1] = t; } }
-  else if (action === 'sec-down') { if (si < secs.length - 1) { const t = secs[si]; secs[si] = secs[si + 1]; secs[si + 1] = t; } }
-  else if (action === 'add-field') { const f = { title: 'New Field', type: 'text' }; normalizeField(f); secs[si].fields = secs[si].fields || []; secs[si].fields.push(f); }
-  else if (action === 'del-field') secs[si].fields.splice(fi, 1);
-  else if (action === 'fld-up') { const a = secs[si].fields; if (fi > 0) { const t = a[fi]; a[fi] = a[fi - 1]; a[fi - 1] = t; } }
-  else if (action === 'fld-down') { const a = secs[si].fields; if (fi < a.length - 1) { const t = a[fi]; a[fi] = a[fi + 1]; a[fi + 1] = t; } }
-  else return;
-  renderBuilder();
-}
-
-function showBuilderMsg(msg, kind) {
-  const el = $('builder-msg');
-  el.textContent = msg;
-  el.className = 'sheet-msg ' + (kind === 'err' ? 'sheet-msg-err' : (kind === 'warn' ? 'builder-warn' : 'sheet-msg-ok'));
-  el.classList.remove('hidden');
-}
-
-function applyConfig() {
-  ['sections', 'pitSections'].forEach(key => {
-    if (!Array.isArray(builderConfig[key])) { builderConfig[key] = []; return; }
-    const used = [];
-    builderConfig[key].forEach(s => {
-      s.name = String(s.name || 'Section');
-      (s.fields || []).forEach(f => {
-        f.title = String(f.title || 'Field');
-        if (!f.type) f.type = 'text';
-        normalizeField(f);
-        if (!f.code) f.code = slug(f.title, used);     // existing fields keep their code; new ones derive from the label
-        used.push(f.code);
-      });
-    });
-  });
-  const matchCodes = (builderConfig.sections || []).flatMap(s => (s.fields || []).map(f => f.code));
-  const missing = ['scoutName', 'eventKey', 'matchType', 'matchNumber', 'teamNumber'].filter(c => matchCodes.indexOf(c) === -1);
-  const scoringCount = (builderConfig.sections || []).reduce((n, s) => n + (s.fields || []).filter(f => f.points != null || f.optionPoints).length, 0);
-
-  CONFIG = deepClone(builderConfig);
-  try { localStorage.setItem('custom_config', JSON.stringify(CONFIG)); } catch (e) {}
-  syncAnalyticsConfig();
-  draftFromImport = false;
-  clearDraft();
-  currentForm = 'match';
-  applyForm();
-  fields = initialFieldState();
-  confidence = {};
-  currentMatchId = newMatchId();
-  if ($('transcript')) $('transcript').value = '';
-  resetTranscriptBuffer();
-  renderAllFields();
-  syncFormUI();
-  updateProcessButton();
-  updateGenerateButton();
-  if (missing.length) showBuilderMsg('Saved — but the match form no longer has the standard ' + missing.join(', ') + ' field(s). Those codes power Sheet de-duplication; keep fields titled "Scout Name", "Event Key", "Match Type", "Match #", "Team #" for full cloud support.', 'warn');
-  else if (!scoringCount) showBuilderMsg('✓ Saved — but no field has a point value yet, so the 📈 ANALYZE engine can\'t rate teams or predict matches. Add a "pts" value to each scoring field (or re-import the manual).', 'warn');
-  else showBuilderMsg('✓ Saved! The form rebuilt to match (' + scoringCount + ' scoring fields wired to ANALYZE). Export it to share with your scouts.', 'ok');
-}
-
-function exportConfig() {
-  const blob = new Blob([JSON.stringify(CONFIG, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'bobcat-scout-config.json';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
-  showBuilderMsg('Config downloaded. Scouts can load it here via "Load pasted/uploaded".', 'ok');
-}
-
-function importConfigText(text) {
-  let c;
-  try { c = JSON.parse(text); } catch (e) { showBuilderMsg('That is not valid JSON — check for a missing bracket or comma.', 'err'); return; }
-  if (!c || !Array.isArray(c.sections)) { showBuilderMsg('A config must have a "sections" array.', 'err'); return; }
-  reconcileSelectScoring(c);
-  builderConfig = c;
-  if (!Array.isArray(builderConfig.pitSections)) builderConfig.pitSections = [];
-  builderForm = 'match';
-  draftFromImport = true;
-  renderBuilder();
-  showBuilderMsg('Loaded into the editor. Review the fields, then tap APPLY & SAVE.', 'ok');
-}
-
-async function resetConfig() {
-  if (!confirm('Switch back to this year\'s game (REBUILT 2026)? Any custom game you built or imported will be replaced on this device.')) return;
-  try { localStorage.removeItem('custom_config'); } catch (e) {}
-  const def = await fetchDefaultConfig();
-  builderConfig = deepClone(def);
-  CONFIG = deepClone(def);
-  syncAnalyticsConfig();
-  draftFromImport = false;
-  currentForm = 'match'; applyForm(); fields = initialFieldState(); confidence = {}; currentMatchId = newMatchId(); clearDraft();
-  renderAllFields(); syncFormUI(); updateGenerateButton();
-  renderBuilder();
-  showBuilderMsg('✓ Switched back to this year\'s game — REBUILT 2026.', 'ok');
-}
-
-// =====================================================================
-// IMPORT FROM GAME MANUAL — upload the year's manual, AI drafts the fields + scoring
-// =====================================================================
-
-// The identity columns every game needs (Sheet de-dup + analytics group-by).
-// We always inject these so an AI/hand-built form can't accidentally drop them.
-const IDENTITY_FIELDS = [
-  { title: 'Scout Name', type: 'text', code: 'scoutName', required: true, preserve: true, placeholder: 'Your name' },
-  { title: 'Event Key', type: 'text', code: 'eventKey', required: true, preserve: true, placeholder: '2026ctwat' },
-  { title: 'Match #', type: 'number', code: 'matchNumber', required: true, default: 1, min: 1, max: 200 },
-  { title: 'Match Type', type: 'select', code: 'matchType', default: 'qm', options: [{ k: 'qm', v: 'Qualification' }, { k: 'pm', v: 'Practice' }, { k: 'sf', v: 'Playoff' }] },
-  { title: 'Team #', type: 'number', code: 'teamNumber', required: true, default: 0, min: 1, max: 99999 },
-  { title: 'Alliance', type: 'select', code: 'alliance', preserve: true, default: 'red', options: [{ k: 'red', v: 'Red' }, { k: 'blue', v: 'Blue' }] },
-  { title: 'Driver Station', type: 'select', code: 'driverStation', default: '1', options: [{ k: '1', v: '1' }, { k: '2', v: '2' }, { k: '3', v: '3' }] },
-  { title: 'No Show', type: 'boolean', code: 'noShow', default: false, fail: true }
-];
-const IDENTITY_TITLE_RE = /^(scout\s*name|event\s*key|match\s*#|match\s*number|match\s*type|team\s*#|team\s*number|alliance|driver\s*station|no\s*show)$/i;
-
-function ensureScoutingIdentity(cfg) {
-  cfg.sections = Array.isArray(cfg.sections) ? cfg.sections : [];
-  const idCodes = IDENTITY_FIELDS.map(f => f.code);
-  cfg.sections.forEach(s => {
-    s.fields = (s.fields || []).filter(f =>
-      idCodes.indexOf(f.code) === -1 && !IDENTITY_TITLE_RE.test(String(f.title || '').trim()));
-  });
-  cfg.sections = cfg.sections.filter(s => s.fields && s.fields.length);
-  cfg.sections.unshift({ name: 'Prematch', fields: deepClone(IDENTITY_FIELDS) });   // always lead with clean identity
-  return cfg;
-}
-
-// Reliability robustness: a boolean that READS like a breakdown counts as one,
-// even if an AI draft set "0 points" instead of ticking breakdown.
-const BREAKDOWN_RE = /(tipp|disab|died|dead|broke|broken|fell|fall|no[\s-]*show|stuck|immobil)/i;
-function markBreakdownFields(cfg) {
-  (cfg.sections || []).forEach(s => (s.fields || []).forEach(f => {
-    if (f.type === 'boolean' && f.fail == null && BREAKDOWN_RE.test(String(f.title || ''))) f.fail = true;
-  }));
-  return cfg;
-}
-
-// Scoring robustness: an AI sometimes keys optionPoints by the choice's LABEL or a
-// near-miss slug instead of its option key — re-map so every point value actually lands.
-function reconcileSelectScoring(cfg) {
-  (cfg.sections || []).forEach(s => (s.fields || []).forEach(f => {
-    if (f.type !== 'select' || !f.optionPoints || !Array.isArray(f.options) || !f.options.length) return;
-    const keys = f.options.map(o => o.k);
-    const fixed = {};
-    Object.keys(f.optionPoints).forEach(k => {
-      const val = f.optionPoints[k];
-      if (keys.indexOf(k) !== -1) { fixed[k] = val; return; }                 // already a valid key
-      const hit = f.options.find(o =>
-        o.k === slug(k) || String(o.v).toLowerCase() === String(k).toLowerCase() || slug(o.v) === slug(k));
-      if (hit) fixed[hit.k] = val;                                            // matched by label/slug
-    });
-    f.optionPoints = fixed;
-  }));
-  return cfg;
-}
-
-// A short human summary of what scoring the engine will read (for the import banner).
-function summarizeScoring(cfg) {
-  const out = [];
-  (cfg.sections || []).forEach(s => (s.fields || []).forEach(f => {
-    if (f.optionPoints) { const p = Object.keys(f.optionPoints).map(k => f.optionPoints[k]); if (p.length) out.push(f.title + ' (' + Math.min.apply(null, p) + '–' + Math.max.apply(null, p) + ')'); }
-    else if (f.points != null) out.push(f.title + ' ' + f.points + 'pt');
-  }));
-  return out;
-}
-
-const MANUAL_PROMPT = [
-  'You configure a robotics-competition scouting form. From the game-manual excerpt below, design the MATCH scouting fields and their SCORING.',
-  'Output ONLY one JSON object (no markdown fences, no prose) of exactly this shape:',
-  '{"title":"<Game> <Year>","sections":[{"name":"Auto","fields":[{"title":"Human label","type":"number|boolean|select|range|text","points":0,"optionPoints":{"key":0},"options":[{"k":"key","v":"Label"}],"fail":false}]}]}',
-  'Rules:',
-  '- Do NOT include identity fields (scout name, team #, match #, match type, alliance, driver station, no-show) — the app injects those itself.',
-  '- Create one section per game period, e.g. "Auto", "Teleop", "Endgame", then a final "Qualitative" section.',
-  '- type "number": a counted scoring action (balls/notes/cones/links scored). Set "points" to its value THAT period; make separate Auto vs Teleop fields when the value differs.',
-  '- type "select" with "optionPoints": tiered actions (climb/park/stage levels). Give every option a point value and include its "options" list.',
-  '- type "boolean": a yes/no scoring action (e.g. left the starting line). Set "points" if it scores; omit otherwise.',
-  '- Set "fail":true ONLY on boolean breakdown fields (Tipped, Died/Disabled).',
-  '- Always end with a "Qualitative" section containing: a 1-5 "range" Driver Skill, a 1-5 "range" Defense Rating, a boolean "Tipped" (fail), a boolean "Died / Disabled" (fail), and a text "Comments". No points on these.',
-  '- Keep labels short. Use real point values from the manual. Output strictly valid JSON with numeric (not string) points.'
-].join('\n');
-
-function loadExternalScript(src) {
-  return new Promise((res, rej) => {
-    if (document.querySelector('script[data-ext="' + src + '"]')) return res();
-    const s = document.createElement('script');
-    s.src = src; s.async = true; s.setAttribute('data-ext', src);
-    s.onload = () => res();
-    s.onerror = () => rej(new Error('Could not load a helper (need internet for manual import).'));
-    document.head.appendChild(s);
-  });
-}
-
-async function extractPdfText(file) {
-  await loadExternalScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
-  if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions)
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  if (!window.pdfjsLib) throw new Error('PDF reader failed to load — paste the scoring text instead.');
-  const buf = await file.arrayBuffer();
-  const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
-  const out = [];
-  const maxPages = Math.min(pdf.numPages, 140);
-  for (let p = 1; p <= maxPages; p++) {
-    const page = await pdf.getPage(p);
-    const tc = await page.getTextContent();
-    out.push(tc.items.map(it => it.str).join(' '));
-  }
-  const joined = out.join('\n');
-  if (joined.replace(/\s/g, '').length < 120)
-    throw new Error('No readable text in that PDF — it looks like scanned images. Use PASTE SCORING TEXT and paste the scoring section instead.');
-  return joined;
-}
-
-// Manuals are huge; send the AI the densest scoring region rather than 150 pages.
-function pickScoringExcerpt(text) {
-  text = String(text).replace(/\s+/g, ' ').trim();
-  if (text.length <= 14000) return text;
-  const kw = /(point|scor|ranking|climb|cargo|cone|cube|note|fuel|goal|rung|barge|amp|speaker|tarmac|auto|endgame|penalt|hatch|panel|cell|link)/gi;
-  let best = 0, bestI = 0; const win = 14000;
-  for (let i = 0; i < text.length - 1; i += 2000) {
-    const m = text.slice(i, i + win).match(kw);
-    const c = m ? m.length : 0;
-    if (c > best) { best = c; bestI = i; }
-  }
-  return text.slice(bestI, bestI + win);
-}
-
-function extractJsonObject(s) {
-  s = String(s).trim().replace(/^```(?:json)?/i, '').replace(/```\s*$/, '').trim();
-  const a = s.indexOf('{'), b = s.lastIndexOf('}');
-  if (a === -1 || b === -1) throw new Error('The AI did not return a form. Try again or paste a cleaner scoring section.');
-  return JSON.parse(s.slice(a, b + 1));
-}
-
-async function aiDraftConfig(rawText) {
-  const excerpt = pickScoringExcerpt(rawText);
-  if (excerpt.length < 40) throw new Error('That looked empty — paste the scoring section, or the PDF may be scanned images (no text).');
-  await loadExternalScript('https://js.puter.com/v2/');
-  if (!window.puter || !puter.ai || !puter.ai.chat) throw new Error('AI service unavailable — check internet, or build the form by hand below.');
-  try { puter.quiet = true; } catch (e) {}
-  const resp = await Promise.race([
-    puter.ai.chat(MANUAL_PROMPT + '\n\nMANUAL EXCERPT:\n"""\n' + excerpt + '\n"""'),
-    new Promise((_, rej) => setTimeout(() => rej(new Error('AI timed out. If a Puter sign-in window opened, finish it and retry — or just build the form by hand below (the pts boxes set the scoring).')), 75000))
-  ]);
-  let text;
-  if (resp && typeof resp === 'object') {
-    const mc = resp.message && resp.message.content;
-    text = resp.text || (typeof mc === 'string' ? mc : (mc && mc[0] && mc[0].text)) || String(resp);
-  } else text = String(resp);
-  const cfg = extractJsonObject(text);
-  if (!cfg || !Array.isArray(cfg.sections)) throw new Error('The AI returned an invalid form. Try again.');
-  ensureScoutingIdentity(cfg);
-  markBreakdownFields(cfg);
-  reconcileSelectScoring(cfg);
-  cfg.title = cfg.title || 'Imported game';
-  cfg.delimiter = '\t';
-  if (!Array.isArray(cfg.pitSections)) cfg.pitSections = deepClone((CONFIG && CONFIG.pitSections) || []);
-  return cfg;
-}
-
-function setManualStatus(msg, kind) {
-  const el = $('manual-status'); if (!el) return;
-  el.textContent = msg;
-  el.className = 'b-import-status' + (kind === 'err' ? ' b-import-err' : (kind === 'ok' ? ' b-import-ok' : ''));
-  el.classList.remove('hidden');
-}
-
-async function runManualDraft(getText, label) {
-  setManualStatus('Reading ' + label + '… (10–30s)', '');
-  try {
-    const raw = await getText();
-    setManualStatus('Designing your form from the manual with AI…', '');
-    const cfg = await aiDraftConfig(raw);
-    builderConfig = cfg;
-    builderForm = 'match';
-    draftFromImport = true;
-    renderBuilder();
-    const scoring = summarizeScoring(cfg);
-    setManualStatus('✓ Drafted ' + scoring.length + ' scoring fields: ' + scoring.slice(0, 8).join(' · ') + (scoring.length > 8 ? ' …' : '') + '. DOUBLE-CHECK these below, then APPLY & SAVE.', 'ok');
-    showBuilderMsg('Draft loaded from your manual — verify the point values, then APPLY & SAVE.', 'ok');
-  } catch (e) {
-    setManualStatus('⚠ ' + (e && e.message ? e.message : 'Import failed'), 'err');
-  }
 }
 
 // =====================================================================
@@ -2238,45 +1881,6 @@ function wireUI() {
   // Session summary
   $('btn-summary').addEventListener('click', toggleSummary);
 
-  // Match / Pit mode
-  $('mode-match').addEventListener('click', () => setForm('match'));
-  $('mode-pit').addEventListener('click', () => setForm('pit'));
-
-  // Form builder
-  $('btn-builder').addEventListener('click', openBuilder);
-  $('btn-builder-close').addEventListener('click', closeBuilder);
-  $('bf-match').addEventListener('click', () => { builderForm = 'match'; renderBuilder(); });
-  $('bf-pit').addEventListener('click', () => { builderForm = 'pit'; renderBuilder(); });
-  $('builder-body').addEventListener('input', onBuilderEdit);
-  $('builder-body').addEventListener('change', onBuilderEdit);
-  $('builder-body').addEventListener('click', onBuilderClick);
-  $('btn-builder-apply').addEventListener('click', applyConfig);
-  $('btn-builder-export').addEventListener('click', exportConfig);
-  $('btn-builder-reset').addEventListener('click', resetConfig);
-  $('btn-builder-load').addEventListener('click', () => importConfigText($('builder-paste').value));
-  // Import from game manual (AI-assisted draft)
-  if ($('btn-manual-pdf')) $('btn-manual-pdf').addEventListener('click', () => $('manual-file').click());
-  if ($('manual-file')) $('manual-file').addEventListener('change', e => {
-    const file = e.target.files && e.target.files[0];
-    if (file) runManualDraft(() => extractPdfText(file), file.name);
-    e.target.value = '';
-  });
-  if ($('btn-manual-text')) $('btn-manual-text').addEventListener('click', () => {
-    const wrap = $('manual-text-wrap');
-    wrap.classList.toggle('hidden');
-    if (!wrap.classList.contains('hidden')) $('manual-text').focus();
-  });
-  if ($('btn-manual-go')) $('btn-manual-go').addEventListener('click', () => {
-    const t = $('manual-text').value.trim();
-    if (t.length < 40) { setManualStatus('Paste a bit more of the scoring section first.', 'err'); return; }
-    runManualDraft(() => Promise.resolve(t), 'pasted text');
-  });
-  $('builder-file').addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (file) { const r = new FileReader(); r.onload = () => { $('builder-paste').value = r.result; importConfigText(r.result); }; r.readAsText(file); }
-  });
-  $('btn-builder-upload').addEventListener('click', () => $('builder-file').click());
-  $('builder-overlay').addEventListener('click', e => { if (e.target === $('builder-overlay')) closeBuilder(); });
 }
 
 // =====================================================================
@@ -2289,7 +1893,6 @@ function saveDraft() {
       fields: fields,
       confidence: confidence,
       matchId: currentMatchId,
-      form: currentForm,
       transcript: $('transcript') ? $('transcript').value : ''
     }));
   } catch (e) {}
@@ -2301,7 +1904,6 @@ function loadDraft() {
     if (!raw) return null;
     const d = JSON.parse(raw);
     if (!d || !d.fields) return null;
-    if (d.form === 'match') { currentForm = d.form; applyForm(); }   // pit scouting removed — match only
     fields = Object.assign(initialFieldState(), d.fields);
     confidence = d.confidence || {};
     if (d.matchId) currentMatchId = d.matchId;
@@ -2329,38 +1931,7 @@ function registerServiceWorker() {
   }
 }
 
-// ---- Match / Pit mode ----
-function syncFormUI() {
-  const isPit = currentForm === 'pit';
-  const step1 = $('step-describe'); if (step1) step1.classList.toggle('hidden', isPit);
-  const saveNext = $('btn-save-next'); if (saveNext) saveNext.classList.toggle('hidden', isPit);
-  const mm = $('mode-match'), mp = $('mode-pit');
-  if (mm) mm.classList.toggle('mode-active', !isPit);
-  if (mp) mp.classList.toggle('mode-active', isPit);
-}
 
-function setForm(form) {
-  if (form === currentForm) return;
-  currentForm = form;
-  applyForm();
-  const sn = fields.scoutName, ek = fields.eventKey;   // carry identity across the switch
-  fields = initialFieldState();
-  if (sn) fields.scoutName = sn;
-  if (ek) fields.eventKey = ek;
-  confidence = {};
-  currentMatchId = newMatchId();
-  $('output-section').classList.add('hidden');
-  $('generate-row').classList.remove('hidden');
-  const ss = $('submit-status'); if (ss) ss.classList.add('hidden');
-  if ($('transcript')) $('transcript').value = '';
-  resetTranscriptBuffer();
-  renderAllFields();
-  syncFormUI();
-  updateProcessButton();
-  updateGenerateButton();
-  saveDraft();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
 
 // =====================================================================
 // SESSION SUMMARY — per-team averages computed on the phone (no internet)
@@ -2462,15 +2033,27 @@ async function loadSchedule(tbaKey, eventKey) {
 }
 
 // Fill the team number from the cached schedule whenever match/alliance/station changes.
+// Starting slot 1-6 is the whole answer: 1-3 is red 1-3, 4-6 is blue 1-3.
+function slotToAlliance(slot) {
+  const n = parseInt(slot, 10);
+  if (n >= 1 && n <= 3) return 'red';
+  if (n >= 4 && n <= 6) return 'blue';
+  return '';
+}
+function slotToStation(slot) {
+  const n = parseInt(slot, 10);
+  return n >= 1 && n <= 6 ? ((n - 1) % 3) + 1 : 0;
+}
+
 function maybeAutoFillTeam() {
   if (!scheduleCache) return;
   if (scheduleCache.event !== String(fields.eventKey || '').toLowerCase()) return;
   if (fields.matchType !== 'qm') return;
   const m = scheduleCache.matches[String(fields.matchNumber)];
   if (!m) return;
-  const arr = m[fields.alliance];
+  const arr = m[slotToAlliance(fields.startingPosition)];
   if (!arr) return;
-  const team = arr[parseInt(fields.driverStation, 10) - 1];
+  const team = arr[slotToStation(fields.startingPosition) - 1];
   if (!team || String(fields.teamNumber) === String(team)) return;
   fields.teamNumber = parseInt(team, 10) || team;
   confidence.teamNumber = 'high';
@@ -2544,7 +2127,7 @@ async function fetchTBAEvent(tbaKey, eventKey) {
 
 // Called by the ANALYZE "Add official TBA data" button.
 async function loadTBAData() {
-  const tbaKey = ((localStorage.getItem('tba_key') || '') || ($('tba-key') ? $('tba-key').value : '')).trim();
+  const tbaKey = (presetValue('tbaKey') || localStorage.getItem('tba_key') || ($('tba-key') ? $('tba-key').value : '') || '').trim();
   const ek = String(fields.eventKey || '').trim();
   if (!ek) throw new Error('Set the Event Key on the scouting form first (e.g. 2026ctwat).');
   if (!tbaKey) throw new Error('Add your free TBA API key in ⚙ SHEET → "Match schedule" first.');
@@ -2615,7 +2198,7 @@ const SETUP_TRACKS = {
       id: 'event',
       title: 'Set the event code',
       time: '15 sec',
-      auto: () => !!ls('event_key'),
+      auto: () => !!presetValue('eventKey') || !!ls('event_key'),
       body: `<p>The event code tells the spreadsheet which competition this data belongs to. Your host will give it to you. It looks like <code>2026ctwat</code>, which is the year plus a short code for the event.</p>
              <p class="setup-dim">If the host sent you a setup link, this is probably already filled in.</p>`,
       input: { key: 'event_key', field: 'eventKey', label: 'Event code', placeholder: 'e.g. 2026ctwat' }
@@ -2624,7 +2207,7 @@ const SETUP_TRACKS = {
       id: 'connect',
       title: 'Check you are connected',
       time: '10 sec',
-      auto: () => !!ls('sheet_endpoint'),
+      auto: () => isPreset() || !!ls('sheet_endpoint'),
       body: `<p>When you are connected, every match you save goes straight into the team spreadsheet on its own. You never need a password for the spreadsheet itself, and you cannot open it. You can only send matches into it.</p>
              <div id="setup-conn-state" class="setup-state"></div>
              <p class="setup-dim">Not connected? Ask your host for the setup link and open it on this phone. You can still scout without it, because the app makes a QR code your host can scan instead.</p>`,
@@ -2760,21 +2343,6 @@ const SETUP_TRACKS = {
       ]
     },
     {
-      id: 'form',
-      title: 'Build this year’s form',
-      time: '5 min',
-      optional: true,
-      auto: () => !!ls('custom_config'),
-      body: `<p>The app ships with this season’s game already built in, so you can skip this today. When next year’s game drops, this is the one step that makes everything else work again.</p>
-             <ol class="help-list">
-               <li>Tap <strong>OPEN THE FORM BUILDER</strong>.</li>
-               <li>Upload the new game manual as a PDF, or paste the scoring section as text.</li>
-               <li>Check every point value against the manual’s scoring table, fix anything wrong, then tap <strong>APPLY AND SAVE</strong>.</li>
-             </ol>
-             <div class="help-note">The point values you set here are what the ratings, the win predictions and the pick list are all built on. Nothing else needs to change.</div>`,
-      actions: [{ label: '&#128736; OPEN THE FORM BUILDER', act: 'builder', cls: 'btn-outline' }]
-    },
-    {
       id: 'tba',
       title: 'Turn on automatic team numbers',
       time: '3 min',
@@ -2817,7 +2385,12 @@ const SETUP_TRACKS = {
 
 // ---------------------------------------------------------------- state
 
-function setupSteps() { return SETUP_TRACKS[setupState.role] || []; }
+function setupSteps() {
+  // With the team preset in place the host work is already done in code,
+  // so everyone who opens the app is a scouter.
+  if (isPreset()) return SETUP_TRACKS.scouter;
+  return SETUP_TRACKS[setupState.role] || [];
+}
 function stepDone(st) {
   if (st.auto && st.auto()) return true;
   return !!setupState.done[st.id];
@@ -2831,6 +2404,7 @@ function setupCounts() {
 
 function renderSetup() {
   const roles = $('setup-roles'), track = $('setup-track');
+  if (isPreset() && !setupState.role) setupState.role = 'scouter';
   if (!setupState.role) {
     roles.classList.remove('hidden');
     track.classList.add('hidden');
@@ -3046,7 +2620,6 @@ function handleSetupAction(act, stepId) {
       break;
     }
     case 'showqr': setupShowQR(); break;
-    case 'builder': closeSetup(); openBuilder(); break;
     case 'sheetdlg': closeSetup(); openSheetDialog(); break;
     case 'savetba': {
       const v = ($('setup-tba').value || '').trim();
@@ -3150,7 +2723,9 @@ function wireSetup() {
   $('btn-setup').addEventListener('click', openSetup);
   $('btn-setup-close').addEventListener('click', closeSetup);
   $('setup-overlay').addEventListener('click', (e) => { if (e.target === $('setup-overlay')) closeSetup(); });
-  $('btn-setup-back').addEventListener('click', () => {
+  const back = $('btn-setup-back');
+  if (isPreset()) back.classList.add('hidden');
+  back.addEventListener('click', () => {
     setupState.role = ''; saveSetupState(); renderSetup(); refreshSetupUI();
   });
   $('btn-ready-go').addEventListener('click', openSetup);
@@ -3223,7 +2798,7 @@ async function init() {
   try {
     const sn = localStorage.getItem('scout_name');
     if (sn) fields.scoutName = sn;
-    const ek = localStorage.getItem('event_key');
+    const ek = presetValue('eventKey') || localStorage.getItem('event_key');
     if (ek) fields.eventKey = ek;
     const sm = localStorage.getItem('session_matches');
     if (sm) sessionMatches = JSON.parse(sm);
@@ -3236,7 +2811,7 @@ async function init() {
   loadCachedSchedule();
   loadCachedTBA();           // hand any cached official Blue Alliance data to the analytics engine
   try {
-    const tk = localStorage.getItem('tba_key');
+    const tk = presetValue('tbaKey') || localStorage.getItem('tba_key');
     const ek = String(fields.eventKey || '').toLowerCase();
     if (tk && ek && navigator.onLine && (!scheduleCache || scheduleCache.event !== ek)) {
       loadSchedule(tk, ek).then(maybeAutoFillTeam).catch(() => {});
@@ -3245,7 +2820,6 @@ async function init() {
 
   renderAllFields();
   wireUI();
-  syncFormUI();
   if (draft && draft.transcript) { $('transcript').value = draft.transcript; resetTranscriptBuffer(); }
   updateProcessButton();
   updateGenerateButton();
@@ -3254,6 +2828,7 @@ async function init() {
   flushQueue();
   initGoogleSignIn();
   registerServiceWorker();
+  applyPresetUI();
   wireSetup();
   refreshSetupUI();
 }

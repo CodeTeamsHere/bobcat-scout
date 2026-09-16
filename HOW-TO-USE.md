@@ -16,6 +16,13 @@ The app lives at **https://codeteamshere.github.io/bobcat-scout** — anyone can
 
 ---
 
+## If the team preset is already filled in
+
+Once a host has filled in [`team-config.js`](team-config.js) (see **[SETUP-ONCE.md](SETUP-ONCE.md)**),
+scouters have **nothing to set up**. The settings page is hidden, the spreadsheet connection and
+the event are already there, and the only thing the app asks for is a name. Everything below about
+hosts and connecting is then just background reading.
+
 ## Fastest path: the built-in setup wizard
 
 You do not have to read this whole file. Open the app, tap **⚡ SETUP** at the top, and pick whether you
@@ -27,7 +34,7 @@ and remembers where you stopped.
 | **Time** | About 2 minutes, once | About 15 minutes, once |
 | **Steps** | Name → event code → connection check → mic test → one practice match | Sheet → script → authorize → passcode → deploy → connect and live-test → share the link |
 | **Nice touches** | A real mic test that shows what it heard, plus an "I will type instead" escape hatch | Copies the whole Apps Script to your clipboard, opens the right Google pages, and sends a real test row so you know it worked |
-| **Optional extras** | — | Build this year's form from the game manual, auto-fill team numbers from The Blue Alliance, lock submissions to your team's Google accounts |
+| **Optional extras** | — | Auto-fill team numbers from The Blue Alliance, lock submissions to your team's Google accounts |
 
 Everything below is the same information written out longhand, for when you want to read ahead or
 follow along on a second screen.
@@ -104,7 +111,7 @@ Every row the gate writes is already analysis-ready, because it:
    - **Who has access:** **Anyone** ← important, or phones can't reach it
    - **Deploy**, then **copy the Web app URL** (it ends in `/exec`).
 
-> Full screenshots-level detail is in **`SETUP-SHEET.md`**. Changing events later? Just edit the **Config** tab — no need to redeploy.
+> Full click-by-click detail, with links for every value, is in **[SETUP-ONCE.md](SETUP-ONCE.md)**. Changing events later? Just edit the **Config** tab — no need to redeploy.
 
 ## Step 3 — Connect the app to your Sheet
 
@@ -130,7 +137,7 @@ Only do this if you want to require sign-in so randoms can't submit.
 1. In the Sheet's **Config** tab: set **Require Google Login → yes**, leave **Google Client ID** as the pre-filled one, and set **Allowed Domain** (e.g. `team177.org`) or **Allowed Emails** (a comma-separated list).
 2. In the app: **⚙ SHEET → Google sign-in → Save & Enable** (the Client ID is already filled in for you).
 
-The shared Client ID is **already built into the app** — it's public, not a secret, and your allow-list is what actually controls who can submit. (Details in `SETUP-SHEET.md`.)
+The shared Client ID is **already built into the app** — it's public, not a secret, and your allow-list is what actually controls who can submit. (Details in [SETUP-ONCE.md](SETUP-ONCE.md).)
 
 ## Step 6 — Build this year's form
 

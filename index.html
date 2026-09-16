@@ -38,7 +38,6 @@
           <span id="sheet-dot" class="sheet-dot dot-off"></span>
           <span id="sheet-label">SHEET</span>
         </button>
-        <button id="btn-builder" class="btn-header-outline" title="Edit the scouting form for this year's game">🛠 FORM</button>
         <button id="btn-analyze" class="btn-header-gold" title="Alliance recommendations, predictions & validation">📈 ANALYZE</button>
         <button id="btn-help" class="btn-header-outline" title="Help & instructions">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
@@ -53,11 +52,6 @@
   </header>
 
   <main>
-
-    <div class="mode-bar" role="tablist" aria-label="Scouting mode">
-      <button id="mode-match" class="mode-btn mode-active">📋 MATCH SCOUTING</button>
-      <button id="mode-pit" class="mode-btn">🔧 PIT SCOUTING</button>
-    </div>
 
     <!-- First-run / readiness strip -->
     <div id="ready-strip" class="ready-strip hidden">
@@ -103,7 +97,7 @@
               <line x1="8" y1="23" x2="16" y2="23"></line>
             </svg>
           </button>
-          <textarea id="transcript" placeholder='Tap mic and talk, or type. Example: "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2, preloaded 3 fuel. In auto they made 4 in the hub and left the line. Teleop 18 scored, pickup was pretty good, passing was amazing. Climbed the mid rung. Smooth driver."'></textarea>
+          <textarea id="transcript" placeholder='Tap mic and talk, or type. Example: "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2. In auto they scored 4 off the depot. Teleop 18 while driving, pickup was pretty good, passing was amazing. Played defense well. Climbed the mid rung."'></textarea>
         </div>
         <div id="mic-status" class="mic-status hidden" role="status" aria-live="polite">
           <span id="mic-status-dot" class="mic-status-dot"></span>
@@ -265,7 +259,7 @@
           <ol class="help-list">
             <li>Tap the maroon mic button and describe the match in plain English. You can also type into the box.</li>
             <li>Tap <strong>AUTO-FILL FIELDS</strong>. The app parses your description into the form.</li>
-            <li>Review the fields (Step 2) — anything with a green AI badge was auto-filled. Edit anything that's wrong.</li>
+            <li>Review the fields (Step 2) and fix anything the app got wrong. Nothing is sent until you do.</li>
             <li>Fill in any required fields marked with <span class="req">*</span>. The Generate button stays disabled until they're filled.</li>
             <li>Tap <strong>GENERATE</strong>, then either scan the QR code, or — if a Sheet is connected — tap <strong>SUBMIT TO SHEET</strong>.</li>
             <li>Tap <strong>SAVE &amp; NEXT MATCH</strong> to keep going (it also submits to the Sheet when connected). Match number increments automatically.</li>
@@ -277,7 +271,7 @@
           <p class="help-intro">The <strong>host</strong> is whoever owns the scouting Google Sheet. Do this once so scouters' matches flow straight into your Sheet.</p>
           <ol class="help-list">
             <li><strong>Easiest way:</strong> tap <strong>&#9889; SETUP</strong> at the top, choose <strong>I am the Host</strong>, and work down the numbered steps. It copies the script for you, opens the right pages, and tests the connection live so you know it worked. Everything below is the same thing written out.</li>
-            <li>Create a Google Sheet, add the script, and deploy it as a Web App — full click-by-click steps are in the project's <strong>SETUP-SHEET.md</strong> (and inside <code>apps-script/Code.gs</code>).</li>
+            <li>Create a Google Sheet, add the script, and deploy it as a Web App — full click-by-click steps with links are in <strong>SETUP-ONCE.md</strong>.</li>
             <li>In the Sheet's <strong>Config</strong> tab, set a <strong>Passcode</strong> (and optionally an Active Event + dates, so it only accepts data during your event).</li>
             <li>Open this app → <strong>⚙ SHEET</strong> → paste your Web App URL + passcode → <strong>SAVE</strong> → <strong>SEND TEST ROW</strong> to confirm it works.</li>
             <li>Tap <strong>COPY SCOUT LINK</strong> and share that one link with your scouters — opening it connects their phones automatically.</li>
@@ -285,15 +279,14 @@
         </section>
 
         <section class="help-section">
-          <h3>New game each year — build the form (Host)</h3>
-          <p class="help-intro">The game changes every season. You don't need code — the <strong>🛠 FORM</strong> button rebuilds the whole app (boxes, dropdowns, scoring, and the ANALYZE engine) for this year's game.</p>
+          <h3>New game each year</h3>
+          <p class="help-intro">The season's form lives in one file that ships with the app, so <strong>every scouter is on the identical form</strong>. There is deliberately no in-app form editor: if each person could rebuild the fields on their own phone, the columns would drift apart and the data would stop lining up.</p>
           <ol class="help-list">
-            <li><strong>Fastest way — from the manual:</strong> tap <strong>🛠 FORM</strong> → <strong>📄 Start from this year's game manual</strong> → <strong>UPLOAD GAME MANUAL (PDF)</strong> (or <strong>PASTE SCORING TEXT</strong>). It reads the scoring and drafts every field and point value for you. <em>Needs internet, plus a one-time free Puter sign-in popup the first time.</em></li>
-            <li><strong>Always review the draft:</strong> a yellow banner reminds you to check each <strong>pts</strong> value — the AI reads wording, so confirm the numbers match the manual's scoring table. Fix anything, then tap <strong>APPLY &amp; SAVE</strong>.</li>
-            <li><strong>Or build it by hand:</strong> add sections and fields, and type the points into the small <strong>pts</strong> box on each scoring field (a per-choice grid for dropdowns; a <strong>breakdown</strong> tick for tip-over / dead robots). The form updates live as you go.</li>
-            <li><strong>Share it with your scouters:</strong> tap <strong>EXPORT JSON</strong> and send them the file; they tap <strong>🛠 FORM → UPLOAD JSON</strong> to load the identical form. Scouters don't need any sign-in.</li>
+            <li>When the new game comes out, the form, the point values, the spreadsheet columns and the <strong>&#128200; ANALYZE</strong> engine are rebuilt in one place from the game manual.</li>
+            <li>That gets deployed once, and every scouter picks it up the next time they open the app. Nobody has to do anything.</li>
+            <li>Point the settings at the new event, and that is the whole changeover.</li>
           </ol>
-          <div class="help-note"><strong>Why it matters:</strong> the point values you set here power the <strong>📈 ANALYZE</strong> engine — team ratings (OPR), win predictions, and the pick list all re-tune themselves to the game you build.</div>
+          <div class="help-note"><strong>Why it works this way:</strong> scouting data is only useful if every row has the same columns in the same order. One shipped form guarantees that. See <strong>SETUP-ONCE.md</strong> for the changeover steps.</div>
         </section>
 
         <section class="help-section">
@@ -434,7 +427,7 @@
 
         <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
         <h3 style="font-size:12px;letter-spacing:1.5px;color:var(--maroon);font-weight:800;text-transform:uppercase;margin-bottom:8px;">Google sign-in (max security, optional)</h3>
-        <p class="help-intro" style="margin-bottom:10px;">Locks submissions to your team's Google accounts. The host pastes an OAuth Client ID (steps in SETUP-SHEET.md) and sets the Sheet's Config tab; scouters then sign in below. Leave blank to use the passcode only.</p>
+        <p class="help-intro" style="margin-bottom:10px;">Locks submissions to your team's Google accounts. The host pastes an OAuth Client ID (steps in SETUP-ONCE.md) and sets the Sheet's Config tab; scouters then sign in below. Leave blank to use the passcode only.</p>
         <label class="field-label" for="google-client-id">Google OAuth Client ID</label>
         <input type="text" id="google-client-id" placeholder="…apps.googleusercontent.com">
         <div class="btn-row" style="margin-top:10px;">
@@ -445,68 +438,13 @@
         <div id="google-status" class="sheet-msg hidden"></div>
 
         <div class="help-note" style="margin-top:16px;">
-          <strong>Don't have the URL yet?</strong> The Sheet owner sets this up once — see the <code>apps-script/Code.gs</code> file in the repo (it has click-by-click steps) or the <strong>SETUP-SHEET.md</strong> guide. Then use <strong>COPY SCOUT LINK</strong> to send every scout a single link that connects their app automatically.
+          <strong>Don't have the URL yet?</strong> The Sheet owner sets this up once — see <strong>SETUP-ONCE.md</strong>, which has every step with links. Then use <strong>COPY SCOUT LINK</strong> to send every scout a single link that connects their app automatically.
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Form builder (define this year's game fields) -->
-  <div id="builder-overlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="builder-title">
-    <div class="help-modal" style="max-width:780px;">
-      <div class="help-head">
-        <h2 id="builder-title">FORM BUILDER</h2>
-        <button id="btn-builder-close" class="btn-help-close" aria-label="Close">×</button>
-      </div>
-      <div class="help-body">
-        <p class="help-intro">Every season the game changes. Define this year's scouting fields here — the form rebuilds instantly, no code. Saved on this device; <strong>Export JSON</strong> to share the exact form with your scouts (they tap <strong>Upload JSON</strong>).</p>
-
-        <div class="b-import">
-          <div class="b-import-head">📄 Start from this year's game manual</div>
-          <p class="b-import-sub">Upload the FRC game manual PDF (or paste its scoring section) and Bobcat Scout drafts the fields <em>and</em> the point values for you — boxes, dropdowns, scoring, all of it. Then you just review and tap APPLY &amp; SAVE. <span class="b-import-net">Needs internet for this step.</span></p>
-          <div class="btn-row">
-            <button id="btn-manual-pdf" class="btn btn-primary">UPLOAD GAME MANUAL (PDF)</button>
-            <button id="btn-manual-text" class="btn btn-outline">PASTE SCORING TEXT</button>
-          </div>
-          <input id="manual-file" type="file" accept="application/pdf,.pdf" class="hidden">
-          <div id="manual-text-wrap" class="hidden">
-            <textarea id="manual-text" placeholder="Paste the scoring / game-overview section of the manual here, then tap DRAFT FORM…"></textarea>
-            <button id="btn-manual-go" class="btn btn-outline" style="margin-top:8px;">DRAFT FORM FROM TEXT</button>
-          </div>
-          <div id="manual-status" class="b-import-status hidden"></div>
-        </div>
-
-        <div class="b-formsel">
-          <button id="bf-match" class="b-formsel-btn b-mode-active">MATCH FORM</button>
-          <button id="bf-pit" class="b-formsel-btn">PIT FORM</button>
-        </div>
-
-        <div id="builder-body"></div>
-
-        <div id="builder-msg" class="sheet-msg hidden"></div>
-
-        <div class="btn-row" style="margin-top:16px;">
-          <button id="btn-builder-apply" class="btn btn-primary">APPLY &amp; SAVE</button>
-          <button id="btn-builder-export" class="btn btn-outline">EXPORT JSON</button>
-          <button id="btn-builder-upload" class="btn btn-outline">UPLOAD JSON</button>
-          <button id="btn-builder-reset" class="btn btn-ghost">↩ THIS YEAR'S GAME (REBUILT 2026)</button>
-        </div>
-        <input id="builder-file" type="file" accept="application/json,.json" class="hidden">
-
-        <details class="b-paste">
-          <summary>Advanced: paste / copy config JSON</summary>
-          <textarea id="builder-paste" placeholder='Paste a config JSON here, then tap LOAD PASTED'></textarea>
-          <button id="btn-builder-load" class="btn btn-outline" style="margin-top:8px;">LOAD PASTED</button>
-        </details>
-
-        <div class="help-note" style="margin-top:16px;">
-          <strong>Note:</strong> keep the Prematch identity fields (Scout Name, Event Key, Match Type, Match #, Team #) so the Google Sheet can de-duplicate and the Analytics tab can group by team. The <strong>pts</strong> boxes on each field set the scoring — the in-app ANALYZE engine (OPR, predictions, pick list) reads them, so it re-tunes itself to whatever game you build here.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================== SETUP WIZARD ============================== -->
+    <!-- ============================== SETUP WIZARD ============================== -->
   <div id="setup-overlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="setup-title">
     <div class="help-modal">
       <div class="help-head">
@@ -579,6 +517,7 @@
     </div>
   </div>
 
+  <script src="team-config.js"></script>
   <script src="app.js"></script>
   <script src="analytics.js"></script>
 </body>

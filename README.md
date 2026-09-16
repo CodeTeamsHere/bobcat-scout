@@ -7,7 +7,7 @@ Voice scouting app for FRC Team 177 (Bobcat Robotics).
 Scouts at a competition open this app on their phone, tap the mic, and describe a match in natural language ("Match 14, team 177 red 2, scored 4 in auto, climbed the mid rung..."). The app auto-fills the scouting fields and gives two ways to get the data out:
 
 - **QR code** — the always-offline path (scan into the team's QRScout pipeline). Works with no internet.
-- **Submit to Sheet** — optional one-tap auto-submit straight into a team Google Sheet when the phone has signal. It queues offline and sends automatically when back online, and is protected by a passcode + server-side validation + event/date gating + duplicate-blocking. See **[SETUP-SHEET.md](SETUP-SHEET.md)**.
+- **Submit to Sheet** — optional one-tap auto-submit straight into a team Google Sheet when the phone has signal. It queues offline and sends automatically when back online, and is protected by a passcode + server-side validation + event/date gating + duplicate-blocking. See **[SETUP-ONCE.md](SETUP-ONCE.md)**.
 
 ## Getting started
 
@@ -23,10 +23,18 @@ throw, it just leaves a field blank or fills the wrong one. There is a regressio
 
 ```bash
 node tools/test-parser.js
+node tools/test-analytics.js
 ```
 
-It needs no dependencies and runs in under a second. Add a case whenever you touch a pattern
-in `parseTranscript`.
+Neither needs any dependencies and both run in under a second.
+
+- **test-parser** covers the voice patterns, including the spelled-out numbers speech
+  recognition returns and the false positives that used to fill the wrong field.
+- **test-analytics** covers the scoring model. The engine is config-driven, so renaming a
+  field in `config.json` makes the scoring silently become zero instead of throwing — these
+  checks catch that, and verify the display columns still point at fields that exist.
+
+Add a case whenever you touch a pattern in `parseTranscript` or a point value in `config.json`.
 
 To run the app locally with no browser caching (so an edit shows up on reload):
 
@@ -34,9 +42,13 @@ To run the app locally with no browser caching (so an edit shows up on reload):
 python tools/devserver.py
 ```
 
-Longer written guides: **[HOW-TO-USE.md](HOW-TO-USE.md)** (roles and data flow),
-**[SETUP-SHEET.md](SETUP-SHEET.md)** (the Google Sheet in detail),
-**[PILOT-PROPOSAL.md](PILOT-PROPOSAL.md)** (the honest pitch for adopting it, including what it is not).
+**Setting it up for a team is a one-time job**, and it is all in
+**[SETUP-ONCE.md](SETUP-ONCE.md)** — every value you need, where to click to get it, and
+the links. Once the values are in [`team-config.js`](team-config.js), the in-app settings
+page disappears and scouters have nothing to configure at all.
+
+Other guides: **[HOW-TO-USE.md](HOW-TO-USE.md)** (roles and data flow),
+**[PILOT-PROPOSAL.md](PILOT-PROPOSAL.md)** (the honest pitch for adopting it).
 
 It's an installable **PWA**: open it once and it runs fully offline (essential at venues — the QR library is bundled, not loaded from a CDN), the in-progress match auto-saves through refreshes, and you can **Add to Home Screen** to use it like an app.
 
@@ -82,7 +94,8 @@ See the deployment guide. Short version:
 - `manifest.webmanifest` / `icon.svg` — PWA manifest + app icon (installable / Add to Home Screen)
 - `service-worker.js` — caches the app shell so it runs fully offline after first load
 - `apps-script/Code.gs` — the Google Apps Script that runs in the team Sheet (the submission endpoint)
-- `SETUP-SHEET.md` — click-by-click guide to connect the app to a Google Sheet
+- `SETUP-ONCE.md` — the one-time team setup: every value, where to click to get it, and the links
+- `team-config.js` — the team's settings; filling it in hides the in-app settings page
 - `README.md` — this file
 
 ## Credits

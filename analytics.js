@@ -31,7 +31,7 @@
     return p;
   }
 
-  // ----- config-driven scoring (so ANY game works from the Form Builder) -----
+  // ----- config-driven scoring (so ANY game works straight from config.json) -----
   // The active scouting config carries the point values on its fields:
   //   number/range field -> field.points       = points per unit
   //   boolean field      -> field.points        = points when true   (+ field.fail = a breakdown)
@@ -43,6 +43,21 @@
     if (SCFG) return SCFG;
     try { if (typeof CONFIG !== 'undefined' && CONFIG) return CONFIG; } catch (e) {}
     return null;
+  }
+
+  // Which columns the Capabilities table summarises. The config names them under
+  // game.display so a new season only has to rename them in one place; the old
+  // REBUILT codes stay as the fallback for data recorded before that existed.
+  function displayCodes() {
+    var c = activeConfig();
+    var d = (c && c.game && c.game.display) || {};
+    return {
+      auto: d.autoCountCode || 'autoHubMade',
+      tele: d.teleCountCode || 'teleopHubMade',
+      defense: d.defenseCode || 'defenseRating',
+      climb: d.climbCode || 'endgameClimb',
+      climbLevels: d.climbLevels || ['level1', 'level2', 'level3']
+    };
   }
   function scoringFields(cfg) {
     var out = [];
@@ -113,16 +128,17 @@
     var rows = {}, maxAvg = 0;
     Object.keys(by).forEach(function (t) {
       var ms = by[t], pts = ms.map(function (r) { return r._pts; });
+      var DC = displayCodes();
       var avg = mean(pts), sd = stddev(pts), cv = avg > 0 ? sd / avg : 1;
       var fails = ms.filter(isFail).length;
       rows[t] = {
         team: t, matches: ms.length, avgPts: avg, sd: sd,
         consistency: clamp(1 - cv, 0, 1),
         reliability: ms.length ? 1 - fails / ms.length : 0,
-        avgAuto: mean(ms.map(function (r) { return num(r.autoHubMade); })),
-        avgTele: mean(ms.map(function (r) { return num(r.teleopHubMade); })),
-        avgDefense: mean(ms.map(function (r) { return num(r.defenseRating); })),
-        climbRate: ms.filter(function (r) { return ['level1', 'level2', 'level3'].indexOf(String(r.endgameClimb)) >= 0; }).length / ms.length,
+        avgAuto: mean(ms.map(function (r) { return num(r[DC.auto]); })),
+        avgTele: mean(ms.map(function (r) { return num(r[DC.tele]); })),
+        avgDefense: mean(ms.map(function (r) { return num(r[DC.defense]); })),
+        climbRate: ms.filter(function (r) { return DC.climbLevels.indexOf(String(r[DC.climb])) >= 0; }).length / ms.length,
         fails: fails
       };
       if (avg > maxAvg) maxAvg = avg;
@@ -285,11 +301,11 @@
           var climb = dead ? 'none' : (R() < s.climbHi * 0.7 ? 'level3' : (R() < 0.5 ? 'level2' : (R() < 0.6 ? 'level1' : 'none')));
           recs.push({
             eventKey: '2025demo', matchType: 'qm', matchNumber: m, teamNumber: t, alliance: al, driverStation: String(st + 1),
-            autoLeft: !dead && R() > 0.1, autoHubMade: dead ? 0 : Math.max(0, Math.round(s.auto + (R() - 0.5) * 3)),
-            teleopHubMade: dead ? 0 : Math.max(0, Math.round(s.tele + (R() - 0.5) * 8)),
-            autoClimb: 'none', endgameClimb: climb,
-            driverSkill: Math.round(2 + R() * 3), defenseRating: s.def > 0.7 ? Math.round(2 + R() * 3) : 1,
-            tipped: R() > 0.95, disabled: dead, noShow: false
+            autoScored: !dead && R() > 0.1, autoFuel: dead ? 0 : Math.max(0, Math.round(s.auto + (R() - 0.5) * 3)),
+            teleFuel: dead ? 0 : Math.max(0, Math.round(s.tele + (R() - 0.5) * 8)),
+            autoClimbed: 'none', endClimbed: climb,
+            teleDefenseEff: s.def > 0.7 ? Math.round(2 + R() * 3) : 1,
+            endTipped: R() > 0.95, endDied: dead, endMechIssue: false, noShow: false
           });
         });
       });
