@@ -33,6 +33,43 @@ function valueOf(key) {
 const problems = [];
 const notes = [];
 
+// --- does the file even load? --------------------------------------------
+// A typo here does not throw anywhere you would see it: the script fails to
+// load, window.TEAM_CONFIG never exists, the preset silently does not apply,
+// and the settings page reappears for every scouter. The classic one is
+// putting the comma after the comment —  key: 'x'  // PUBLISH-OK,  — which
+// swallows the comma and breaks the object.
+let loaded = null;
+try {
+  const sandbox = { window: {} };
+  new Function('window', src + '\nreturn window.TEAM_CONFIG;')(sandbox.window);
+  loaded = new Function('window', src + '\nreturn window.TEAM_CONFIG;')(sandbox.window);
+  if (!loaded || typeof loaded !== 'object') {
+    problems.push('team-config.js loaded but did not set window.TEAM_CONFIG to an object.');
+  }
+} catch (e) {
+  problems.push(
+    'team-config.js is not valid JavaScript, so the app would ignore it entirely ' +
+    'and show every scouter the settings page. ' + e.message +
+    "\n      Most likely a misplaced comma. It goes BEFORE the comment:" +
+    "\n          tbaKey: 'yourkey',  // PUBLISH-OK      <-- right" +
+    "\n          tbaKey: 'yourkey'   // PUBLISH-OK,     <-- wrong"
+  );
+}
+
+if (loaded) {
+  for (const k of ['sheetUrl', 'passcode', 'eventKey', 'tbaKey', 'googleClientId']) {
+    if (!(k in loaded)) problems.push(`team-config.js is missing the "${k}" setting.`);
+  }
+}
+
+if (problems.length) {
+  console.log(`\n${problems.length} problem(s) in team-config.js:\n`);
+  for (const p of problems) console.log('  x ' + p);
+  console.log('');
+  process.exit(1);
+}
+
 // --- things that must never be published ---------------------------------
 for (const [key, why] of [
   ['passcode', 'Anyone who finds this repo could then submit rows. Leave it blank and send it in the invite link instead: python tools/make-invite-link.py'],
