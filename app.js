@@ -1385,7 +1385,11 @@ function loadSheetConfig() {
   } catch (e) { pendingQueue = []; }
   if (isPreset()) {
     sheetEndpoint = presetValue('sheetUrl');
-    sheetPasscode = presetValue('passcode');
+    // Prefer a passcode from the invite link; the preset only carries one when
+    // the host decided it was fine to publish.
+    let fromLink = '';
+    try { fromLink = localStorage.getItem('sheet_passcode') || ''; } catch (e) {}
+    sheetPasscode = presetValue('passcode') || fromLink;
     return;
   }
   try {
@@ -1406,14 +1410,21 @@ function applyPresetUI() {
 
 // A lead can share a link like  ...?sheet=<webAppUrl>&key=<passcode>  to auto-connect a scout's phone.
 function applyUrlConfig() {
-  if (isPreset()) return;          // the team preset is the single source of truth
   const p = new URLSearchParams(location.search);
   const url = p.get('sheet'), key = p.get('key'), tba = p.get('tba'), gid = p.get('gid');
   let changed = false;
-  if (url) { try { localStorage.setItem('sheet_endpoint', url); } catch (e) {} changed = true; }
+
+  // The two values that must stay out of a public repo — the passcode and the
+  // Blue Alliance key — ride the invite link instead. A preset still owns the
+  // address and the client ID, which are safe to publish, but it deliberately
+  // does NOT own these two, so the link is what grants access.
   if (key) { try { localStorage.setItem('sheet_passcode', key); } catch (e) {} changed = true; }
   if (tba) { try { localStorage.setItem('tba_key', tba); } catch (e) {} changed = true; }
-  if (gid) { try { localStorage.setItem('google_client_id', gid); } catch (e) {} changed = true; }
+
+  if (!isPreset()) {
+    if (url) { try { localStorage.setItem('sheet_endpoint', url); } catch (e) {} changed = true; }
+    if (gid) { try { localStorage.setItem('google_client_id', gid); } catch (e) {} changed = true; }
+  }
   if (changed) history.replaceState(null, '', location.pathname); // don't leave the passcode in the address bar
 }
 
@@ -2210,7 +2221,7 @@ const SETUP_TRACKS = {
       id: 'connect',
       title: 'Check you are connected',
       time: '10 sec',
-      auto: () => isPreset() || !!ls('sheet_endpoint'),
+      auto: () => (isPreset() && (!!presetValue('passcode') || !!ls('sheet_passcode'))) || (!isPreset() && !!ls('sheet_endpoint')),
       body: `<p>When you are connected, every match you save goes straight into the team spreadsheet on its own. You never need a password for the spreadsheet itself, and you cannot open it. You can only send matches into it.</p>
              <div id="setup-conn-state" class="setup-state"></div>
              <p class="setup-dim">Not connected? Ask your host for the setup link and open it on this phone. You can still scout without it, because the app makes a QR code your host can scan instead.</p>`,
@@ -2457,11 +2468,14 @@ function renderSetup() {
   }
   const cs = $('setup-conn-state');
   if (cs) {
-    const on = !!ls('sheet_endpoint');
-    cs.className = 'setup-state ' + (on ? 'setup-state-ok' : 'setup-state-warn');
-    cs.textContent = on
-      ? '✓ Connected. Matches you save go straight into the team spreadsheet.'
-      : 'Not connected yet. You can still scout — the app makes a QR code your host can scan.';
+    const on = isPreset() || !!ls('sheet_endpoint');
+    const needsKey = isPreset() && !presetValue('passcode') && !ls('sheet_passcode');
+    cs.className = 'setup-state ' + (on && !needsKey ? 'setup-state-ok' : 'setup-state-warn');
+    cs.textContent = needsKey
+      ? 'Almost. Open the invite link your host sent you — it carries the team passcode. Without it your matches will be turned away.'
+      : on
+        ? '✓ Connected. Matches you save go straight into the team spreadsheet.'
+        : 'Not connected yet. You can still scout — the app makes a QR code your host can scan.';
   }
 }
 

@@ -35,8 +35,8 @@ const notes = [];
 
 // --- things that must never be published ---------------------------------
 for (const [key, why] of [
-  ['passcode', 'Anyone could then submit rows to your Sheet. Blank the Passcode cell in the Sheet\'s Config tab and rely on the Google sign-in lock instead.'],
-  ['tbaKey', 'It is tied to your Blue Alliance account. Generate a key just for this app so it can be revoked on its own, and only publish that one.']
+  ['passcode', 'Anyone who finds this repo could then submit rows. Leave it blank and send it in the invite link instead: python tools/make-invite-link.py'],
+  ['tbaKey', 'It is tied to your Blue Alliance account. Leave it blank and send it in the invite link instead: python tools/make-invite-link.py']
 ]) {
   const f = valueOf(key);
   if (!f) continue;

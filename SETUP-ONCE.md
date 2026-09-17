@@ -210,6 +210,54 @@ before anything they send is accepted, and stamps every row with the account tha
 
 ---
 
+## Deciding who is allowed to submit
+
+There are three doors into your spreadsheet and you choose which ones are locked.
+Here is what each setting actually does, so you can pick on purpose.
+
+### The allow-list (Sheet → Config tab)
+
+| Setting | Who can submit | Upkeep |
+|---|---|---|
+| **Allowed Domain** = your school's email domain | Anyone with a school account | None. Best option if your school uses Google |
+| **Allowed Emails** = a list of addresses | Exactly those people | You edit the list when the roster changes |
+| **Both blank** | **Anyone with any Google account** | None |
+
+> **Both blank does not mean "only my team".** It means any Google account on
+> Earth passes the check. It still stamps every row with the real email address
+> that sent it, so junk is traceable and easy to delete — but it does not stop
+> anyone.
+
+### The passcode
+
+If the passcode is published in this repository, it stops nobody, because anyone
+can read it. Keep it out of the repo and send it in the invite link instead:
+
+```bash
+python tools/make-invite-link.py
+```
+
+That prints one link carrying the passcode and the Blue Alliance key. Send it to
+your team privately. A scouter opens it once and their phone remembers both
+values. Anyone who merely finds the repository has no passcode and cannot submit.
+
+### What we recommend
+
+**Leave the allow-list blank, and keep the passcode in the link.** You get:
+
+- no email list to maintain as people join and leave,
+- people you gave the link to can scout,
+- someone who stumbles on the public repo cannot,
+- and every row still records which Google account sent it.
+
+If your school has Google accounts, setting **Allowed Domain** on top of that is
+strictly better and costs nothing.
+
+**Changed your mind, or someone left the team?** Change the passcode in the Sheet's
+Config tab and send a new link. Every old link stops working immediately.
+
+---
+
 ## Read this before you publish
 
 `team-config.js` ships to the browser. **If this GitHub repository is public, that file

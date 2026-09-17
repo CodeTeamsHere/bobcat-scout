@@ -80,6 +80,23 @@ section of `SETUP-ONCE.md`.
 
 ---
 
+### 2c. Send scouters their invite link, or rotate the passcode
+
+The passcode and the Blue Alliance key are deliberately **not** in the repo, because
+the repo is public. They travel in a link.
+
+```bash
+python tools/make-invite-link.py
+```
+
+It asks for the passcode and the key, prints one link, and saves nothing. Send it to
+the team privately. A scouter opens it once and their phone remembers.
+
+**Someone left the team, or the link got out?** Change the passcode in the Sheet's
+Config tab, run the script again, and send the new link. Every old link dies instantly.
+
+---
+
 ### 3. The scouting form changed (QRScout was edited)
 
 This is the important one, and it is why the app has no in-app form editor: everybody has

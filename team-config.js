@@ -99,6 +99,17 @@ window.TEAM_CONFIG = {
   //                   to accept any event)
   //   Start Date / End Date - optional. Fill them in and the sheet only
   //                   accepts data during your competition.
+  //
+  // LEAVE THIS BLANK. This repository is public, so anything here is public,
+  // and git history keeps it forever. The passcode travels in the invite link
+  // instead — build one with:
+  //
+  //     python tools/make-invite-link.py
+  //
+  // Send that link to your scouters. Their phone stores the passcode the first
+  // time they open it. Nobody who merely finds this repo can submit anything.
+  //
+  // Really want it published anyway? Put  // PUBLISH-OK  at the end of the line.
   // -------------------------------------------------------------------
   passcode: '',
 
@@ -137,6 +148,15 @@ window.TEAM_CONFIG = {
   // It is free, read-only, and cannot change anything on The Blue
   // Alliance. Because this repo is public, make a key just for this app
   // so it can be revoked on its own without breaking anything else.
+  //
+  // LEAVE THIS BLANK for the same reason as the passcode — it is tied to your
+  // Blue Alliance account. It rides the invite link too, so scouters still get
+  // automatic team numbers:
+  //
+  //     python tools/make-invite-link.py
+  //
+  // Really want it published? Make a key used ONLY by this app so you can
+  // revoke it on its own, then put  // PUBLISH-OK  at the end of the line.
   // -------------------------------------------------------------------
   tbaKey: '',
 
