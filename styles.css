@@ -1265,3 +1265,15 @@ footer {
   .count-btn { min-height: 52px; font-size: 16px; }
   .chip { min-height: 42px; }
 }
+
+/* Field-layout diagram inside the form (the six starting slots). */
+.field-image {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+}

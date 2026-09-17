@@ -20,7 +20,11 @@ let activeTab = 'qr';
 
 
 function activeSections() { return CONFIG.sections || []; }
-function applyForm() { ALL_FIELDS = activeSections().flatMap(s => s.fields); FIELD_ORDER = ALL_FIELDS.map(f => f.code); }
+function applyForm() {
+  ALL_FIELDS = activeSections().flatMap(s => s.fields);
+  // Images carry no value, so they get no column in the TSV / QR / Sheet row.
+  FIELD_ORDER = ALL_FIELDS.filter(f => f.type !== 'image').map(f => f.code);
+}
 
 const SAMPLE_TEXT = "Scout name is Krish, event 2026ctwat, match 14, scouting team 177 red 2. In auto they scored 4 and picked up from the depot. Teleop they scored 18 shooting while driving, picked up off the floor and from the outpost chute. Pickup was pretty good, passing was amazing, about 60 percent. Played defense well. Went under the trench. Climbed the mid rung, 2 alliance robots climbed. No issues.";
 
@@ -34,6 +38,7 @@ function $$(sel) { return document.querySelectorAll(sel); }
 function initialFieldState() {
   const state = {};
   ALL_FIELDS.forEach(f => {
+    if (f.type === 'image') return;                 // decoration, not data
     if (f.type === 'multiselect') state[f.code] = [];
     else if (f.default !== undefined) state[f.code] = f.default;
     else if (f.type === 'boolean') state[f.code] = false;
@@ -289,7 +294,7 @@ function parseTranscript(text, initialState) {
     else if (blueAt) slot = String(parseInt(blueAt[1], 10) + 3);
   }
   if (slot) {
-    set('startingPosition', slot);
+    set('startPos', slot);
     set('alliance', parseInt(slot, 10) <= 3 ? 'red' : 'blue');
   } else {
     const red = t.match(/\b(?:red\s*alliance|alliance\s*(?:is\s*)?red|on\s*red)\b/i);
@@ -314,10 +319,10 @@ function parseTranscript(text, initialState) {
   const autoHit = t.match(AUTO_BEFORE) || t.match(AUTO_AFTER) || t.match(AUTO_NEAR);
   if (autoHit) {
     const n = parseInt(autoHit[1], 10);
-    set('autoFuel', n);
-    if (n > 0) set('autoScored', true);
+    set('autoFuelScored', n);
+    if (n > 0) set('AutoScored', true);
   }
-  if (/\b(?:scored|shot|made)\s+in\s+auto\b/i.test(t)) set('autoScored', true);
+  if (/\b(?:scored|shot|made)\s+in\s+auto\b/i.test(t)) set('AutoScored', true);
 
   // Stop at the end of the auto sentence. A fixed character window runs on
   // into the teleop description and picks up its pickup locations as auto's.
@@ -330,53 +335,43 @@ function parseTranscript(text, initialState) {
   }
 
   if (autoCtx) {
-    if (HOW_DRIVING.test(autoCtx) && HOW_STATIONARY.test(autoCtx)) set('autoHowScored', 'both');
-    else if (HOW_DRIVING.test(autoCtx)) set('autoHowScored', 'driving');
-    else if (HOW_STATIONARY.test(autoCtx)) set('autoHowScored', 'stationary');
+    if (HOW_DRIVING.test(autoCtx) && HOW_STATIONARY.test(autoCtx)) set('scoringMannerismAuto', 'BOTH');
+    else if (HOW_DRIVING.test(autoCtx)) set('scoringMannerismAuto', 'WHILE_DRIVE');
+    else if (HOW_STATIONARY.test(autoCtx)) set('scoringMannerismAuto', 'STATIONARY');
 
-    if (/\b(pick(?:ed|ing)?\s*up|intake[d]?|collected|grabbed)\b/i.test(autoCtx)) set('autoPickup', true);
-    if (/\bdepot\b/i.test(autoCtx)) addMulti('autoPickupFrom', 'depot');
-    if (/\b(human player|hp|chute|outpost)\b/i.test(autoCtx)) addMulti('autoPickupFrom', 'hpzone');
-    if (/\b(floor|ground|loose fuel|scooped)\b/i.test(autoCtx)) addMulti('autoPickupFrom', 'floor');
-    if (/\b(midfield|mid field|neutral zone)\b/i.test(autoCtx)) addMulti('autoPickupFrom', 'midfield');
+    if (/\b(pick(?:ed|ing)?\s*up|intake[d]?|collected|grabbed)\b/i.test(autoCtx)) set('AutoPickup', true);
+    if (/\bdepot\b/i.test(autoCtx)) addMulti('pickupfrom', 'DEPOT');
+    if (/\b(human player|hp|chute|outpost)\b/i.test(autoCtx)) addMulti('pickupfrom', 'H_Player');
+    if (/\b(floor|ground|loose fuel|scooped)\b/i.test(autoCtx)) addMulti('pickupfrom', 'FLOOR');
+    if (/\b(midfield|mid field|neutral zone)\b/i.test(autoCtx)) addMulti('pickupfrom', 'MID');
 
-    if (/\bbuddy\s*climb|double\s*climb/i.test(t)) set('autoBuddyClimb', true);
-    if (/\bpre\s*-?\s*load\s*only\b/i.test(t)) addMulti('autoPath', 'preload_only');
-    if (/\bstraight\s+to\s+(?:the\s+)?depot\b/i.test(t)) addMulti('autoPath', 'straight_depot');
-    if (/\bstraight\s+to\s+(?:the\s+)?outpost\b/i.test(t)) addMulti('autoPath', 'straight_outpost');
+    if (/\bbuddy\s*climb|double\s*climb/i.test(t)) set('doubleClimb', true);
+    if (/\bpre\s*-?\s*load\s*only\b/i.test(t)) addMulti('AutoPath', 'Pre-Load');
+    if (/\bstraight\s+to\s+(?:the\s+)?depot\b/i.test(t)) addMulti('AutoPath', 'Depot');
+    if (/\bstraight\s+to\s+(?:the\s+)?outpost\b/i.test(t)) addMulti('AutoPath', 'Outpost');
 
   }
 
-  // The climb level can be named before "auto" as easily as after it
-  // ("climbed level 1 in auto"), so look on both sides of the keyword.
-  const AUTO_CLIMB_BEFORE = /climb\w*[^.?!]{0,30}?\b(level\s*[123]|l[123]|high|top|mid|middle|low)\b[^.?!]{0,20}?\bin\s+auto\b/i;
-  // Attribution has to be explicit, and a comma ends it — so "4 in auto,
-  // climbed high" stays an endgame climb, which is both the common case and
-  // the safer default.
-  // "in auto climbed high" is genuinely ambiguous out loud, so require a real
-  // subject in between ("in auto THEY climbed high"). Auto climbs score more
-  // than endgame climbs, so guessing auto would inflate a team's rating —
-  // endgame is the safer reading when the sentence does not commit.
-  const AUTO_CLIMB_AFTER = /\bauto(?:nomous)?\b\s+(?:they|it|and|then|the\s+robot|robot)\s+climb\w*\s*(?:up\s*)?(?:to\s*)?(?:the\s*)?(level\s*[123]|l[123]|high|top|mid|middle|low)\b/i;
-  const ac = t.match(AUTO_CLIMB_BEFORE) || t.match(AUTO_CLIMB_AFTER);
-  if (ac) {
-    const w = ac[1].toLowerCase().replace(/\s+/g, '');
-    if (/3|high|top/.test(w)) set('autoClimbed', 'level3');
-    else if (/2|mid|middle/.test(w)) set('autoClimbed', 'level2');
-    else set('autoClimbed', 'level1');
-  }
+  // QRScout's auto climb records only whether it worked, not which level, so
+  // any auto climb phrasing collapses to Success. Attribution still has to be
+  // explicit: "4 in auto, climbed high" is an endgame climb.
+  const AUTO_CLIMB_BEFORE = /climb\w*[^.?!]{0,30}?\b(?:level\s*[123]|l[123]|high|top|mid|middle|low)\b[^.?!]{0,20}?\bin\s+auto\b/i;
+  const AUTO_CLIMB_AFTER = /\bauto(?:nomous)?\b\s+(?:they|it|and|then|the\s+robot|robot)\s+climb\w*/i;
+  const AUTO_CLIMB_FAIL = /\bauto(?:nomous)?\b[^.?!]{0,40}?(?:failed|missed|fell off)\s*(?:the\s*)?climb|climb\w*\s+fail\w*[^.?!]{0,20}?\bin\s+auto\b|failed\s+the\s+climb\b[^.?!]{0,20}?\bin\s+auto\b/i;
+  if (AUTO_CLIMB_FAIL.test(t)) set('autoClimbed', 'Failed');
+  else if (AUTO_CLIMB_BEFORE.test(t) || AUTO_CLIMB_AFTER.test(t)) set('autoClimbed', 'Success');
 
   // ============================================================== TELEOP
   const TELE_BEFORE = /(\d+)\s+(?:[a-z]+\s+){0,2}?(?:in|during)\s+(?:the\s+)?tele\s*-?\s*op(?:erated)?\b/i;
   const TELE_AFTER = /\btele\s*-?\s*op(?:erated)?\b(?:[^.?!]{0,60}?)(?:made|scored|put in|hit|got|sank|banked)\s*(\d+)/i;
   const TELE_NEAR = /\btele\s*-?\s*op(?:erated)?\b[^.?!\d]{0,14}(\d+)/i;
   const teleHit = t.match(TELE_BEFORE) || t.match(TELE_AFTER) || t.match(TELE_NEAR);
-  if (teleHit) set('teleFuel', parseInt(teleHit[1], 10));
+  if (teleHit) set('teleopFuelScored', parseInt(teleHit[1], 10));
 
   // A bare count with no auto mentioned anywhere is a teleop count.
-  if (conf.teleFuel === undefined && conf.autoFuel === undefined && !/\bauto(?:nomous)?\b/i.test(t)) {
+  if (conf.teleopFuelScored === undefined && conf.autoFuelScored === undefined && !/\bauto(?:nomous)?\b/i.test(t)) {
     const anyMade = t.match(/(?:made|scored)\s*(\d+)/i);
-    if (anyMade) set('teleFuel', parseInt(anyMade[1], 10), 'medium');
+    if (anyMade) set('teleopFuelScored', parseInt(anyMade[1], 10), 'medium');
   }
 
   const teleIdx = t.search(/\btele\s*-?\s*op(?:erated)?\b/i);
@@ -386,48 +381,48 @@ function parseTranscript(text, initialState) {
     const stop = rest.search(/[.?!]/);
     teleCtx = stop >= 0 ? rest.slice(0, stop) : rest;
   }
-  if (HOW_DRIVING.test(teleCtx) && HOW_STATIONARY.test(teleCtx)) set('teleHowScored', 'both');
-  else if (HOW_DRIVING.test(teleCtx)) set('teleHowScored', 'driving');
-  else if (HOW_STATIONARY.test(teleCtx)) set('teleHowScored', 'stationary');
+  if (HOW_DRIVING.test(teleCtx) && HOW_STATIONARY.test(teleCtx)) set('scoringMannerismTele', 'BOTH');
+  else if (HOW_DRIVING.test(teleCtx)) set('scoringMannerismTele', 'WHILE_DRIVE');
+  else if (HOW_STATIONARY.test(teleCtx)) set('scoringMannerismTele', 'STATIONARY');
 
   const pct = t.match(/(\d{1,3})\s*(?:%|percent)\b/i);
   if (pct) {
     const n = parseInt(pct[1], 10);
-    if (n >= 0 && n <= 100) set('teleScoringPct', n);
+    if (n >= 0 && n <= 100) set('scoringEffe', n);
   }
 
-  if (/\bdepot\b/i.test(t)) addMulti('telePickupLoc', 'depot');
-  if (/\b(human player|hp|chute|outpost)\b/i.test(t)) addMulti('telePickupLoc', 'hpzone');
-  if (/\b(floor|ground|off the ground|loose fuel|scooped)\b/i.test(t)) addMulti('telePickupLoc', 'floor');
-  if (/\b(midfield|mid field|neutral zone)\b/i.test(t)) addMulti('telePickupLoc', 'midfield');
+  if (/\bdepot\b/i.test(t)) addMulti('pickupTele', 'DEPOT');
+  if (/\b(human player|hp|chute|outpost)\b/i.test(t)) addMulti('pickupTele', 'H_Player');
+  if (/\b(floor|ground|off the ground|loose fuel|scooped)\b/i.test(t)) addMulti('pickupTele', 'FLOOR');
+  if (/\b(midfield|mid field|neutral zone)\b/i.test(t)) addMulti('pickupTele', 'MID');
 
   const pickupRating = rateAround(['picking\\s+up', 'pickup', 'pick\\s+up', 'intake', 'intaking']);
-  if (pickupRating !== null) set('telePickupEff', pickupRating);
+  if (pickupRating !== null) set('pickupEffe', pickupRating);
   const passRating = rateAround(['passing', 'passes', '\\bpass\\b', 'feeding']);
-  if (passRating !== null) set('telePassingEff', passRating);
+  if (passRating !== null) set('passingEffe', passRating);
 
-  if (/\bno\s+passing\b|\b(?:did\s+not|did\s*n'?t)\s+pass\b|\bnever\s+passed\b/i.test(t)) addMulti('telePassed', 'none');
+  if (/\bno\s+passing\b|\b(?:did\s+not|did\s*n'?t)\s+pass\b|\bnever\s+passed\b/i.test(t)) addMulti('fuelPassed', 'No_Passing');
   else {
-    if (/\bpass\w*\b[^.?!]{0,30}\bcenter\b|\bcenter\b[^.?!]{0,20}\bpass/i.test(t)) addMulti('telePassed', 'center');
-    if (/\bopp(?:onent)?\s*zone\b/i.test(t)) addMulti('telePassed', 'oppzone');
-    if (/\bscattered\b/i.test(t)) addMulti('telePassed', 'scattered');
-    if (/\bintentional(?:ly)?\b/i.test(t)) addMulti('telePassed', 'intentional');
+    if (/\bpass\w*\b[^.?!]{0,30}\bcenter\b|\bcenter\b[^.?!]{0,20}\bpass/i.test(t)) addMulti('fuelPassed', 'Center');
+    if (/\bopp(?:onent)?\s*zone\b/i.test(t)) addMulti('fuelPassed', 'Opp_Zone');
+    if (/\bscattered\b/i.test(t)) addMulti('fuelPassed', 'Scattered');
+    if (/\bintentional(?:ly)?\b/i.test(t)) addMulti('fuelPassed', 'Intentional');
   }
 
   if (/\btrench\b/i.test(t) && !/\b(?:can ?not|couldn'?t|could not|no)\s+(?:go\s+)?(?:under\s+)?(?:the\s+)?trench\b/i.test(t)) {
-    set('teleTrench', true);
+    set('TrenchRizz', true);
   }
 
   // ---- Defense ----
   if (/\b(tried|attempt\w*)\b[^.?!]{0,25}\bdefense\b|\bdefense\b[^.?!]{0,25}\b(attempt\w*)\b/i.test(t)) {
-    set('telePlayedDefense', 'attempted');
+    set('robotDefended', 'Attempted');
   } else if (/\b(no defense|did ?n'?t play defense|played no defense)\b/i.test(t)) {
-    set('telePlayedDefense', 'no');
+    set('robotDefended', 'No');
   } else if (/\bdefen[cs]e\b/i.test(t)) {
-    set('telePlayedDefense', 'yes');
+    set('robotDefended', 'Yes');
   }
   const defRating = rateAround(['defen[cs]e', 'defended']);
-  if (defRating !== null && result.telePlayedDefense === 'yes') set('teleDefenseEff', defRating);
+  if (defRating !== null && result.robotDefended === 'Yes') set('defenceEffe', defRating);
 
   // ============================================================= ENDGAME
   // "climbed high" is how scouters actually say it, so match the bare
@@ -443,28 +438,28 @@ function parseTranscript(text, initialState) {
   const climbWasAuto = conf.autoClimbed !== undefined && climbMentions <= 1;
 
   if (climbWasAuto) { /* recorded as the auto climb above */ }
-  else if (CLIMB_FAIL.test(t)) set('endClimbed', 'failed');
-  else if (CLIMB_NONE.test(t)) set('endClimbed', 'none');
-  else if (CLIMB_L3.test(t)) set('endClimbed', 'level3');
-  else if (CLIMB_L2.test(t)) set('endClimbed', 'level2');
-  else if (CLIMB_L1.test(t)) set('endClimbed', 'level1');
+  else if (CLIMB_FAIL.test(t)) set('climbed', 'F');
+  else if (CLIMB_NONE.test(t)) set('climbed', 'No');
+  else if (CLIMB_L3.test(t)) set('climbed', 'L3');
+  else if (CLIMB_L2.test(t)) set('climbed', 'L2');
+  else if (CLIMB_L1.test(t)) set('climbed', 'L1');
 
   const buddies = t.match(/(\d)\s*(?:of\s*(?:our|the)\s*)?(?:alliance\s*)?(?:robots?|bots?)\s*climbed/i);
   if (buddies) {
     const n = parseInt(buddies[1], 10);
-    if (n >= 0 && n <= 3) set('endAllianceClimbs', n);
+    if (n >= 0 && n <= 3) set('AllianceClimb', n);
   }
 
-  if (/\bcross\w*\s+(?:in)?to\s+(?:the\s+)?(?:opposite|other|opp)\s+zone\b/i.test(t)) set('endCrossedZone', true);
-  if (/\b(tipped|fell over|flipped|tipped over)\b/i.test(t)) set('endTipped', true);
-  if (/\b(died|went dead|bot died|stopped working|lost power|disabled)\b/i.test(t)) set('endDied', true);
+  if (/\bcross\w*\s+(?:in)?to\s+(?:the\s+)?(?:opposite|other|opp)\s+zone\b/i.test(t)) set('crossedZone', true);
+  if (/\b(tipped|fell over|flipped|tipped over)\b/i.test(t)) set('tipped', true);
+  if (/\b(died|went dead|bot died|stopped working|lost power|disabled)\b/i.test(t)) set('died', true);
   if (/\b(mechanical (?:issue|problem|failure)|broke|broken|jam+ed|fell apart|chain came off|arm broke)\b/i.test(t)) {
-    set('endMechIssue', true);
+    set('mechIssue', true);
   }
 
   // The raw description is always kept as the comment.
-  result.comments = text.trim().slice(0, 500);
-  conf.comments = 'high';
+  result.co = text.trim().slice(0, 500);
+  conf.co = 'high';
 
   return { fields: result, confidence: conf };
 }
@@ -533,6 +528,14 @@ function renderFieldHTML(f) {
         <div class="count-value" data-count-value="${f.code}">${val == null ? 0 : val}</div>
         <div class="count-pad">${minus}${plus}</div>
       </div>
+    </div>`;
+  }
+  // The field-layout diagram. Scouters use it to work out which of the six
+  // starting slots they are looking at, so it belongs in the form itself.
+  if (f.type === 'image') {
+    if (!f.src) return '';
+    return `<div data-field="${f.code}" class="field-wide">${labelHTML}
+      <img class="field-image" src="${escapeHTML(f.src)}" alt="${escapeHTML(f.alt || f.title || '')}" loading="lazy" onerror="this.closest('[data-field]').style.display='none'">
     </div>`;
   }
   if (f.type === 'multiselect') {
@@ -638,11 +641,11 @@ function setField(code, value) {
 
   // Starting position 1-3 is red, 4-6 is blue, so the alliance never has to be
   // asked for separately — and can't disagree with the slot.
-  if (code === 'startingPosition') fields.alliance = slotToAlliance(value);
+  if (code === 'startPos') fields.alliance = slotToAlliance(value);
 
   updateGenerateButton();
   saveDraft();
-  if (code === 'matchNumber' || code === 'startingPosition' || code === 'matchType' || code === 'eventKey') {
+  if (code === 'matchNumber' || code === 'startPos' || code === 'matchType' || code === 'eventKey') {
     maybeAutoFillTeam();
   }
 }
@@ -2051,9 +2054,9 @@ function maybeAutoFillTeam() {
   if (fields.matchType !== 'qm') return;
   const m = scheduleCache.matches[String(fields.matchNumber)];
   if (!m) return;
-  const arr = m[slotToAlliance(fields.startingPosition)];
+  const arr = m[slotToAlliance(fields.startPos)];
   if (!arr) return;
-  const team = arr[slotToStation(fields.startingPosition) - 1];
+  const team = arr[slotToStation(fields.startPos) - 1];
   if (!team || String(fields.teamNumber) === String(team)) return;
   fields.teamNumber = parseInt(team, 10) || team;
   confidence.teamNumber = 'high';

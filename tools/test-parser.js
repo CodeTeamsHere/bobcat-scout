@@ -99,76 +99,80 @@ check('full sample',
   'about 60 percent. Played defense well. Went under the trench. Climbed the mid rung, ' +
   '2 alliance robots climbed. No issues.',
   { scoutName: 'Krish', eventKey: '2026ctwat', matchNumber: 14, teamNumber: 177,
-    startingPosition: '2', alliance: 'red', autoFuel: 4, autoScored: true,
-    autoPickupFrom: ['depot'], teleFuel: 18, teleHowScored: 'driving', teleScoringPct: 60,
-    telePickupEff: 4, telePassingEff: 5, telePlayedDefense: 'yes', teleTrench: true,
-    endClimbed: 'level2', endAllianceClimbs: 2 });
+    startPos: '2', alliance: 'red', autoFuelScored: 4, AutoScored: true,
+    pickupfrom: ['DEPOT'], teleopFuelScored: 18, scoringMannerismTele: 'WHILE_DRIVE', scoringEffe: 60,
+    pickupEffe: 4, passingEffe: 5, robotDefended: 'Yes', TrenchRizz: true,
+    climbed: 'L2', AllianceClimb: 2 });
 
 check('spoken numbers throughout',
   'scouting team one seventy seven, match fourteen, they scored four in auto, ' +
   'teleop eighteen scored, climbed high rung',
-  { teamNumber: 177, matchNumber: 14, autoFuel: 4, teleFuel: 18, endClimbed: 'level3' });
+  { teamNumber: 177, matchNumber: 14, autoFuelScored: 4, teleopFuelScored: 18, climbed: 'L3' });
 
 check('terse call', '177 red 2 match 14 four in auto climbed high',
-  { teamNumber: 177, startingPosition: '2', alliance: 'red', matchNumber: 14,
-    autoFuel: 4, endClimbed: 'level3' });
+  { teamNumber: 177, startPos: '2', alliance: 'red', matchNumber: 14,
+    autoFuelScored: 4, climbed: 'L3' });
 
 check('blue maps to slots 4-6', 'team 1114 blue 1, climbed low',
-  { teamNumber: 1114, startingPosition: '4', alliance: 'blue', endClimbed: 'level1' });
+  { teamNumber: 1114, startPos: '4', alliance: 'blue', climbed: 'L1' });
 
 check('explicit starting position', 'team 254 starting position 6, no climb',
-  { startingPosition: '6', alliance: 'blue', endClimbed: 'none' });
+  { startPos: '6', alliance: 'blue', climbed: 'No' });
 
 // ---------------------------------------------------------------- climbing
 // This is the phrasing on the pitch deck and the scouter handout; it has to work.
-check('climbed high', 'team 1114 climbed high', { endClimbed: 'level3' });
-check('climbed mid', 'team 254 climbed mid', { endClimbed: 'level2' });
-check('climbed low', 'team 254 climbed low', { endClimbed: 'level1' });
-check('high rung', 'team 254 got the high rung', { endClimbed: 'level3' });
-check('level wording', 'team 254 hit level 2', { endClimbed: 'level2' });
-check('failed climb', 'team 254 tried to climb and fell off', { endClimbed: 'failed' });
-check('no climb', 'team 118 did not climb', { endClimbed: 'none' });
-check('auto climb', 'team 254 climbed level 1 in auto', { autoClimbed: 'level1' });
-check('buddy climb', 'team 254 did a buddy climb in auto', { autoBuddyClimb: true });
+check('climbed high', 'team 1114 climbed high', { climbed: 'L3' });
+check('climbed mid', 'team 254 climbed mid', { climbed: 'L2' });
+check('climbed low', 'team 254 climbed low', { climbed: 'L1' });
+check('high rung', 'team 254 got the high rung', { climbed: 'L3' });
+check('level wording', 'team 254 hit level 2', { climbed: 'L2' });
+check('failed climb', 'team 254 tried to climb and fell off', { climbed: 'F' });
+check('no climb', 'team 118 did not climb', { climbed: 'No' });
+// The team's form records only WHETHER the auto climb worked, not the level,
+// so every auto climb phrasing collapses to Success.
+check('auto climb', 'team 254 climbed level 1 in auto', { autoClimbed: 'Success' });
+check('auto climb, plain', 'in auto they climbed the low rung', { autoClimbed: 'Success' });
+check('failed auto climb', 'team 254 failed the climb in auto', { autoClimbed: 'Failed' });
+check('buddy climb', 'team 254 did a buddy climb in auto', { doubleClimb: true });
 
 // ---------------------------------------------------------------- counts
 check('count before the keyword', 'Team 177, 4 in auto, climbed high',
-  { teamNumber: 177, autoFuel: 4, autoScored: true, endClimbed: 'level3' });
-check('count after the keyword', 'in auto they scored 5', { autoFuel: 5 });
+  { teamNumber: 177, autoFuelScored: 4, AutoScored: true, climbed: 'L3' });
+check('count after the keyword', 'in auto they scored 5', { autoFuelScored: 5 });
 check('auto count does not land in teleop', 'team 2056 scored 2 in auto',
-  { autoFuel: 2 }, ['teleFuel']);
+  { autoFuelScored: 2 }, ['teleopFuelScored']);
 check('team number is not mistaken for a score', 'team 177 scored 3 in auto',
-  { teamNumber: 177, autoFuel: 3 });
-check('teleop count before the keyword', 'team 177 put up 12 in teleop', { teleFuel: 12 });
+  { teamNumber: 177, autoFuelScored: 3 });
+check('teleop count before the keyword', 'team 177 put up 12 in teleop', { teleopFuelScored: 12 });
 
 // ---------------------------------------------------- pickup and passing
 check('pickup sources', 'team 177 picked up from the depot and the human player zone',
-  { telePickupLoc: ['depot', 'hpzone'] });
+  { pickupTele: ['DEPOT', 'H_Player'] });
 check('passing targets', 'team 177 passed intentionally to the center',
-  { telePassed: ['center', 'intentional'] });
-check('no passing', 'team 177 did not pass all match', { telePassed: ['none'] });
+  { fuelPassed: ['Center', 'Intentional'] });
+check('no passing', 'team 177 did not pass all match', { fuelPassed: ['No_Passing'] });
 
 // ---------------------------------------------------------------- defense
 check('played defense', 'team 2056 played great defense the whole match',
-  { telePlayedDefense: 'yes', teleDefenseEff: 5 });
+  { robotDefended: 'Yes', defenceEffe: 5 });
 check('attempted defense', 'team 2056 tried to play defense but could not catch anyone',
-  { telePlayedDefense: 'attempted' });
+  { robotDefended: 'Attempted' });
 check('defense praise does not leak from passing', 'passing was amazing, defense was rough',
-  { teleDefenseEff: 2 });
+  { defenceEffe: 2 });
 
 // ------------------------------------------------------- false positives
-check('"scored 3" is not a starting position', 'team 177 scored 3 in auto', {}, ['startingPosition']);
-check('"measured 2" is not a starting position', 'the drive team measured 2 cycles', {}, ['startingPosition']);
-check('real slot still works', 'team 177 blue 3', { startingPosition: '6', alliance: 'blue' });
+check('"scored 3" is not a starting position', 'team 177 scored 3 in auto', {}, ['startPos']);
+check('"measured 2" is not a starting position', 'the drive team measured 2 cycles', {}, ['startPos']);
+check('real slot still works', 'team 177 blue 3', { startPos: '6', alliance: 'blue' });
 
 // ---------------------------------------------------------------- states
 check('robot died', 'team 118 match 9 blue 1, robot died halfway through teleop, no climb',
-  { teamNumber: 118, matchNumber: 9, startingPosition: '4', alliance: 'blue',
-    endDied: true, endClimbed: 'none' });
-check('tipped over', 'team 118 tipped over in the trench', { endTipped: true });
-check('mechanical issue', 'team 118 had a mechanical issue, intake jammed', { endMechIssue: true });
+  { teamNumber: 118, matchNumber: 9, startPos: '4', alliance: 'blue',
+    died: true, climbed: 'No' });
+check('tipped over', 'team 118 tipped over in the trench', { tipped: true });
+check('mechanical issue', 'team 118 had a mechanical issue, intake jammed', { mechIssue: true });
 check('no show', 'team 118 was a no show', { noShow: true });
-check('crossed zone', 'team 118 crossed into the opposite zone', { endCrossedZone: true });
+check('crossed zone', 'team 118 crossed into the opposite zone', { crossedZone: true });
 
 // ---------------------------------------------------------------- report
 if (failures.length) {

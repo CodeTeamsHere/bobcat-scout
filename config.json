@@ -2,18 +2,18 @@
   "title": "REBUILT 2026",
   "delimiter": "\t",
   "game": {
-    "name": "REBUILT",
+    "name": "Rebuilt",
     "year": 2026,
-    "note": "Fields mirror Team 177's REBUILT QRScout form. Keep the codes stable — the Sheet columns and the analytics engine key on them.",
+    "note": "Generated from reference/QRScout_config.json by tools/from-qrscout.py. Edit the QRScout config and re-run rather than hand-editing this file. Scoring values live in SCORING inside that script.",
     "display": {
-      "autoCountCode": "autoFuel",
-      "teleCountCode": "teleFuel",
-      "defenseCode": "teleDefenseEff",
-      "climbCode": "endClimbed",
+      "autoCountCode": "autoFuelScored",
+      "teleCountCode": "teleopFuelScored",
+      "defenseCode": "defenceEffe",
+      "climbCode": "climbed",
       "climbLevels": [
-        "level1",
-        "level2",
-        "level3"
+        "L1",
+        "L2",
+        "L3"
       ]
     }
   },
@@ -27,7 +27,8 @@
           "code": "scoutName",
           "required": true,
           "preserve": true,
-          "placeholder": "Your name"
+          "placeholder": "Your name",
+          "help": "QRScout calls this 'scouter'. Kept as scoutName because every row is stamped with it."
         },
         {
           "title": "Event Key",
@@ -43,10 +44,10 @@
           "type": "number",
           "code": "matchNumber",
           "required": true,
+          "help": "Select the match number.",
           "default": 1,
           "min": 1,
-          "max": 200,
-          "placeholder": "Enter match number"
+          "max": 200
         },
         {
           "title": "Match Type",
@@ -73,18 +74,19 @@
           "type": "number",
           "code": "teamNumber",
           "required": true,
+          "help": "Select the team and robot position you are scouting.",
+          "preserve": true,
           "default": 177,
           "min": 1,
-          "max": 99999,
-          "placeholder": "Enter team number"
+          "max": 99999
         },
         {
           "title": "Starting Position",
           "type": "select",
-          "code": "startingPosition",
+          "code": "startPos",
           "required": true,
+          "help": "The starting position of the robot.",
           "default": "",
-          "help": "1, 2, 3 are red. 4, 5, 6 are blue. The alliance is worked out from this.",
           "options": [
             {
               "k": "",
@@ -123,6 +125,7 @@
           "hidden": true,
           "preserve": true,
           "default": "",
+          "help": "Derived from the starting position. Never typed.",
           "options": [
             {
               "k": "",
@@ -139,9 +142,22 @@
           ]
         },
         {
+          "title": "Field Layout",
+          "type": "image",
+          "code": "fieldLayout",
+          "help": "Reference diagram of the field",
+          "preserve": true,
+          "src": "assets/field-layout.jpg",
+          "remoteSrc": "https://i.imgur.com/ep25ncm.jpeg",
+          "alt": "2026 FRC Field Layout Diagram",
+          "height": 300
+        },
+        {
           "title": "No Show",
           "type": "boolean",
           "code": "noShow",
+          "help": "Check if the robot did not show up for the match.",
+          "default": false,
           "fail": true
         }
       ]
@@ -152,15 +168,18 @@
         {
           "title": "Scored in Auto",
           "type": "boolean",
-          "code": "autoScored"
+          "code": "AutoScored",
+          "help": "Check if the robot scored in Auto.",
+          "default": false
         },
         {
           "title": "Fuel Scored",
           "type": "counter",
-          "code": "autoFuel",
+          "code": "autoFuelScored",
+          "help": "Approximate fuel scored during autonomous.",
           "default": 0,
           "min": 0,
-          "max": 200,
+          "max": 300,
           "steps": [
             1,
             5,
@@ -171,23 +190,28 @@
         {
           "title": "How Scored",
           "type": "select",
-          "code": "autoHowScored",
-          "default": "none",
+          "code": "scoringMannerismAuto",
+          "required": true,
+          "default": "",
           "options": [
             {
-              "k": "none",
+              "k": "",
+              "v": "—"
+            },
+            {
+              "k": "NONE",
               "v": "No Scoring"
             },
             {
-              "k": "stationary",
+              "k": "STATIONARY",
               "v": "While Stationary"
             },
             {
-              "k": "driving",
+              "k": "WHILE_DRIVE",
               "v": "While Driving"
             },
             {
-              "k": "both",
+              "k": "BOTH",
               "v": "Both"
             }
           ]
@@ -195,31 +219,35 @@
         {
           "title": "Pickup Fuel",
           "type": "boolean",
-          "code": "autoPickup"
+          "code": "AutoPickup",
+          "help": "Check if the robot picked up fuel in Auto.",
+          "default": false
         },
         {
-          "title": "Pickup Fuel From",
+          "title": "Pickup fuel from",
           "type": "multiselect",
-          "code": "autoPickupFrom",
+          "code": "pickupfrom",
+          "required": true,
+          "help": "Fuel pickup from",
           "options": [
             {
-              "k": "none",
+              "k": "NONE",
               "v": "No Pickup"
             },
             {
-              "k": "depot",
+              "k": "DEPOT",
               "v": "Depot"
             },
             {
-              "k": "midfield",
+              "k": "MID",
               "v": "MidField"
             },
             {
-              "k": "hpzone",
+              "k": "H_Player",
               "v": "Human Player Zone"
             },
             {
-              "k": "floor",
+              "k": "FLOOR",
               "v": "Floor"
             }
           ]
@@ -228,141 +256,205 @@
           "title": "Climbed",
           "type": "select",
           "code": "autoClimbed",
-          "default": "none",
-          "options": [
-            {
-              "k": "none",
-              "v": "No Climb"
-            },
-            {
-              "k": "level1",
-              "v": "Level 1"
-            },
-            {
-              "k": "level2",
-              "v": "Level 2"
-            },
-            {
-              "k": "level3",
-              "v": "Level 3"
-            },
-            {
-              "k": "failed",
-              "v": "Failed Climb"
-            }
-          ],
-          "optionPoints": {
-            "level1": 15,
-            "level2": 20,
-            "level3": 30
-          }
-        },
-        {
-          "title": "Where Climbed",
-          "type": "select",
-          "code": "autoWhereClimbed",
+          "required": true,
+          "help": "Did the robot climb during autonomous?",
           "default": "",
           "options": [
             {
               "k": "",
               "v": "—"
+            },
+            {
+              "k": "NA",
+              "v": "Not Attempted"
+            },
+            {
+              "k": "Success",
+              "v": "Successful Climb"
+            },
+            {
+              "k": "Failed",
+              "v": "Unsuccessful Climb"
             }
           ],
-          "needsOptions": "Dropdown was cut off in the reference screenshot — paste the real choices."
+          "optionPoints": {
+            "Success": 15
+          }
+        },
+        {
+          "title": "Where Climbed",
+          "type": "select",
+          "code": "autoClimbPos",
+          "help": "Where on the tower did the robot climb in autonomous?",
+          "default": "",
+          "options": [
+            {
+              "k": "",
+              "v": "—"
+            },
+            {
+              "k": "No",
+              "v": "No Climb"
+            },
+            {
+              "k": "LS",
+              "v": "Left Side"
+            },
+            {
+              "k": "MD",
+              "v": "Middle"
+            },
+            {
+              "k": "RS",
+              "v": "Right Side"
+            }
+          ]
         },
         {
           "title": "Double (Buddy) Climbed in Auto",
           "type": "boolean",
-          "code": "autoBuddyClimb"
+          "code": "doubleClimb",
+          "help": "Check if the robots Climbed with another robot in Auto.",
+          "default": false
         },
         {
           "title": "Auto Path",
           "type": "multiselect",
-          "code": "autoPath",
+          "code": "AutoPath",
+          "required": true,
           "options": [
             {
-              "k": "bump_bump_sweep",
+              "k": "Bump/Bump",
               "v": "Bump to Bump (sweep)"
             },
             {
-              "k": "trench_trench_sweep",
+              "k": "Trench/Trench",
               "v": "Trench to Trench (sweep)"
             },
             {
-              "k": "bump_trench_sweep",
+              "k": "Bump-Trench",
               "v": "Bump to Trench (sweep)"
             },
             {
-              "k": "trench_bump_sweep",
+              "k": "Trench-Bump",
               "v": "Trench to Bump (sweep)"
             },
             {
-              "k": "preload_only",
+              "k": "Pre-Load",
               "v": "Shoot Pre-Load Only"
             },
             {
-              "k": "straight_depot",
+              "k": "Depot",
               "v": "Straight to Depot"
             },
             {
-              "k": "straight_outpost",
+              "k": "Outpost",
               "v": "Straight to Outpost"
             },
             {
-              "k": "bump_bump_same",
+              "k": "Same Side Bump",
               "v": "Bump to Bump (Same Side)"
             },
             {
-              "k": "trench_trench_same",
+              "k": "Same Side Trench",
               "v": "Trench to Trench (Same Side)"
+            },
+            {
+              "k": "Same Side Bump/Trench",
+              "v": "Trench to Bump (Same Side)"
+            },
+            {
+              "k": "Same Side Trench/Bump",
+              "v": "Bump to Trench (Same Side)"
+            },
+            {
+              "k": "Climb",
+              "v": "Climb Only"
+            },
+            {
+              "k": "N/A",
+              "v": "Did not do anything"
             }
           ]
         },
         {
           "title": "Auto Shooting Locations",
           "type": "multiselect",
-          "code": "autoShootLoc",
+          "code": "AutoSL",
+          "required": true,
           "options": [
             {
-              "k": "left_near_depot",
+              "k": "LSH/Depot",
               "v": "Left side hub near Depot"
             },
             {
-              "k": "left_mid_depot",
+              "k": "LSH/Middle",
               "v": "Left side hub in the middle of hub and Depot"
             },
             {
-              "k": "left_near_hub",
+              "k": "LSH/Hub",
               "v": "Left side hub near hub"
             },
             {
-              "k": "left_near_bump",
+              "k": "LSH/Bump",
               "v": "Left side hub near bump"
             },
             {
-              "k": "left_near_trench",
+              "k": "LSH/Trench",
               "v": "Left side hub near trench"
             },
             {
-              "k": "mid_near_hub",
+              "k": "Trench-Bump",
+              "v": "Trench to Bump (sweep)"
+            },
+            {
+              "k": "MH/Hub",
               "v": "Middle hub near hub"
             },
             {
-              "k": "mid_mid_tower",
+              "k": "MH/Middle",
               "v": "Middle hub in the middle of hub and Tower"
             },
             {
-              "k": "mid_near_tower",
+              "k": "MH/Tower",
               "v": "Middle hub near Tower"
+            },
+            {
+              "k": "RSH/Outpost",
+              "v": "Right side hub near Outpost"
+            },
+            {
+              "k": "RSH/Middle",
+              "v": "Right side hub in the middle of hub and Outpost"
+            },
+            {
+              "k": "RSH/Hub",
+              "v": "Right side hub near hub"
+            },
+            {
+              "k": "RSH/Bump",
+              "v": "Right side hub near bump"
+            },
+            {
+              "k": "RSH/Trench",
+              "v": "Right side hub near trench"
+            },
+            {
+              "k": "Climb",
+              "v": "Climb Only"
+            },
+            {
+              "k": "N/A",
+              "v": "Did not do anything"
             }
-          ],
-          "needsOptions": "The screenshot's list scrolled past the middle-hub entries — paste the full list."
+          ]
         },
         {
-          "title": "Auto Comments (if their path isn't mentioned in Auto Path)",
+          "title": "Auto Comments (If their path isn't mentioned in Auto Path)",
           "type": "textarea",
-          "code": "autoComments",
-          "placeholder": "Anything about their auto the options above don't cover"
+          "code": "Aco",
+          "default": "",
+          "maxLength": 750
         }
       ]
     },
@@ -372,7 +464,8 @@
         {
           "title": "Fuel Scored",
           "type": "counter",
-          "code": "teleFuel",
+          "code": "teleopFuelScored",
+          "help": "Approximate fuel scored during teleop.",
           "default": 0,
           "min": 0,
           "max": 300,
@@ -386,32 +479,38 @@
         {
           "title": "% Scoring Effectiveness",
           "type": "range",
-          "code": "teleScoringPct",
+          "code": "scoringEffe",
+          "help": "Rate the approximate percent of fuel scored/attempted",
           "default": 0,
           "min": 0,
           "max": 100,
-          "step": 5
+          "step": 20
         },
         {
           "title": "How Scored",
           "type": "select",
-          "code": "teleHowScored",
-          "default": "none",
+          "code": "scoringMannerismTele",
+          "required": true,
+          "default": "",
           "options": [
             {
-              "k": "none",
+              "k": "",
+              "v": "—"
+            },
+            {
+              "k": "NONE",
               "v": "No Scoring"
             },
             {
-              "k": "stationary",
+              "k": "STATIONARY",
               "v": "While Stationary"
             },
             {
-              "k": "driving",
+              "k": "WHILE_DRIVE",
               "v": "While Driving"
             },
             {
-              "k": "both",
+              "k": "BOTH",
               "v": "Both"
             }
           ]
@@ -419,87 +518,135 @@
         {
           "title": "Tele Shooting Locations",
           "type": "multiselect",
-          "code": "teleShootLoc",
+          "code": "TeleSL",
+          "required": true,
           "options": [
             {
-              "k": "left_near_depot",
+              "k": "LSH/Depot",
               "v": "Left side hub near Depot"
             },
             {
-              "k": "left_near_hub",
+              "k": "LSH/Middle",
+              "v": "Left side hub in the middle of hub and Depot"
+            },
+            {
+              "k": "LSH/Hub",
               "v": "Left side hub near hub"
             },
             {
-              "k": "mid_near_hub",
+              "k": "LSH/Bump",
+              "v": "Left side hub near bump"
+            },
+            {
+              "k": "LSH/Trench",
+              "v": "Left side hub near trench"
+            },
+            {
+              "k": "Trench-Bump",
+              "v": "Trench to Bump (sweep)"
+            },
+            {
+              "k": "MH/Hub",
               "v": "Middle hub near hub"
             },
             {
-              "k": "mid_near_tower",
+              "k": "MH/Middle",
+              "v": "Middle hub in the middle of hub and Tower"
+            },
+            {
+              "k": "MH/Tower",
               "v": "Middle hub near Tower"
+            },
+            {
+              "k": "RSH/Outpost",
+              "v": "Right side hub near Outpost"
+            },
+            {
+              "k": "RSH/Middle",
+              "v": "Right side hub in the middle of hub and Outpost"
+            },
+            {
+              "k": "RSH/Hub",
+              "v": "Right side hub near hub"
+            },
+            {
+              "k": "RSH/Bump",
+              "v": "Right side hub near bump"
+            },
+            {
+              "k": "RSH/Trench",
+              "v": "Right side hub near trench"
+            },
+            {
+              "k": "NS",
+              "v": "No shooting"
             }
-          ],
-          "needsOptions": "Dropdown wasn't opened in the reference screenshot — paste the real choices."
+          ]
         },
         {
           "title": "Pickup Locations",
           "type": "multiselect",
-          "code": "telePickupLoc",
+          "code": "pickupTele",
+          "required": true,
+          "help": "Fuel pickup TELEOP",
           "options": [
             {
-              "k": "none",
+              "k": "NONE",
               "v": "No Pickup"
             },
             {
-              "k": "depot",
+              "k": "DEPOT",
               "v": "Depot"
             },
             {
-              "k": "midfield",
+              "k": "MID",
               "v": "MidField"
             },
             {
-              "k": "hpzone",
+              "k": "H_Player",
               "v": "Human Player Zone"
             },
             {
-              "k": "floor",
+              "k": "FLOOR",
               "v": "Floor"
             }
-          ],
-          "needsOptions": "Assumed the same list as auto pickup — confirm or paste the real one."
+          ]
         },
         {
           "title": "Pickup Effectiveness",
           "type": "range",
-          "code": "telePickupEff",
+          "code": "pickupEffe",
+          "help": "Rate the robot's pickup effectiveness.",
           "default": 0,
           "min": 0,
           "max": 5,
           "step": 1
         },
         {
-          "title": "Passed Fuel During Match?",
+          "title": "Passed fuel during match?",
           "type": "multiselect",
-          "code": "telePassed",
+          "code": "fuelPassed",
+          "required": true,
+          "help": "Did the robot pass fuel during the match?",
           "options": [
             {
-              "k": "none",
+              "k": "No_Passing",
               "v": "No passing"
             },
             {
-              "k": "center",
+              "k": "Center",
               "v": "Center"
             },
             {
-              "k": "oppzone",
+              "k": "Opp_Zone",
               "v": "Opp Zone"
             },
             {
-              "k": "scattered",
+              "k": "Scattered",
               "v": "Scattered"
             },
             {
-              "k": "intentional",
+              "k": "Intentional",
               "v": "Intentional"
             }
           ]
@@ -507,7 +654,8 @@
         {
           "title": "Passing Effectiveness",
           "type": "range",
-          "code": "telePassingEff",
+          "code": "passingEffe",
+          "help": "Rate the robot's passing effectiveness.",
           "default": 0,
           "min": 0,
           "max": 5,
@@ -516,24 +664,32 @@
         {
           "title": "Trench Capability",
           "type": "boolean",
-          "code": "teleTrench"
+          "code": "TrenchRizz",
+          "help": "Check if the robot is able to go under the trench",
+          "default": false
         },
         {
           "title": "Played Defense?",
           "type": "select",
-          "code": "telePlayedDefense",
-          "default": "no",
+          "code": "robotDefended",
+          "required": true,
+          "help": "Did the robot play defense during the match?",
+          "default": "",
           "options": [
             {
-              "k": "yes",
+              "k": "",
+              "v": "—"
+            },
+            {
+              "k": "Yes",
               "v": "Yes"
             },
             {
-              "k": "no",
+              "k": "No",
               "v": "No"
             },
             {
-              "k": "attempted",
+              "k": "Attempted",
               "v": "Attempted"
             }
           ]
@@ -541,7 +697,8 @@
         {
           "title": "Defense Effectiveness",
           "type": "range",
-          "code": "teleDefenseEff",
+          "code": "defenceEffe",
+          "help": "Rate the robot's defense effectiveness.",
           "default": 0,
           "min": 0,
           "max": 5,
@@ -555,86 +712,120 @@
         {
           "title": "Climbed",
           "type": "select",
-          "code": "endClimbed",
-          "default": "none",
-          "options": [
-            {
-              "k": "none",
-              "v": "No Climb"
-            },
-            {
-              "k": "level1",
-              "v": "Level 1"
-            },
-            {
-              "k": "level2",
-              "v": "Level 2"
-            },
-            {
-              "k": "level3",
-              "v": "Level 3"
-            },
-            {
-              "k": "failed",
-              "v": "Failed Climb"
-            }
-          ],
-          "optionPoints": {
-            "level1": 10,
-            "level2": 20,
-            "level3": 30
-          }
-        },
-        {
-          "title": "Where Climbed",
-          "type": "select",
-          "code": "endWhereClimbed",
+          "code": "climbed",
+          "required": true,
+          "help": "The level the robot climbed during endgame.",
           "default": "",
           "options": [
             {
               "k": "",
               "v": "—"
+            },
+            {
+              "k": "No",
+              "v": "No Climb"
+            },
+            {
+              "k": "L1",
+              "v": "Level 1"
+            },
+            {
+              "k": "L2",
+              "v": "Level 2"
+            },
+            {
+              "k": "L3",
+              "v": "Level 3"
+            },
+            {
+              "k": "F",
+              "v": "Failed Climb"
             }
           ],
-          "needsOptions": "Dropdown was cut off in the reference screenshot — paste the real choices."
+          "optionPoints": {
+            "L1": 10,
+            "L2": 20,
+            "L3": 30
+          }
+        },
+        {
+          "title": "Where Climbed",
+          "type": "select",
+          "code": "climbPos",
+          "help": "Where on the tower did the robot climb?",
+          "default": "",
+          "options": [
+            {
+              "k": "",
+              "v": "—"
+            },
+            {
+              "k": "No",
+              "v": "No Climb"
+            },
+            {
+              "k": "LS",
+              "v": "Left Side"
+            },
+            {
+              "k": "MD",
+              "v": "Middle"
+            },
+            {
+              "k": "RS",
+              "v": "Right Side"
+            }
+          ]
         },
         {
           "title": "Number of Alliance Robots Climbed",
           "type": "range",
-          "code": "endAllianceClimbs",
+          "code": "AllianceClimb",
+          "help": "How much of the robots climbed at endgame.",
           "default": 0,
           "min": 0,
           "max": 3,
           "step": 1
         },
         {
-          "title": "Crossed Into Opposite Zone?",
+          "title": "Crossed into opposite zone?",
           "type": "boolean",
-          "code": "endCrossedZone"
+          "code": "crossedZone",
+          "help": "Did the robot cross into the opposing alliance's zone?",
+          "default": false
         },
         {
           "title": "Mechanical Issue?",
           "type": "boolean",
-          "code": "endMechIssue",
+          "code": "mechIssue",
+          "help": "Did the robot have a mechanical issue during the match?",
+          "default": false,
           "fail": true
         },
         {
           "title": "Died?",
           "type": "boolean",
-          "code": "endDied",
+          "code": "died",
+          "help": "Did the robot die during the match?",
+          "default": false,
           "fail": true
         },
         {
-          "title": "Tipped / Fell Over",
+          "title": "Tipped/Fell Over",
           "type": "boolean",
-          "code": "endTipped",
+          "code": "tipped",
+          "help": "Did the robot tip or fall over during the match?",
+          "default": false,
           "fail": true
         },
         {
-          "title": "Comments (eg: penalties / defense / uniqueness)",
+          "title": "Comments (Eg:Penalties/Defense/Uniqueness)",
           "type": "textarea",
-          "code": "comments",
-          "placeholder": "Penalties, defense, anything unusual"
+          "code": "co",
+          "required": true,
+          "help": "Eg: Penalties/Defense/Uniqueness, etc.",
+          "default": "",
+          "maxLength": 2500
         }
       ]
     }

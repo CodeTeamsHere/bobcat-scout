@@ -3,7 +3,7 @@
    stale-while-revalidate (instant from cache, refreshed in the background).
    Cross-origin requests (e.g. the Google Apps Script submit) are left untouched. */
 
-const CACHE = 'bobcat-scout-v16';
+const CACHE = 'bobcat-scout-v17';
 const ASSETS = [
   '.',
   'index.html',
@@ -12,6 +12,7 @@ const ASSETS = [
   'team-config.js',
   'analytics.js',
   'config.json',
+  'assets/field-layout.jpg',
   'vendor/qrcode-generator.js',
   'manifest.webmanifest',
   'icon.svg',

@@ -90,20 +90,21 @@ if (climbField) {
 // ---- scoring maths ------------------------------------------------------
 const row = (over) => Object.assign({
   teamNumber: '177', alliance: 'red', eventKey: 'e', matchType: 'qm', matchNumber: 1,
-  autoFuel: 0, teleFuel: 0, autoClimbed: 'none', endClimbed: 'none'
+  autoFuelScored: 0, teleopFuelScored: 0, autoClimbed: 'NA', climbed: 'No'
 }, over);
 
 check('empty match scores nothing', api.recordPoints(row({})), 0);
-check('fuel counts one point each', api.recordPoints(row({ autoFuel: 4, teleFuel: 18 })), 22);
+check('fuel counts one point each', api.recordPoints(row({ autoFuelScored: 4, teleopFuelScored: 18 })), 22);
 check('endgame climb levels', [
-  api.recordPoints(row({ endClimbed: 'level1' })),
-  api.recordPoints(row({ endClimbed: 'level2' })),
-  api.recordPoints(row({ endClimbed: 'level3' }))
+  api.recordPoints(row({ climbed: 'L1' })),
+  api.recordPoints(row({ climbed: 'L2' })),
+  api.recordPoints(row({ climbed: 'L3' }))
 ], [10, 20, 30]);
-check('an auto climb is worth more than the same climb at the end',
-  api.recordPoints(row({ autoClimbed: 'level1' })) > api.recordPoints(row({ endClimbed: 'level1' })), true);
-check('a failed climb scores nothing', api.recordPoints(row({ endClimbed: 'failed' })), 0);
-check('full line', api.recordPoints(row({ autoFuel: 4, teleFuel: 18, endClimbed: 'level2' })), 42);
+check('an auto climb scores more than a level 1 endgame climb',
+  api.recordPoints(row({ autoClimbed: 'Success' })) > api.recordPoints(row({ climbed: 'L1' })), true);
+check('a failed endgame climb scores nothing', api.recordPoints(row({ climbed: 'F' })), 0);
+check('a failed auto climb scores nothing', api.recordPoints(row({ autoClimbed: 'Failed' })), 0);
+check('full line', api.recordPoints(row({ autoFuelScored: 4, teleopFuelScored: 18, climbed: 'L2' })), 42);
 
 // ---- the model actually predicts better than chance ---------------------
 const recs = api.sampleSeason();

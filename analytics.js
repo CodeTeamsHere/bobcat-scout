@@ -298,14 +298,14 @@
       ['red', 'blue'].forEach(function (al, ai) {
         pool.slice(ai * 3, ai * 3 + 3).forEach(function (t, st) {
           var s = skill[t], dead = R() > s.rel;
-          var climb = dead ? 'none' : (R() < s.climbHi * 0.7 ? 'level3' : (R() < 0.5 ? 'level2' : (R() < 0.6 ? 'level1' : 'none')));
+          var climb = dead ? 'No' : (R() < s.climbHi * 0.7 ? 'L3' : (R() < 0.5 ? 'L2' : (R() < 0.6 ? 'L1' : 'No')));
           recs.push({
             eventKey: '2025demo', matchType: 'qm', matchNumber: m, teamNumber: t, alliance: al, driverStation: String(st + 1),
-            autoScored: !dead && R() > 0.1, autoFuel: dead ? 0 : Math.max(0, Math.round(s.auto + (R() - 0.5) * 3)),
-            teleFuel: dead ? 0 : Math.max(0, Math.round(s.tele + (R() - 0.5) * 8)),
-            autoClimbed: 'none', endClimbed: climb,
-            teleDefenseEff: s.def > 0.7 ? Math.round(2 + R() * 3) : 1,
-            endTipped: R() > 0.95, endDied: dead, endMechIssue: false, noShow: false
+            AutoScored: !dead && R() > 0.1, autoFuelScored: dead ? 0 : Math.max(0, Math.round(s.auto + (R() - 0.5) * 3)),
+            teleopFuelScored: dead ? 0 : Math.max(0, Math.round(s.tele + (R() - 0.5) * 8)),
+            autoClimbed: 'NA', climbed: climb,
+            defenceEffe: s.def > 0.7 ? Math.round(2 + R() * 3) : 1,
+            tipped: R() > 0.95, died: dead, mechIssue: false, noShow: false
           });
         });
       });

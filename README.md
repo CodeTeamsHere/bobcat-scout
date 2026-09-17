@@ -47,8 +47,19 @@ python tools/devserver.py
 the links. Once the values are in [`team-config.js`](team-config.js), the in-app settings
 page disappears and scouters have nothing to configure at all.
 
+**To change anything later** — a new event, a new passcode, a new season — open
+**[CHANGE-IT.md](CHANGE-IT.md)**. It says where each file is, what to do, and the exact
+words to paste into Claude Code if you would rather not do it by hand.
+
+**[IMPORTANT/](IMPORTANT/)** holds the finished things you would hand to a person: the pitch
+deck, the scouter handout, the pilot proposal.
+
 Other guides: **[HOW-TO-USE.md](HOW-TO-USE.md)** (roles and data flow),
 **[PILOT-PROPOSAL.md](PILOT-PROPOSAL.md)** (the honest pitch for adopting it).
+
+The scouting form is generated from the team's QRScout export
+(`reference/QRScout_config.json`) by `tools/from-qrscout.py`, so the two stay
+interchangeable — same field codes, same option keys. Do not hand-edit `config.json`.
 
 It's an installable **PWA**: open it once and it runs fully offline (essential at venues — the QR library is bundled, not loaded from a CDN), the in-progress match auto-saves through refreshes, and you can **Add to Home Screen** to use it like an app.
 

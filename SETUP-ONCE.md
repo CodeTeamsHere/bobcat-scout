@@ -182,12 +182,44 @@ role on the spreadsheet. The script decides what gets written, so the sheet stay
 
 ## Next year, or a new game
 
-The season's form lives in [`config.json`](config.json) and ships with the app, so every
-scouter is guaranteed to be on the identical form. There is deliberately no in-app editor:
-if each scouter could rebuild the form on their own phone, their columns would drift apart
-and the data would stop lining up.
+The season's form is **generated from your QRScout config**, so the two never drift apart —
+same field codes, same option keys, which means a Bobcat Scout row drops straight into the
+pipeline you already use.
 
-When the new game comes out, send the game manual and the new field list, and the form,
-the scoring, the spreadsheet columns and the analytics get rebuilt in one place and
-redeployed to everybody at once. Then you redo Part C to point at the new event, and
-that is it.
+1. Export the config from QRScout and save it over `reference\QRScout_config.json`.
+2. Open `tools\from-qrscout.py` and update the **`SCORING`** block with the new game's point
+   values. A script cannot read a game manual, so this part is on a human.
+3. Run:
+
+   ```bash
+   python tools/from-qrscout.py
+   node tools/test-parser.js
+   node tools/test-analytics.js
+   ```
+
+4. Push. Every scouter gets the new form next time they open the app.
+
+There is deliberately no in-app form editor. If each scouter could rebuild the fields on
+their own phone, the columns would drift apart and the data would stop lining up.
+
+**Full instructions for this and every other kind of change, including the exact words to
+paste into Claude Code, are in [CHANGE-IT.md](CHANGE-IT.md).**
+
+---
+
+## Where the files live
+
+```
+C:\Users\kishg\CLAUDE\bobcat-scout
+```
+
+Paste that into the File Explorer address bar to jump straight there.
+
+| File | What it is |
+|---|---|
+| `team-config.js` | **The settings.** Every value, with its links and click path written inside the file. |
+| `IMPORTANT\` | The deck, the handouts, the proposal, the video. Everything you would hand to a person. |
+| `CHANGE-IT.md` | How to change anything, with copy-paste prompts. |
+| `reference\QRScout_config.json` | Your QRScout form. The source of truth for the fields. |
+| `config.json` | Generated from the above. Do not hand-edit it. |
+| `assets\field-layout.jpg` | The field diagram, kept locally so it still shows with no signal. |
