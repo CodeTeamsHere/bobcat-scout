@@ -1,4 +1,4 @@
-"""Build the invite link that carries the team's private values.
+r"""Build the invite link that carries the team's private values.
 
     python tools/make-invite-link.py
 
@@ -6,6 +6,14 @@ The app's public address, its client ID and the event code all live in
 team-config.js and are safe to publish. The passcode and the Blue Alliance key
 are NOT — this repository is public, and git history is permanent. They travel
 in the link instead, which you send to your scouters privately.
+
+RUN THIS IN YOUR OWN TERMINAL, not in a chat window — it asks for the
+passcode, and you do not want that ending up in a transcript.
+
+In the Claude Code app that means the Terminal panel beside the chat, or a
+normal PowerShell window opened at:
+
+    C:\Users\kishg\CLAUDE\bobcat-scout
 
 This script only prints. It writes nothing, saves nothing, and sends nothing.
 Paste the result into your team chat.
@@ -35,7 +43,15 @@ def preset(key):
 def ask(label, note):
     print('\n' + label)
     print('  ' + note)
-    return input('  > ').strip()
+    try:
+        return input('  > ').strip()
+    except EOFError:
+        # No keyboard attached. Almost always means this was run somewhere
+        # that cannot prompt, such as a chat tool's command runner.
+        print('\n! Nothing to type into. Run this in a real terminal window:')
+        print('    cd C:\\Users\\kishg\\CLAUDE\\bobcat-scout')
+        print('    python tools/make-invite-link.py')
+        sys.exit(1)
 
 
 def main():
