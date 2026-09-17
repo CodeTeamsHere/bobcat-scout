@@ -24,6 +24,7 @@ throw, it just leaves a field blank or fills the wrong one. There is a regressio
 ```bash
 node tools/test-parser.js
 node tools/test-analytics.js
+node tools/test-config.js
 ```
 
 Neither needs any dependencies and both run in under a second.
@@ -33,6 +34,9 @@ Neither needs any dependencies and both run in under a second.
 - **test-analytics** covers the scoring model. The engine is config-driven, so renaming a
   field in `config.json` makes the scoring silently become zero instead of throwing — these
   checks catch that, and verify the display columns still point at fields that exist.
+
+- **test-config** refuses to let a private value reach this public repository. Run it before
+  every push that touches `team-config.js`.
 
 Add a case whenever you touch a pattern in `parseTranscript` or a point value in `config.json`.
 

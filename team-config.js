@@ -82,7 +82,7 @@ window.TEAM_CONFIG = {
   // deployment gives a different address and you would have to update
   // this file again.
   // -------------------------------------------------------------------
-  sheetUrl: '',
+  sheetUrl: 'https://script.google.com/macros/s/AKfycbz6aXksgsVBMshkKifAnvFGZoJSidxousfwGVwFnizArKy1zVI2GrdvtGpXkIppBgPi/exec',
 
   // ===================================================================
   // 2. PASSCODE                  ** REQUIRED **
@@ -160,7 +160,7 @@ window.TEAM_CONFIG = {
   // Sign-ins last about an hour. When one expires a scouter taps the
   // button again and anything waiting sends itself. Nothing is lost.
   // -------------------------------------------------------------------
-  googleClientId: ''
+  googleClientId: '404429673783-0mue3sktcon2ca4v7fgjmn8iu8bqitpe.apps.googleusercontent.com'
 };
 
 /* =====================================================================

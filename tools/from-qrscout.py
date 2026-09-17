@@ -64,12 +64,31 @@ RENAME = {
 }
 
 # --- REBUILT 2026 scoring, layered on top of the converted form ------------
-# Keys are Bobcat Scout field codes. CHECK THESE AGAINST THE GAME MANUAL.
+# VERIFIED against the 2026 Game Manual (version TU22), section 6.5.3,
+# "Table 6-4 REBUILT point values":
+#
+#                                          AUTO   TELEOP
+#   FUEL scored in an active HUB             1       1
+#   FUEL scored in an inactive HUB           -       -
+#   Each ROBOT at LEVEL 1                   15      10     (max 2 robots in AUTO)
+#   Each ROBOT at LEVEL 2                    -      20
+#   Each ROBOT at LEVEL 3                    -      30
+#
+# Section 6.5.2 confirms a ROBOT may only earn TOWER points for LEVEL 1 during
+# AUTO, which is why QRScout records the auto climb as merely succeeded/failed
+# and why a single 15 is the right value here rather than a per-level table.
+#
+# KNOWN APPROXIMATION: the HUBs alternate active/inactive each SHIFT, and fuel
+# put into an inactive HUB scores nothing. A scouter counting fuel cannot track
+# which shift was active, and the QRScout form does not ask, so every teleop
+# fuel is counted at 1 point. Team point totals therefore read slightly HIGH.
+# It biases every team the same way, so the rankings and the pick list still
+# hold up; treat the raw totals as a scouting estimate, not an official score.
+#
+# Keys are Bobcat Scout field codes.
 SCORING = {
     "autoFuelScored":   {"points": 1},
     "teleopFuelScored": {"points": 1},
-    # QRScout's auto climb has no level, only whether it worked, so this is the
-    # single auto-climb value rather than a per-level table.
     "autoClimbed":      {"optionPoints": {"Success": 15}},
     "climbed":          {"optionPoints": {"L1": 10, "L2": 20, "L3": 30}},
     # Booleans that mean the robot stopped contributing. These drive the
