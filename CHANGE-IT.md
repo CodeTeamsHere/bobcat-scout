@@ -66,6 +66,20 @@ If you moved to a **different spreadsheet**, you also need a new web app address
 
 ---
 
+### 2b. The form changed and your spreadsheet is from before it
+
+The script appends columns it does not recognise instead of replacing them, so an old
+**Data** tab plus a new form gives you a very wide sheet with half the columns blank.
+
+1. Open the **Data** tab, save anything you care about (right-click the tab → Duplicate).
+2. Delete every row **including row 1**. The tab must be completely empty.
+3. The next match that arrives rebuilds the header correctly.
+
+You do **not** need to re-paste the script or redeploy. See the "Already have a sheet?"
+section of `SETUP-ONCE.md`.
+
+---
+
 ### 3. The scouting form changed (QRScout was edited)
 
 This is the important one, and it is why the app has no in-app form editor: everybody has

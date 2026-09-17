@@ -8,6 +8,8 @@ Everything you collect here goes into one file: **[`team-config.js`](team-config
 
 You need a Google account and about twenty minutes. Follow it in order.
 
+**Already made the spreadsheet in an earlier session?** Skip to [Already have a sheet?](#already-have-a-sheet-start-here-instead) — you do not need to redo any of this.
+
 ---
 
 ## What you are collecting
@@ -19,6 +21,68 @@ You need a Google account and about twenty minutes. Follow it in order.
 | 3 | **Event key** | The Blue Alliance event page (Part D) | Recommended |
 | 4 | **TBA read key** | thebluealliance.com account page (Part E) | Recommended |
 | 5 | **Google client ID** | Already written for you (Part F) | Only for the strict lock |
+
+---
+
+---
+
+## Already have a sheet? Start here instead
+
+If you already made the spreadsheet and ran the script in an earlier session, **do not
+start over.** The script has not changed, so your deployment still works. You only need
+four things, and it takes about five minutes.
+
+### 1. Clear out the old Data tab
+
+The scouting form changed, so the old columns no longer match. The script *appends*
+columns it does not recognise rather than replacing them, so if you leave the old
+headers there you end up with roughly eighty columns, half of them permanently blank.
+
+1. Open the **Data** tab.
+2. Check whether any rows are real scouting you care about. Test rows are not worth keeping.
+3. Select all rows **including row 1, the header row**, right-click, **Delete rows**.
+   The tab must be completely empty — the script rebuilds the header from the first match
+   that arrives.
+
+> Keeping old data? Right-click the Data tab, **Duplicate**, and rename the copy
+> `Data (old 2026)` first. Then clear the real one.
+
+### 2. Fix who is allowed to submit
+
+This one will stop a pilot dead if you miss it. In the **Config** tab:
+
+- If **Require Google Login** is `yes`, then **Allowed Emails** or **Allowed Domain**
+  decides who can send matches. If Allowed Emails is just your own address, **every other
+  scouter gets rejected.**
+- Pick one:
+  - **Allowed Domain** → your school's email domain, so anyone on it can submit. Easiest.
+  - **Allowed Emails** → a comma separated list of every scouter's address.
+  - Or set **Require Google Login** to `no` and rely on the passcode. Simplest for a pilot,
+    but then anyone with the link can submit.
+
+### 3. Set the event
+
+In the **Config** tab, put your competition's code in **Active Event** (e.g. `2026ctwat`),
+and put the same value in `team-config.js` as `eventKey`. Leave it blank to accept any event.
+
+### 4. Get your web app URL
+
+You already deployed the script, so the address already exists — you just need to read it.
+
+1. Open the spreadsheet, then **Extensions → Apps Script**.
+2. Top right: **Deploy → Manage deployments**.
+3. Copy the **Web app URL** shown there. It ends in `/exec`.
+
+Paste it into `team-config.js` as `sheetUrl`, and put your existing passcode (from the
+Config tab) in as `passcode`. Then push.
+
+> **Do not click "New deployment".** That creates a *second* address and leaves the old one
+> live. Manage deployments shows you the one you already have.
+
+### Tabs you can delete
+
+`Pit` (pit scouting was removed) and `Sheet1` (the empty default) are both unused now.
+Deleting them is optional and changes nothing.
 
 ---
 
