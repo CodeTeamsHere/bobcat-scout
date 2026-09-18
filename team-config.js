@@ -136,7 +136,7 @@ window.TEAM_CONFIG = {
   // Prefer not to publish it? Leave blank and send it in the invite link
   // instead — make-invite-link.py carries it too.
   // -------------------------------------------------------------------
-  tbaKey: '',
+  tbaKey: 'fIR5Ubm8lYkMlO0rO3sJvvMTre2GbySWsmgdvJPhDbE3avfGp4YuMx1xmlSeEIX4', // PUBLISH-OK
 
   // ===================================================================
   // 5. GOOGLE SIGN-IN            ** REQUIRED for Plan A and Plan B **
