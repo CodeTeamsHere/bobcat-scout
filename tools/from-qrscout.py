@@ -99,7 +99,7 @@ SCORING = {
     "tipped":           {"fail": True},
 }
 
-# Which converted columns the ANALYZE tables summarise.
+# Which converted columns the Analytics app's tables summarise.
 DISPLAY = {
     "autoCountCode": "autoFuelScored",
     "teleCountCode": "teleopFuelScored",
@@ -246,7 +246,8 @@ def main():
     for key in ('autoCountCode', 'teleCountCode', 'defenseCode', 'climbCode'):
         if DISPLAY[key] not in codes:
             print('  ! DISPLAY.%s = %r is not a field code' % (key, DISPLAY[key]))
-    print('\nNow run:  node tools/test-parser.js && node tools/test-analytics.js')
+    print('\nNow run:  node tools/test-parser.js')
+    print('Then refresh the Analytics app\'s copy of the form, if the team uses it (see its README).')
 
 
 if __name__ == '__main__':

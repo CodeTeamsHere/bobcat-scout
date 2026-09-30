@@ -554,7 +554,7 @@ function renderAllFields() {
   activeSections().forEach(sec => {
     html += `<div class="section-header">${escapeHTML(sec.name.toUpperCase())}</div>`;
     html += `<div class="field-grid">`;
-    // `hidden` fields stay in FIELD_ORDER (the Sheet and the analytics still
+    // `hidden` fields stay in FIELD_ORDER (the Sheet and the Analytics app still
     // want the column) but are derived rather than typed, so don't draw them.
     sec.fields.forEach(f => { if (!f.hidden) html += renderFieldHTML(f); });
     html += `</div>`;
@@ -1157,11 +1157,11 @@ function updateSessionBar() {
   }
   // refresh list contents if visible
   const list = $('session-list');
-  list.innerHTML = sessionMatches.map(m => `
-    <div class="row"><strong>Match ${escapeHTML(m.matchNumber)}</strong> · Team ${escapeHTML(m.teamNumber)} · ${escapeHTML(m.alliance)} ${escapeHTML(m.driverStation)} · Climb: ${escapeHTML(m.endgameClimb)} · Hub made: ${(parseInt(m.autoHubMade)||0) + (parseInt(m.teleopHubMade)||0)}</div>
-  `).join('');
-  const sb = $('summary-box');
-  if (sb && !sb.classList.contains('hidden')) renderSummary();
+  list.innerHTML = sessionMatches.map(m => {
+    const parts = [`<strong>Match ${escapeHTML(m.matchNumber)}</strong>`, `Team ${escapeHTML(m.teamNumber)}`];
+    if (m.alliance) parts.push(escapeHTML(String(m.alliance).toUpperCase()));
+    return `<div class="row">${parts.join(' · ')}</div>`;
+  }).join('');
 }
 
 function toggleSessionCard() {
@@ -1875,12 +1875,6 @@ async function loadConfig() {
   return await fetchDefaultConfig();
 }
 
-// Hand the live config (with its scoring point-values) to the Analytics engine
-// so OPR / predictions / pick-list re-derive points for whatever game is loaded.
-function syncAnalyticsConfig() {
-  try { if (window.ANALYTICS && ANALYTICS.setConfig) ANALYTICS.setConfig(CONFIG); } catch (e) {}
-}
-
 // =====================================================================
 // UI WIRING
 // =====================================================================
@@ -1973,10 +1967,6 @@ function wireUI() {
   $('btn-google-signout').addEventListener('click', googleSignOut);
   $('sheet-overlay').addEventListener('click', e => { if (e.target === $('sheet-overlay')) closeSheetDialog(); });
   window.addEventListener('online', flushQueue);
-
-  // Session summary
-  $('btn-summary').addEventListener('click', toggleSummary);
-
 }
 
 // =====================================================================
@@ -2025,66 +2015,6 @@ function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js').catch(() => {});
   }
-}
-
-
-
-// =====================================================================
-// SESSION SUMMARY — per-team averages computed on the phone (no internet)
-// =====================================================================
-
-const CLIMB_RANK = { none: 0, attempted_failed: 0, parked: 1, level1: 2, level2: 3, level3: 4 };
-const CLIMB_SHORT = { none: '—', attempted_failed: 'Fail', parked: 'Park', level1: 'L1', level2: 'L2', level3: 'L3' };
-
-function computeSummary() {
-  const byTeam = {};
-  sessionMatches.forEach(m => {
-    const t = (m.teamNumber == null || m.teamNumber === '') ? '?' : m.teamNumber;
-    (byTeam[t] = byTeam[t] || []).push(m);
-  });
-  const num = v => parseFloat(v) || 0;
-  const rows = Object.keys(byTeam).map(team => {
-    const ms = byTeam[team], n = ms.length;
-    const avg = key => ms.reduce((s, m) => s + num(m[key]), 0) / n;
-    const a = avg('autoHubMade'), te = avg('teleopHubMade');
-    let best = 'none';
-    ms.forEach(m => { if ((CLIMB_RANK[m.endgameClimb] || 0) > (CLIMB_RANK[best] || 0)) best = m.endgameClimb; });
-    const died = ms.filter(m => m.disabled).length;
-    const tip = ms.filter(m => m.tipped).length;
-    return {
-      team: team, n: n,
-      auto: a.toFixed(1), tele: te.toFixed(1), total: (a + te).toFixed(1),
-      climb: CLIMB_SHORT[best] || best,
-      driver: avg('driverSkill').toFixed(1),
-      defense: avg('defenseRating').toFixed(1),
-      issues: (died || tip) ? [died ? died + '✕died' : '', tip ? tip + '✕tip' : ''].filter(Boolean).join(' ') : '—'
-    };
-  });
-  rows.sort((x, y) => parseFloat(y.total) - parseFloat(x.total));
-  return rows;
-}
-
-function renderSummary() {
-  const box = $('summary-box');
-  if (!box) return;
-  const rows = computeSummary();
-  if (!rows.length) { box.innerHTML = '<div class="summary-empty">No saved matches yet this session.</div>'; return; }
-  let h = '<div class="summary-scroll"><table class="summary-table"><thead><tr>'
-    + '<th>Team</th><th>Mch</th><th>Auto</th><th>Tele</th><th>Total</th><th>Climb</th><th>Drv</th><th>Def</th><th>Issues</th>'
-    + '</tr></thead><tbody>';
-  rows.forEach(r => {
-    h += '<tr><td><strong>' + escapeHTML(r.team) + '</strong></td><td>' + r.n + '</td><td>' + r.auto + '</td><td>' + r.tele
-      + '</td><td><strong>' + r.total + '</strong></td><td>' + escapeHTML(r.climb) + '</td><td>' + r.driver + '</td><td>' + r.defense + '</td><td>' + escapeHTML(r.issues) + '</td></tr>';
-  });
-  h += '</tbody></table></div><div class="summary-note">Averages across matches saved this session, sorted by total fuel. Total = avg auto + avg teleop. "Climb" = best achieved.</div>';
-  box.innerHTML = h;
-}
-
-function toggleSummary() {
-  const box = $('summary-box');
-  if (!box) return;
-  if (box.classList.contains('hidden')) { renderSummary(); box.classList.remove('hidden'); }
-  else box.classList.add('hidden');
 }
 
 // =====================================================================
@@ -2172,75 +2102,6 @@ async function doLoadSchedule() {
   } catch (e) {
     showScheduleMsg('Could not load schedule: ' + e.message, 'err');
   }
-}
-
-// ----- Rich Blue Alliance data for analytics (team names, official OPR, rankings, results) -----
-// Lets the ANALYZE engine show real team names and validate its scouting-based
-// predictions against the official match outcomes from the field.
-async function fetchTBAEvent(tbaKey, eventKey) {
-  eventKey = String(eventKey || '').toLowerCase().trim();
-  if (!eventKey) throw new Error('set the Event Key first');
-  if (!tbaKey) throw new Error('add your free TBA API key first');
-  const base = 'https://www.thebluealliance.com/api/v3/event/' + eventKey;
-  const opts = { headers: { 'X-TBA-Auth-Key': tbaKey } };
-  async function get(path) {
-    const r = await fetch(base + path, opts);
-    if (!r.ok) throw new Error('TBA ' + r.status + (r.status === 401 ? ' — check the API key' : (r.status === 404 ? ' — no event "' + eventKey + '"' : '')));
-    return r.json();
-  }
-  const [teams, oprs, rankings, matches] = await Promise.all([
-    get('/teams/simple').catch(() => []),
-    get('/oprs').catch(() => null),
-    get('/rankings').catch(() => null),
-    get('/matches/simple').catch(() => [])
-  ]);
-  const names = {};
-  (teams || []).forEach(t => { if (t && t.team_number != null) names[String(t.team_number)] = t.nickname || ''; });
-  const opr = {};
-  if (oprs && oprs.oprs) Object.keys(oprs.oprs).forEach(k => { opr[k.replace('frc', '')] = Math.round(oprs.oprs[k] * 10) / 10; });
-  const rank = {};
-  if (rankings && rankings.rankings) rankings.rankings.forEach(r => {
-    const rec = r.record || {};
-    rank[String(r.team_key).replace('frc', '')] = { rank: r.rank, w: rec.wins, l: rec.losses, t: rec.ties };
-  });
-  const results = [];
-  (matches || []).forEach(mt => {
-    if (mt.comp_level !== 'qm' || !mt.alliances) return;
-    const rs = mt.alliances.red.score, bs = mt.alliances.blue.score;
-    if (rs == null || rs < 0 || bs == null || bs < 0) return;   // not played yet
-    results.push({
-      matchNumber: mt.match_number,
-      redTeams: (mt.alliances.red.team_keys || []).map(k => k.replace('frc', '')),
-      blueTeams: (mt.alliances.blue.team_keys || []).map(k => k.replace('frc', '')),
-      redScore: rs, blueScore: bs,
-      winner: mt.winning_alliance || (rs > bs ? 'red' : (bs > rs ? 'blue' : ''))
-    });
-  });
-  const tba = { event: eventKey, names, opr, rank, results, pulledAt: Date.now() };
-  try { localStorage.setItem('tba_event_' + eventKey, JSON.stringify(tba)); localStorage.setItem('tba_key', tbaKey); } catch (e) {}
-  return tba;
-}
-
-// Called by the ANALYZE "Add official TBA data" button.
-async function loadTBAData() {
-  const tbaKey = (presetValue('tbaKey') || localStorage.getItem('tba_key') || ($('tba-key') ? $('tba-key').value : '') || '').trim();
-  const ek = String(fields.eventKey || '').trim();
-  if (!ek) throw new Error('Set the Event Key on the scouting form first (e.g. 2026ctwat).');
-  if (!tbaKey) throw new Error('Add your free TBA API key in ⚙ SHEET → "Match schedule" first.');
-  const tba = await fetchTBAEvent(tbaKey, ek);
-  if (window.ANALYTICS && ANALYTICS.setTBA) ANALYTICS.setTBA(tba);
-  return tba;
-}
-window.loadTBAData = loadTBAData;
-
-// On startup, hand any cached official data to the analytics engine.
-function loadCachedTBA() {
-  try {
-    const ek = String(fields.eventKey || '').toLowerCase();
-    if (!ek) return;
-    const raw = localStorage.getItem('tba_event_' + ek);
-    if (raw && window.ANALYTICS && ANALYTICS.setTBA) ANALYTICS.setTBA(JSON.parse(raw));
-  } catch (e) {}
 }
 
 function showScheduleMsg(msg, kind) {
@@ -2882,7 +2743,6 @@ async function init() {
       </div>`;
     return;
   }
-  syncAnalyticsConfig();
 
   applyForm();
   fields = initialFieldState();
@@ -2908,7 +2768,6 @@ async function init() {
 
   // Match schedule (optional) for team-number auto-fill
   loadCachedSchedule();
-  loadCachedTBA();           // hand any cached official Blue Alliance data to the analytics engine
   try {
     const tk = presetValue('tbaKey') || localStorage.getItem('tba_key');
     const ek = String(fields.eventKey || '').toLowerCase();

@@ -8,8 +8,9 @@ A plain-English, click-by-click guide for **two kinds of people**:
 | **Scouter** | Your teammates in the stands | Open the link, fill in matches |
 
 > **The big picture:** the Host sets up a private Google Sheet that acts as the team's "inbox."
-> Every Scouter's phone sends matches straight into that one Sheet. The Host then opens **📈 ANALYZE**
-> to turn all that data into pick lists, predictions, and comparisons against the real results.
+> Every Scouter's phone sends matches straight into that one Sheet. The strategy team then reads it in
+> the separate **Analytics app**, which turns it into pick lists, predictions, and comparisons against
+> the real results. The scouting app itself is only for scouting.
 
 The app lives at **https://codeteamshere.github.io/bobcat-scout** — anyone can open it; what makes it
 *yours* is the Sheet you connect to it.
@@ -50,10 +51,10 @@ flowchart TD
     S["📱 Scouter — submit only, no Sheet access"]
     G["🔒 The Gate · Apps Script Web App<br/>checks passcode · sign-in · valid numbers · right event · no duplicates<br/>runs as the host"]
     SH["📊 Host's Sheet — only the host can open or edit"]
-    A["📈 Analytics — OPR · pick list · predictions · vs real results"]
+    A["📈 Analytics app — separate, own password, read-only<br/>OPR · pick list · predictions · vs real results"]
     S -->|"1 · submits a match"| G
     G -->|"2 · writes a validated row"| SH
-    SH -->|"3 · feeds"| A
+    SH -->|"3 · read by the strategy team"| A
 ```
 
 **Why scouters can't reach the Sheet:** when you deployed the script you set **"Execute as: Me"** and **"Who has access: Anyone."** Together these make a one-way gate:
@@ -68,9 +69,11 @@ So a scouter's phone can only POST a match to your gate. It can't open, read, ed
 | Who | Open / read Sheet | Edit / delete rows | Submit a match | See analytics |
 |---|:---:|:---:|:---:|:---:|
 | **Host (you)** | ✅ | ✅ | ✅ | ✅ |
+| **Strategy team** | read-only, in the Analytics app | ❌ | ❌ | ✅ |
 | **Scouter** | ❌ | ❌ | ✅ (gated) | ❌\* |
 
-\*Scouters only see analytics if you choose to share the ANALYZE view or the Sheet — by default the numbers are yours.
+\*The analysis lives in a separate app, and reading the data needs the **Analytics Password** from the Sheet's
+Config tab: a different password from the scouts' one. Give it only to the strategy team.
 
 ## Why your data lands clean for analytics
 
@@ -79,7 +82,7 @@ Every row the gate writes is already analysis-ready, because it:
 - **Validates** — blank required fields or impossible numbers (bad team #, 350 scored in a 30-second period) are rejected at the door.
 - **De-duplicates** — re-sending the same match + team **updates** that one row instead of doubling it.
 - **Stamps** — each row records the scout's email + timestamp, so bad data is traceable.
-- **Auto-tunes the Analytics tab** — the first submission teaches the Sheet your scoring model; the **Analytics** tab and **📈 ANALYZE** engine read straight from the clean Data tab (and can compare against the official Blue Alliance results).
+- **Auto-tunes the Analytics tab** — the first submission teaches the Sheet your scoring model; the Sheet's **Analytics** tab and the separate **Analytics app** read straight from the clean Data tab (the app can also compare against the official Blue Alliance results).
 
 ---
 
@@ -119,14 +122,14 @@ Every row the gate writes is already analysis-ready, because it:
 2. Paste the **Web app URL** and the **Passcode** (the same one from the Config tab). Tap **SAVE**.
 3. Tap **SEND TEST ROW** — you should see **✓ Success** and a `CONNECTION TEST` row appear in your Sheet's **Data** tab. (Delete that row afterward.)
 
-## Step 4 (optional) — Turn on team names + analytics data (The Blue Alliance)
+## Step 4 (optional) — Turn on the match schedule (The Blue Alliance)
 
-This makes the app auto-fill team numbers from the match schedule, and lets **📈 ANALYZE** show real team
-names, official OPR/rankings, and grade your scouting against real results.
+This makes the app auto-fill team numbers from the match schedule. (The Analytics app uses the same key for
+real team names, official OPR/rankings, and grading your scouting against real results.)
 
 1. Get a **free Read API key**: go to **https://www.thebluealliance.com/account**, sign in, find **Read API Keys**, type a description (e.g. `Bobcat Scout`), click **Add New Key**. Copy the long key it makes.
 2. In the app: **⚙ SHEET → "TBA API KEY"** field → paste your key. Set the **Event Key** on the form (e.g. `2026ctgla`).
-3. Tap **LOAD MATCH SCHEDULE** (auto-fills team #) — and in **📈 ANALYZE → Data → 📊 ADD OFFICIAL TBA DATA** to pull names/OPR/results.
+3. Tap **LOAD MATCH SCHEDULE** (auto-fills team #).
 
 > See **PART 4** for the API-key sharing question. Short answer: sharing it with *your own team* is fine.
 
@@ -147,7 +150,7 @@ The game changes every season. You don't touch any code:
 2. **Fastest:** tap **📄 game manual → UPLOAD GAME MANUAL (PDF)** (or **PASTE SCORING TEXT**). The app reads the scoring and drafts every field + point value. *(Needs internet + a one-time free Puter sign-in popup.)*
 3. **Always review** the yellow banner's reminder — check each **pts** value matches the manual, then **APPLY & SAVE**.
 4. Or build it by hand: add sections/fields and type the points into the **pts** boxes.
-5. Tap **EXPORT JSON** to send your scouters the exact same form (they tap **🛠 FORM → UPLOAD JSON**). The point values you set here power the whole ANALYZE engine.
+5. Tap **EXPORT JSON** to send your scouters the exact same form (they tap **🛠 FORM → UPLOAD JSON**). The point values you set here are what the Analytics app scores with.
 
 ## Step 7 — Share with your team
 
@@ -176,16 +179,15 @@ The game changes every season. You don't touch any code:
 
 ---
 
-# PART 3 — Make sense of the data (📈 ANALYZE)
+# PART 3 — Make sense of the data (the Analytics app)
 
-This is mostly the Host / a strategist on a laptop, but anyone can open it.
+The analysis is not in the scouting app, so scouts only ever see the scouting form. The strategy team
+uses the separate **Bobcat Scout Analytics** app instead: it reads this Sheet (with the **Analytics
+Password** from the Config tab) plus The Blue Alliance, and shows each team's capabilities, OPR,
+predictions, a pick list, and a check against the real results. Its own README has the click-by-click
+steps.
 
-1. Tap **📈 ANALYZE**.
-2. **Data tab:** tap **USE THIS SESSION** (matches on this device), **IMPORT** (a CSV you downloaded from the Sheet's Data tab), or **LOAD SAMPLE SEASON** to explore. Tap **📊 ADD OFFICIAL TBA DATA** to layer in Blue Alliance names/OPR/results.
-3. **Capabilities:** each team's points, consistency, reliability, and **OPR** (true scoring strength) — with the **official TBA OPR + rank** next to yours when loaded.
-4. **Predict:** pick two alliances → win probability.
-5. **Pick List:** choose your team → a ranked list of the best partners, with reasons + a plain-English game plan.
-6. **Validation:** how often the engine called matches right — including **vs the real Blue Alliance results** once you've scouted an event. That's the number to trust.
+Without it, the Sheet's own **Analytics** tab still gives a live per-team table you can sort.
 
 ---
 
@@ -228,7 +230,6 @@ Everyone reuses the same app and the same built-in Google Client ID; only the **
 |---|---|
 | **⚙ SHEET** | Connect to your Google Sheet; paste TBA key; turn on Google login; **COPY SCOUT LINK** |
 | **🛠 FORM** | Build/import this year's game form (PDF manual, paste, or by hand) |
-| **📈 ANALYZE** | OPR, predictions, pick list, validation, + official TBA data |
 | **mic / AUTO-FILL** | Turn a spoken/typed description into form fields |
 | **GENERATE** | Make the QR + review the row |
 | **SUBMIT TO SHEET / SAVE & NEXT** | Send the match to your Sheet (offline-safe) |
@@ -237,6 +238,6 @@ Everyone reuses the same app and the same built-in Google Client ID; only the **
 
 - **Do scouters need a Google account?** Only if the Host turned on Google login. Otherwise just the link + passcode.
 - **Does it work without internet?** Yes — open it once online, then it works offline; matches queue and send when you're back online. The QR code is always available.
-- **Do scouters need a TBA key?** No. Only whoever pulls analytics data needs it, and the scout link shares it for them.
+- **Do scouters need a TBA key?** No. The scout link shares it for them; the app only uses it to auto-fill team numbers.
 - **Can one scouter do many matches?** Yes — unlimited; each match is its own row.
-- **Changing the game next year?** Use **🛠 FORM** to rebuild it — no code, and the analytics retune automatically.
+- **Changing the game next year?** Use **🛠 FORM** to rebuild it — no code, and the Analytics app picks up the new point values by itself.

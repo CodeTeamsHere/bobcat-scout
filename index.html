@@ -38,7 +38,6 @@
           <span id="sheet-dot" class="sheet-dot dot-off"></span>
           <span id="sheet-label">SHEET</span>
         </button>
-        <button id="btn-analyze" class="btn-header-gold" title="Alliance recommendations, predictions & validation">📈 ANALYZE</button>
         <button id="btn-help" class="btn-header-outline" title="Help & instructions">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
           HELP
@@ -69,7 +68,6 @@
       <div class="session-head">
         <h3 class="session-title">SESSION MATCHES</h3>
         <div class="session-actions">
-          <button id="btn-summary" class="btn btn-outline" style="padding:8px 12px;font-size:11px;">TEAM SUMMARY</button>
           <button id="btn-export-session" class="btn btn-primary" style="padding:8px 12px;font-size:11px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             EXPORT TSV
@@ -81,7 +79,6 @@
         </div>
       </div>
       <div id="session-list" class="session-list"></div>
-      <div id="summary-box" class="summary-box hidden"></div>
     </div>
 
     <!-- Step 1: voice / type input -->
@@ -282,7 +279,7 @@
           <h3>New game each year</h3>
           <p class="help-intro">The season's form lives in one file that ships with the app, so <strong>every scouter is on the identical form</strong>. There is deliberately no in-app form editor: if each person could rebuild the fields on their own phone, the columns would drift apart and the data would stop lining up.</p>
           <ol class="help-list">
-            <li>When the new game comes out, the form, the point values, the spreadsheet columns and the <strong>&#128200; ANALYZE</strong> engine are rebuilt in one place from the game manual.</li>
+            <li>When the new game comes out, the form, the point values and the spreadsheet columns are rebuilt in one place from the game manual. The strategy team's Analytics app picks up the new point values from here by itself.</li>
             <li>That gets deployed once, and every scouter picks it up the next time they open the app. Nobody has to do anything.</li>
             <li>Point the settings at the new event, and that is the whole changeover.</li>
           </ol>
@@ -309,11 +306,11 @@
           <div class="flow-diagram">
             <div class="flow-step"><span class="flow-emoji">📱</span><div class="flow-text"><strong>Scouter</strong><span>Submit only — no Sheet access</span></div></div>
             <div class="flow-arrow"><span class="flow-num">1</span> submits a match</div>
-            <div class="flow-step flow-gate"><span class="flow-emoji">🔒</span><div class="flow-text"><strong>The Gate</strong> <span class="flow-dim">(Apps Script Web App)</span><span>Checks passcode · sign-in · valid numbers · right event · no duplicates — runs as the host</span></div></div>
+            <div class="flow-step flow-gate"><span class="flow-emoji">🔒</span><div class="flow-text"><strong>The Gate</strong> <span class="flow-dim">(Apps Script Web App)</span><span>Checks passcode · valid numbers · right event · no duplicates — runs as the host</span></div></div>
             <div class="flow-arrow"><span class="flow-num">2</span> writes a validated row</div>
             <div class="flow-step"><span class="flow-emoji">📊</span><div class="flow-text"><strong>Host's Sheet</strong><span>Only the host can open or edit it</span></div></div>
-            <div class="flow-arrow"><span class="flow-num">3</span> feeds the analytics</div>
-            <div class="flow-step"><span class="flow-emoji">📈</span><div class="flow-text"><strong>Analytics</strong><span>OPR · pick list · predictions · vs real results</span></div></div>
+            <div class="flow-arrow"><span class="flow-num">3</span> read by the strategy team</div>
+            <div class="flow-step"><span class="flow-emoji">📈</span><div class="flow-text"><strong>Analytics app</strong><span>A separate app with its own password · read-only</span></div></div>
           </div>
           <p class="help-intro"><strong>Why scouters can't reach the Sheet:</strong> the script is deployed as <em>“execute as the host · anyone can submit.”</em> A scouter's phone can only <em>call the gate</em> (send one match) — it is never given any role on the spreadsheet. The gate decides what gets written, so the Sheet stays the host's alone.</p>
           <table class="help-table">
@@ -321,10 +318,11 @@
             <tbody>
               <tr><td><strong>Host (you)</strong></td><td class="ht-yes">✅</td><td class="ht-yes">✅</td><td class="ht-yes">✅</td></tr>
               <tr><td><strong>Scouter</strong></td><td class="ht-no">❌</td><td class="ht-no">❌</td><td class="ht-yes">✅ gated</td></tr>
+              <tr><td><strong>Strategy team</strong></td><td class="ht-yes">✅ read-only, in the Analytics app</td><td class="ht-no">❌</td><td class="ht-no">❌</td></tr>
             </tbody>
           </table>
           <div class="help-note">
-            <strong>Why your data stays clean for analytics:</strong> the gate <strong>validates</strong> (rejects blank required fields &amp; impossible numbers), <strong>de-duplicates</strong> (re-sending the same match + team updates that one row instead of doubling), and <strong>stamps</strong> every row with the scout's email + time. So the <strong>Data</strong> tab is always analysis-ready, and the <strong>Analytics</strong> tab + <strong>📈 ANALYZE</strong> read straight from it (and can grade your scouting against the official Blue Alliance results).
+            <strong>Why your data stays clean for analytics:</strong> the gate <strong>validates</strong> (rejects blank required fields &amp; impossible numbers), <strong>de-duplicates</strong> (re-sending the same match + team updates that one row instead of doubling), and <strong>stamps</strong> every row with the time it arrived. So the <strong>Data</strong> tab is always analysis-ready: the Sheet's own <strong>Analytics</strong> tab and the strategy team's Analytics app both read straight from it.
           </div>
         </section>
 
@@ -539,6 +537,5 @@
 
   <script src="team-config.js"></script>
   <script src="app.js"></script>
-  <script src="analytics.js"></script>
 </body>
 </html>

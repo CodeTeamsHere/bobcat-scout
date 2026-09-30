@@ -24,10 +24,10 @@ Paste that into the File Explorer address bar and press Enter to jump straight t
 | Your team's QRScout form (the source of truth) | `reference\QRScout_config.json` | Replace when QRScout changes |
 | Form generator | `tools\from-qrscout.py` | Only for scoring values |
 | The app itself | `app.js`, `index.html`, `styles.css` | No |
-| Ratings, predictions, pick list | `analytics.js` | No |
+| Ratings, predictions, pick list | the separate Analytics app (not in this folder) | No |
 | Google Sheet script | `apps-script\Code.gs` | No |
 | One-time setup walkthrough | `SETUP-ONCE.md` | No |
-| Tests | `tools\test-parser.js`, `tools\test-analytics.js` | No |
+| Tests | `tools\test-parser.js`, `tools\test-apps-script.js`, `tools\test-config.js` | No |
 
 **The live app:** <https://codeteamshere.github.io/bobcat-scout>
 **The code online:** <https://github.com/CodeTeamsHere/bobcat-scout>
@@ -109,10 +109,11 @@ to be on the identical form or the columns stop lining up.
    ```bash
    python tools/from-qrscout.py
    node tools/test-parser.js
-   node tools/test-analytics.js
    ```
 
 4. Push it. Every scouter picks up the new form next time they open the app.
+5. If the team uses the Analytics app, refresh its copy of the form too (its README
+   says how; it takes one command).
 
 > **Say to Claude Code:**
 > *"I have replaced reference/QRScout_config.json with the new export. Regenerate config.json,
@@ -127,8 +128,11 @@ Same as above plus the scoring, because a script cannot know what a game piece i
 1. Put the new QRScout export in `reference\QRScout_config.json`.
 2. Open `tools\from-qrscout.py` and update the **`SCORING`** block near the top — points per
    game piece, what each climb level is worth, which checkboxes mean the robot broke.
-3. Update **`DISPLAY`** in the same file so the ratings tables point at the new field names.
+3. Update **`DISPLAY`** in the same file so the Analytics app's ratings tables point at the
+   new field names.
 4. Regenerate, test, push.
+5. If the team uses the Analytics app, refresh its copy of the form too (its README
+   says how; it takes one command).
 
 > **Say to Claude Code:**
 > *"New season. Here is the game manual and the new QRScout export. Rebuild config.json,

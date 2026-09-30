@@ -13,13 +13,25 @@
    It enforces: passcode • event gate • date gate • validation • dedupe • stamping,
    plus optional Google-login lockdown with an email/domain allow-list.
 
+   It also answers the Bobcat Scout Analytics app, which reads the Data and Pit tabs
+   back (a request with action "read"; it never writes). Reading needs the Config
+   tab's Analytics Password, not the scouts' Passcode, so scouts can send matches
+   but never read them. Leave Analytics Password blank and nothing can read.
+
    ----- ONE-TIME SETUP -----------------------------------------------------
    1. sheets.google.com → new blank spreadsheet.
    2. Extensions → Apps Script. Delete the sample, paste THIS FILE, save (💾).
    3. Run `firstTimeSetup` once (authorize when asked). Creates Config/Data/Pit/Analytics.
-   4. Config tab → set Passcode (+ optional Active Event / dates / Google login).
+   4. Config tab → set Passcode (+ optional Active Event / dates / Google login),
+      and an Analytics Password for the strategy team's Analytics app.
    5. Deploy → New deployment → Web app → Execute as: Me, Access: Anyone → copy /exec URL.
    6. App → ⚙ SHEET → paste URL + passcode → Save (or share the Copy Scout Link).
+
+   ----- UPDATING THIS SCRIPT LATER ------------------------------------------
+   Paste the new version over the old one and save (💾). Then Deploy → Manage
+   deployments → ✏ (Edit) → Version: New version → Deploy. The /exec URL stays
+   the same, so nothing in the apps needs changing. (Saving alone is not enough:
+   the web app keeps running the old version until you deploy a new one.)
 
    The "Bobcat Scout" menu (top of the Sheet) has "Rebuild Analytics" if you ever need it.
    ========================================================================== */
@@ -114,6 +126,10 @@ function handle_(e) {
   try {
     var data = readPayload_(e);
     var cfg = getConfig_();
+    if (String(data.action || '') === 'read') {  // the Analytics app reading the data back
+      checkReadGate_(data, cfg);
+      return respond_({ ok: true, data: readRows_(DATA_SHEET, data.eventKey), pit: readRows_(PIT_SHEET, data.eventKey) }, cb);
+    }
     checkGate_(data, cfg);                       // passcode + login + event + dates
     if (String(data._form) === 'pit') {
       checkPit_(data);
@@ -152,6 +168,7 @@ function getConfig_() {
   rows.forEach(function (r) { if (r[0]) map[String(r[0]).trim().toLowerCase()] = r[1]; });
   return {
     passcode: String(map['passcode'] || '').trim(),
+    readPasscode: String(map['analytics password'] || '').trim(),
     activeEvent: String(map['active event'] || '').trim().toLowerCase(),
     startDate: map['start date'] instanceof Date ? map['start date'] : null,
     endDate: map['end date'] instanceof Date ? map['end date'] : null,
@@ -172,6 +189,38 @@ function checkGate_(d, cfg) {
   var now = new Date();
   if (cfg.startDate && now < startOfDay_(cfg.startDate)) throw new Error('Event has not started yet');
   if (cfg.endDate && now > endOfDay_(cfg.endDate)) throw new Error('Event submissions are closed');
+}
+
+// Reading has its own password, so the scouts' passcode (which every invite link carries) can
+// send matches but never read them back. It skips the event and date gates: the strategy team
+// reads after submissions close, and past events too. Off until an Analytics Password is set.
+function checkReadGate_(d, cfg) {
+  if (!cfg.readPasscode) throw new Error('No Analytics Password: add one to the Config tab to let the Analytics app read');
+  if (cfg.requireLogin) verifyLogin_(d, cfg);
+  if (String(d.passcode || '') !== cfg.readPasscode) throw new Error('Wrong analytics password');
+}
+
+// A tab's rows as { header: value } objects. Dates go out as ISO text, blank rows are skipped,
+// and an eventKey keeps only that event's rows. Never creates or changes a tab.
+function readRows_(sheetName, eventKey) {
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  if (!sh || sh.getLastRow() < 2 || sh.getLastColumn() < 1) return [];
+  var values = sh.getRange(1, 1, sh.getLastRow(), sh.getLastColumn()).getValues();
+  var header = values[0].map(function (h) { return String(h).trim(); });
+  var evCol = header.indexOf('eventKey');
+  var want = String(eventKey || '').trim().toLowerCase();
+  var out = [];
+  for (var r = 1; r < values.length; r++) {
+    var row = values[r];
+    if (row.every(function (v) { return v === '' || v === null; })) continue;
+    if (want && evCol >= 0 && String(row[evCol]).trim().toLowerCase() !== want) continue;
+    var o = {};
+    header.forEach(function (h, i) {
+      if (h) o[h] = row[i] instanceof Date ? row[i].toISOString() : row[i];
+    });
+    out.push(o);
+  }
+  return out;
 }
 
 function verifyLogin_(d, cfg) {
@@ -374,11 +423,13 @@ function getConfigSheet_(ss) {
   if (sh) return sh;
   sh = ss.insertSheet(CONFIG_SHEET);
   sh.getRange('A1:B1').setValues([['Setting', 'Value']]).setFontWeight('bold');
-  sh.getRange('A2:B9').setValues([
+  sh.getRange('A2:B10').setValues([
     ['Passcode', 'changeme'], ['Active Event', ''], ['Start Date', ''], ['End Date', ''],
-    ['Require Google Login', 'no'], ['Google Client ID', ''], ['Allowed Domain', ''], ['Allowed Emails', '']
+    ['Require Google Login', 'no'], ['Google Client ID', ''], ['Allowed Domain', ''], ['Allowed Emails', ''],
+    ['Analytics Password', '']
   ]);
-  sh.getRange('A11').setValue('Tips: leave Active Event and dates blank to allow any event/day. The Passcode must match the app. ' +
+  sh.getRange('A12').setValue('Tips: leave Active Event and dates blank to allow any event/day. The Passcode must match the app. ' +
+    'Analytics Password lets the Analytics app read the data; give it only to the strategy team, never the scouts. ' +
     'For max security set "Require Google Login" to yes, paste your Google Client ID, and limit to an Allowed Domain or Allowed Emails list. See SETUP-SHEET.md.');
   sh.setColumnWidth(1, 130);
   sh.setColumnWidth(2, 220);

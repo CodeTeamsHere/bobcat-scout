@@ -306,10 +306,11 @@ pipeline you already use.
    ```bash
    python tools/from-qrscout.py
    node tools/test-parser.js
-   node tools/test-analytics.js
    ```
 
 4. Push. Every scouter gets the new form next time they open the app.
+5. If the team uses the Analytics app, refresh its copy of the form too (its README
+   says how; it takes one command).
 
 There is deliberately no in-app form editor. If each scouter could rebuild the fields on
 their own phone, the columns would drift apart and the data would stop lining up.

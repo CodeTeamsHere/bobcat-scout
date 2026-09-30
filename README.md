@@ -23,17 +23,17 @@ throw, it just leaves a field blank or fills the wrong one. There is a regressio
 
 ```bash
 node tools/test-parser.js
-node tools/test-analytics.js
+node tools/test-apps-script.js
 node tools/test-config.js
 ```
 
-Neither needs any dependencies and both run in under a second.
+None needs any dependencies and each runs in under a second.
 
 - **test-parser** covers the voice patterns, including the spelled-out numbers speech
   recognition returns and the false positives that used to fill the wrong field.
-- **test-analytics** covers the scoring model. The engine is config-driven, so renaming a
-  field in `config.json` makes the scoring silently become zero instead of throwing — these
-  checks catch that, and verify the display columns still point at fields that exist.
+- **test-apps-script** runs the Google Sheet script against a stand-in Sheet: saving
+  matches, and answering the Analytics app's read only for the Analytics Password (never
+  the scouts' passcode).
 
 - **test-config** refuses to let a private value reach this public repository. Run it before
   every push that touches `team-config.js`.
