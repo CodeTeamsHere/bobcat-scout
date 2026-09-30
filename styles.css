@@ -181,7 +181,7 @@ textarea {
 textarea:focus, input:focus, select:focus { border-color: var(--maroon); box-shadow: 0 0 0 3px rgba(123,31,43,0.15); }
 
 /* Inputs */
-input[type="text"], input[type="number"], select {
+input[type="text"], input[type="password"], input[type="number"], select {
   width: 100%;
   padding: 10px 10px;
   font-size: 16px;          /* 16px+ stops iOS Safari from auto-zooming on focus */
@@ -1277,3 +1277,7 @@ footer {
   border-radius: 8px;
   background: var(--white);
 }
+
+/* Team password dialog: asked for at Submit when the phone does not know it yet */
+.pass-error { margin: 10px 0 0; padding: 8px 10px; border-radius: 2px; font-size: 13px; background: var(--error-bg); color: var(--error); }
+.pass-note { margin: 12px 0 0; font-size: 12px; color: var(--gray); }

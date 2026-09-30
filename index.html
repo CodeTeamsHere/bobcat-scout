@@ -388,6 +388,26 @@
   </div>
 
   <!-- Connect to Google Sheet -->
+  <div id="pass-overlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pass-title">
+    <div class="help-modal" style="max-width:420px;">
+      <div class="help-head">
+        <h2 id="pass-title">TEAM PASSWORD</h2>
+        <button id="btn-pass-close" type="button" class="btn-help-close" aria-label="Close">×</button>
+      </div>
+      <form id="pass-form" class="help-body">
+        <p id="pass-msg" class="help-intro">Type the team password to send this match to the Sheet.</p>
+        <label class="field-label" for="pass-input">Password</label>
+        <input type="password" id="pass-input" autocomplete="current-password" autocapitalize="off" spellcheck="false" enterkeyhint="send">
+        <p id="pass-error" class="pass-error hidden"></p>
+        <div class="btn-row" style="margin-top:16px;">
+          <button id="btn-pass-send" type="submit" class="btn btn-primary">SEND</button>
+          <button id="btn-pass-cancel" type="button" class="btn btn-outline">CANCEL</button>
+        </div>
+        <p class="pass-note">You only type it once on this phone. After that it's remembered.</p>
+      </form>
+    </div>
+  </div>
+
   <div id="sheet-overlay" class="help-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
     <div class="help-modal" style="max-width:560px;">
       <div class="help-head">

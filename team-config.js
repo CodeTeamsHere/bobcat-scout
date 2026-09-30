@@ -57,6 +57,25 @@
 
    Changed the passcode, or someone left the team? Update it in the Sheet,
    make a new link, and every old link stops working instantly.
+
+   ---- PLAN C: just a team password, no Google (what we use) ----------
+   The simplest. Nobody signs in to anything.
+
+     In the Sheet's Config tab:
+        Require Google Login  ->  no
+        Passcode              ->  your team password
+     In this file:
+        leave  passcode  BLANK, and leave  googleClientId  BLANK
+
+   Scouters open the app and scout. The first time one of them presses
+   SUBMIT TO SHEET (or SAVE & NEXT MATCH), the app asks for the team
+   password; the Sheet checks it, and that phone remembers it. An invite
+   link from make-invite-link.py carries the password, so anyone who
+   opens that link is never asked at all.
+
+   Changed the password? Change it in the Sheet. Every phone with the old
+   one is asked for the new one the next time it sends a match, and
+   nothing it saved in the meantime is lost.
    ===================================================================== */
 
 window.TEAM_CONFIG = {
@@ -139,16 +158,19 @@ window.TEAM_CONFIG = {
   tbaKey: 'fIR5Ubm8lYkMlO0rO3sJvvMTre2GbySWsmgdvJPhDbE3avfGp4YuMx1xmlSeEIX4', // PUBLISH-OK
 
   // ===================================================================
-  // 5. GOOGLE SIGN-IN            ** REQUIRED for Plan A and Plan B **
+  // 5. GOOGLE SIGN-IN            (Plan A and Plan B only)
   // ===================================================================
-  // Already filled in for you. This is a published OAuth client ID, not
-  // a secret — it only works from this app's own web address, and who may
-  // actually submit is decided by the Sheet's Config tab.
+  // BLANK = no Google sign-in: scouters only need the team password.
+  // That is Plan C, what Bobcat Scout uses. The Sheet's Config tab must
+  // then say  Require Google Login -> no , or every match is rejected
+  // with "Google sign-in required".
   //
-  // It MUST stay set while the Sheet has Require Google Login = yes,
-  // or every single match is rejected with "Google sign-in required".
+  // To turn Google sign-in on (Plan A or B), paste this published
+  // client ID back in. It is not a secret: it only works from this
+  // app's own web address.
+  //     404429673783-0mue3sktcon2ca4v7fgjmn8iu8bqitpe.apps.googleusercontent.com
   // -------------------------------------------------------------------
-  googleClientId: '404429673783-0mue3sktcon2ca4v7fgjmn8iu8bqitpe.apps.googleusercontent.com'
+  googleClientId: ''
 };
 
 /* =====================================================================

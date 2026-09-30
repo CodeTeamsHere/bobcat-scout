@@ -1049,6 +1049,11 @@ function copyToClipboard(text, btn) {
 // =====================================================================
 
 function saveMatchAndNext() {
+  // Ask for the team password first, so the questions below are not asked twice.
+  if (isSheetConnected() && !sheetPasscode) {
+    askForPasscode('Type the team password to save this match and send it to the Sheet.', saveMatchAndNext);
+    return;
+  }
   if (!confirmUnusual()) return;
   if (isDuplicateInSession(fields)) {
     if (!confirm('You already saved Match ' + fields.matchNumber + ' for team ' + fields.teamNumber + ' this session.\n\nSave it again anyway?')) return;
@@ -1062,8 +1067,13 @@ function saveMatchAndNext() {
   // If a Sheet is connected, also push this match online (queues if offline).
   if (isSheetConnected()) {
     submitMatch(snap).then(res => {
-      if (res.status === 'rejected') {
-        alert('Saved on this device, but the Sheet rejected it:\n' + res.error + '\n\nOpen ⚙ SHEET to check the passcode/settings.');
+      if (res.status === 'rejected' && isWrongPasscode(res.error)) {
+        // Keep it waiting on this phone, and send it once the right password is typed.
+        enqueue(buildPayload(snap), sheetEndpoint);
+        forgetPasscode();
+        askForPasscode('That password doesn’t match the Sheet. The match is saved on this phone and goes as soon as you type the right one.', null);
+      } else if (res.status === 'rejected') {
+        alert('Saved on this phone, but the Sheet rejected it:\n' + res.error + '\n\nShow this message to your lead.');
       }
       updateSheetStatus();
     });
@@ -1560,8 +1570,18 @@ async function flushQueue() {
     const payload = item.payload || item;          // tolerate older bare-payload items
     const url = item.url || sheetEndpoint;
     if (!url) continue;
+    if (url === sheetEndpoint) {
+      // Send with the password this phone knows now: it may have been retyped since this queued.
+      if (!sheetPasscode) continue;                // wait until someone types it
+      payload.passcode = sheetPasscode;
+    }
     try {
       const resp = await jsonpSubmit(payload, undefined, url);
+      if (resp && !resp.ok && url === sheetEndpoint && isWrongPasscode(resp.error)) {
+        // Mistyped or changed: keep everything waiting, and ask at the next send.
+        forgetPasscode();
+        break;
+      }
       // Drop on success OR on a server rejection (a config problem won't fix itself by retrying).
       // The local session copy is always kept, so nothing is lost.
       if (resp) { pendingQueue = pendingQueue.filter(p => qid(p) !== payload._id); savePendingQueue(); }
@@ -1660,17 +1680,72 @@ function showSheetMsg(msg, kind) {
   el.classList.remove('hidden');
 }
 
+// ---- Team password, asked for only when it is needed ----
+// The Sheet checks one team password on every row. A scouter whose link carried it (?key=)
+// is never asked. Anyone else is asked the first time they send a match; the Sheet checks
+// it, and the phone remembers it after that.
+let afterPasscode = null;
+
+function isWrongPasscode(error) { return /wrong passcode/i.test(String(error || '')); }
+
+function askForPasscode(message, then) {
+  afterPasscode = then || null;
+  $('pass-msg').textContent = message;
+  $('pass-error').classList.add('hidden');
+  $('pass-input').value = '';
+  $('pass-overlay').classList.remove('hidden');
+  document.body.classList.add('no-scroll');
+  setTimeout(() => $('pass-input').focus(), 50);
+}
+function closePasscodePrompt() {
+  $('pass-overlay').classList.add('hidden');
+  document.body.classList.remove('no-scroll');
+}
+function forgetPasscode() {
+  sheetPasscode = '';
+  try { localStorage.removeItem('sheet_passcode'); } catch (e) {}
+}
+function onPasscodeEntered(e) {
+  e.preventDefault();
+  const typed = $('pass-input').value.trim();
+  if (!typed) {
+    const err = $('pass-error');
+    err.textContent = 'Type the password first.';
+    err.classList.remove('hidden');
+    return;
+  }
+  sheetPasscode = typed;
+  try { localStorage.setItem('sheet_passcode', typed); } catch (e2) {}
+  closePasscodePrompt();
+  const then = afterPasscode;
+  afterPasscode = null;
+  flushQueue(); // anything that was waiting for the password goes now
+  if (then) then();
+}
+function cancelPasscodePrompt() {
+  afterPasscode = null;
+  closePasscodePrompt();
+  showSubmitStatus('Not sent yet: the Sheet needs the team password.', 'warn');
+}
+
 // ---- Explicit "Submit to Sheet" button in the output step ----
 async function submitCurrentMatch() {
   const v = validateForSubmit(fields);
   if (!v.ok) { showSubmitStatus(v.error, 'err'); return; }
-  if (!confirmUnusual()) { showSubmitStatus('Submission paused — adjust the flagged values, or confirm to continue.', 'warn'); return; }
   if (!isSheetConnected()) { showSubmitStatus('No Sheet connected — scan the QR code, or tap ⚙ SHEET above to connect one.', 'warn'); return; }
+  // Before the questions below, so they are not asked twice when this runs again.
+  if (!sheetPasscode) { askForPasscode('Type the team password to send this match to the Sheet.', submitCurrentMatch); return; }
   if (googleEnabled() && !googleTokenValid()) { showSubmitStatus('Sign in with Google first — open ⚙ SHEET and tap the Google button.', 'warn'); return; }
+  if (!confirmUnusual()) { showSubmitStatus('Submission paused — adjust the flagged values, or confirm to continue.', 'warn'); return; }
   showSubmitStatus('Sending to Sheet…', 'info');
   const res = await submitMatch(Object.assign({}, fields, { _id: currentMatchId }));
   if (res.status === 'sent') showSubmitStatus('✓ Saved to your Sheet (' + res.action + '). Tap SAVE & NEXT MATCH to scout your next one.', 'ok');
   else if (res.status === 'queued') showSubmitStatus('No connection right now — saved on this phone and queued. It sends automatically when you’re back online.', 'warn');
+  else if (res.status === 'rejected' && isWrongPasscode(res.error)) {
+    forgetPasscode();
+    showSubmitStatus('Not sent: that password doesn’t match the Sheet.', 'err');
+    askForPasscode('That password doesn’t match the Sheet. Check it with your lead and type it again.', submitCurrentMatch);
+  }
   else if (res.status === 'rejected') showSubmitStatus('The Sheet rejected it: ' + res.error, 'err');
   else showSubmitStatus('No Sheet connected.', 'warn');
 }
@@ -1701,7 +1776,11 @@ function googleEnabled() { return !!googleClientId; }
 
 function loadGoogleConfig() {
   try {
-    googleClientId = presetValue('googleClientId') || localStorage.getItem('google_client_id') || '';
+    // With a team preset, the preset alone decides. A phone that once saved a Client ID must
+    // not bring Google sign-in back after the team has turned it off.
+    googleClientId = isPreset()
+      ? presetValue('googleClientId')
+      : (presetValue('googleClientId') || localStorage.getItem('google_client_id') || '');
     googleIdToken = localStorage.getItem('google_token') || '';
     googleEmail = localStorage.getItem('google_email') || '';
   } catch (e) {}
@@ -1886,6 +1965,9 @@ function wireUI() {
   $('btn-sheet-disconnect').addEventListener('click', disconnectSheet);
   $('btn-sheet-retry').addEventListener('click', () => flushQueue());
   $('btn-submit-sheet').addEventListener('click', submitCurrentMatch);
+  $('pass-form').addEventListener('submit', onPasscodeEntered);
+  $('btn-pass-cancel').addEventListener('click', cancelPasscodePrompt);
+  $('btn-pass-close').addEventListener('click', cancelPasscodePrompt);
   $('btn-load-schedule').addEventListener('click', doLoadSchedule);
   $('btn-save-google').addEventListener('click', saveGoogleConfig);
   $('btn-google-signout').addEventListener('click', googleSignOut);
