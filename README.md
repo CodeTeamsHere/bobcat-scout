@@ -23,6 +23,7 @@ throw, it just leaves a field blank or fills the wrong one. There is a regressio
 
 ```bash
 node tools/test-parser.js
+node tools/test-modes.js
 node tools/test-apps-script.js
 node tools/test-config.js
 ```
@@ -31,6 +32,10 @@ None needs any dependencies and each runs in under a second.
 
 - **test-parser** covers the voice patterns, including the spelled-out numbers speech
   recognition returns and the false positives that used to fill the wrong field.
+- **test-modes** covers the three ways to scout (`scout-modes.js`): turning a few spoken
+  words into the right box for the question being asked ("blue two" is starting position 5,
+  "nah" is no), which question comes next, which ones are skipped (no climb, no "where did
+  they climb"), and which boxes still block submitting.
 - **test-apps-script** runs the Google Sheet script against a stand-in Sheet: saving
   matches, and answering the Analytics app's read only for the Analytics Password (never
   the scouts' passcode).
@@ -103,7 +108,8 @@ See the deployment guide. Short version:
 
 - `index.html` — the page structure
 - `styles.css` — all styling (Bobcat maroon/gold/white)
-- `app.js` — main logic (parser, voice, QR generation, session save, Sheet submission + offline queue, walkthrough)
+- `app.js` — main logic (parser, voice, QR generation, session save, Sheet submission + offline queue, walkthrough, the three ways to scout)
+- `scout-modes.js` — the thinking behind ways 2 and 3: what's still missing, which question comes next, and reading short spoken answers (this season's guided questions are in `GUIDE` at the top)
 - `config.json` — scouting field schema (edit to add or remove fields)
 - `vendor/qrcode-generator.js` — self-hosted QR library (bundled for offline use)
 - `manifest.webmanifest` / `icon.svg` — PWA manifest + app icon (installable / Add to Home Screen)

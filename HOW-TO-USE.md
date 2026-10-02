@@ -168,10 +168,11 @@ The game changes every season. You don't touch any code:
 
 1. **Open the link the host sent you.** That's it — the app connects to the team's Sheet automatically. (No link? Tap **⚙ SHEET**, paste the URL + passcode the host gives you, **SAVE**.)
 2. **If asked, tap "Sign in with Google"** once (only if your host turned on login).
-3. **Scout a match:**
-   - Tap the **mic** and describe it out loud (or type) — e.g. *"Team 177 red 2, scored 4 in auto, climbed high, smooth driver."*
-   - Tap **AUTO-FILL FIELDS** → review what it filled → fix anything wrong.
-   - Tap **GENERATE**, then **SUBMIT TO SHEET** — or just **SAVE & NEXT MATCH**, which submits *and* sets up the next match.
+3. **Pick a way to scout the match.** The app asks at the start of every match:
+   - **1 · Describe it:** tap the **mic** and describe the match (or type), e.g. *"Team 177 red 2, scored 4 in auto, climbed high."* Tap **AUTO-FILL FIELDS**, then check every box.
+   - **2 · Talk, then fill gaps:** talk through the whole match; the form stays hidden. Tap **DONE · CHECK WHAT I MISSED** and only the boxes the app didn't catch appear. Fill those in.
+   - **3 · Guided:** tap **START**. The app asks one question at a time out loud and moves on by itself when it hears the answer ("twelve", "left side", "nope"). Say **skip**, **go back**, **repeat** or **I'm done** any time, or tap the answer.
+   - Then tap **GENERATE**, then **SUBMIT TO SHEET**, or just **SAVE & NEXT MATCH**, which submits *and* sets up the next match. In ways 2 and 3, GENERATE unlocks once every required box is filled.
 4. **Keep going.** One scouter scouts as many matches as they want — there's no limit, and the match number bumps up automatically.
 5. **No signal?** The app saves your matches on the phone and shows a **SHEET (n)** counter; it sends them automatically once you're back online. The **QR code** is always there as a backup too.
 

@@ -1205,3 +1205,158 @@ footer {
 /* Team password dialog: asked for at Submit when the phone does not know it yet */
 .pass-error { margin: 10px 0 0; padding: 8px 10px; border-radius: 2px; font-size: 13px; background: var(--error-bg); color: var(--error); }
 .pass-note { margin: 12px 0 0; font-size: 12px; color: var(--gray); }
+
+/* =====================================================================
+   THE THREE WAYS TO SCOUT A MATCH
+   ===================================================================== */
+
+/* The picker, shown at the start of every match */
+.mode-card { border-color: var(--maroon); }
+.mode-options { display: grid; gap: 10px; padding: 16px; }
+.mode-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 72px;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: 2px;
+  background: var(--white);
+  color: var(--charcoal);
+  text-align: left;
+}
+.mode-option:hover, .mode-option:focus-visible { border-color: var(--maroon); }
+.mode-option.mode-last { border-color: var(--gold); background: var(--gold-soft); }
+.mode-num {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--maroon);
+  color: var(--white);
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mode-text { display: flex; flex-direction: column; min-width: 0; }
+.mode-name { font-size: 16px; font-weight: 800; color: var(--maroon); }
+.mode-desc { font-size: 13px; color: var(--gray); }
+
+/* The bar that says which way this match uses */
+.mode-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 12px 8px 16px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--maroon);
+  border-radius: 2px;
+  font-size: 13px;
+}
+.mode-bar-btn { padding: 6px 10px; font-size: 11px; }
+
+/* Way 2: the boxes the app didn't catch */
+.section-header.section-must { background: var(--gold-soft); color: var(--warning); }
+.section-note { padding: 14px 20px; font-size: 13px; color: var(--gray); }
+.field-legend { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.field-legend-btn { padding: 6px 10px; font-size: 11px; }
+
+/* Ways 2 and 3: what still blocks submitting */
+.gaps-banner {
+  padding: 12px 16px;
+  border-radius: 2px;
+  font-size: 13px;
+  line-height: 1.6;
+  border: 1px solid;
+}
+.gaps-open { background: var(--gold-soft); border-color: var(--gold); color: var(--warning); }
+.gaps-done { background: var(--success-bg); border-color: #cfe6d7; color: var(--success); }
+.gap-chip {
+  margin: 2px 4px 2px 0;
+  padding: 3px 10px;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--charcoal);
+  font-size: 12px;
+}
+.gap-chip:hover { border-color: var(--maroon); }
+
+/* Way 3: one question at a time, readable at arm's length */
+.guided-card { border-color: var(--maroon); }
+.guided-progress { color: var(--gold); margin-left: 6px; }
+.guided-lead { font-size: 15px; margin-bottom: 8px; }
+.guided-tip { font-size: 13px; color: var(--gray); margin-bottom: 14px; }
+.guided-switch { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 14px; }
+.guided-switch input { width: 20px; height: 20px; accent-color: var(--maroon); }
+.guided-section { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--maroon); margin-bottom: 4px; }
+.guided-question { font-size: 24px; line-height: 1.25; font-weight: 800; color: var(--charcoal); }
+.guided-say { font-size: 14px; color: var(--gray); margin-top: 6px; }
+.guided-heard {
+  min-height: 28px;
+  margin-top: 14px;
+  font-size: 16px;
+  color: var(--gray);
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+.guided-heard.guided-got { color: var(--success); font-style: normal; font-weight: 800; font-size: 20px; }
+.guided-heard.guided-miss { color: var(--warning); }
+.guided-taps { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+.gtap {
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 1px solid var(--maroon);
+  border-radius: 2px;
+  background: var(--white);
+  color: var(--maroon);
+  font-size: 15px;
+  font-weight: 700;
+}
+.gtap:hover { background: var(--gold-soft); }
+.ginput {
+  flex: 1 1 160px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 12px;
+  font-size: 18px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.ginput:focus { border-color: var(--maroon); outline: none; box-shadow: 0 0 0 3px rgba(123, 31, 43, 0.15); }
+.gnext { min-height: 48px; }
+.guided-noted { margin-top: 10px; font-size: 13px; color: var(--success); }
+.guided-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 18px; }
+.guided-controls .btn { min-height: 52px; justify-content: center; padding: 10px 6px; }
+#guided-status { margin-top: 12px; }
+
+/* A new version is ready (shown only when reloading would interrupt a recording) */
+.update-banner {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--charcoal);
+  color: var(--white);
+  border-radius: 2px;
+  font-size: 14px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 600px) {
+  .guided-question { font-size: 21px; }
+  .guided-controls { grid-template-columns: repeat(2, 1fr); }
+  .mode-option { min-height: 64px; }
+}

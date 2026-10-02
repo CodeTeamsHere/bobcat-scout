@@ -27,7 +27,8 @@ Paste that into the File Explorer address bar and press Enter to jump straight t
 | Ratings, predictions, pick list | the separate Analytics app (not in this folder) | No |
 | Google Sheet script | `apps-script\Code.gs` | No |
 | One-time setup walkthrough | `SETUP-ONCE.md` | No |
-| Tests | `tools\test-parser.js`, `tools\test-apps-script.js`, `tools\test-config.js` | No |
+| The three ways to scout: guided questions and the words for each option | `scout-modes.js` | Only at a new game (job 4) |
+| Tests | `tools\test-parser.js`, `tools\test-modes.js`, `tools\test-apps-script.js`, `tools\test-config.js` | No |
 
 **The live app:** <https://codeteamshere.github.io/bobcat-scout>
 **The code online:** <https://github.com/CodeTeamsHere/bobcat-scout>
@@ -130,14 +131,19 @@ Same as above plus the scoring, because a script cannot know what a game piece i
    game piece, what each climb level is worth, which checkboxes mean the robot broke.
 3. Update **`DISPLAY`** in the same file so the Analytics app's ratings tables point at the
    new field names.
-4. Regenerate, test, push.
-5. If the team uses the Analytics app, refresh its copy of the form too (its README
+4. Update **`GUIDE`** at the top of `scout-modes.js`: the question guided mode asks for each
+   new field, the words that mean each option, and which questions to skip when they don't
+   apply. A field it doesn't know still gets a plain question built from its title, so
+   nothing breaks, but good questions make guided mode much faster.
+5. Regenerate, test, push.
+6. If the team uses the Analytics app, refresh its copy of the form too (its README
    says how; it takes one command).
 
 > **Say to Claude Code:**
 > *"New season. Here is the game manual and the new QRScout export. Rebuild config.json,
-> set the scoring from the manual, update the voice parser and both test suites, and push.
-> Tell me every point value you used so I can check it against the manual."*
+> set the scoring from the manual, update the voice parser, the guided questions in
+> scout-modes.js and their tests, and push. Tell me every point value you used so I can
+> check it against the manual."*
 
 You can attach the manual PDF to that message.
 
@@ -146,7 +152,8 @@ You can attach the manual PDF to that message.
 ### 5. Voice is not picking something up
 
 If a scouter says something and the wrong field fills in, or nothing fills in, that is a
-parser pattern, not a settings problem.
+parser pattern, not a settings problem. In guided mode (way 3) each answer is read against
+the one question asked; its words live in `GUIDE` in `scout-modes.js`.
 
 > **Say to Claude Code:**
 > *"When a scouter says '\<the exact sentence\>' the app fills in \<what it did\> but it should

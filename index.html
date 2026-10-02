@@ -63,6 +63,64 @@
       <button id="btn-ready-hide" class="btn btn-ghost" style="padding:8px 10px;font-size:11px;" title="Hide this">&times;</button>
     </div>
 
+    <!-- How is this match being scouted? Chosen for every match. -->
+    <section id="mode-card" class="card mode-card hidden" aria-labelledby="mode-title">
+      <div class="card-bar" id="mode-title">HOW ARE YOU SCOUTING THIS MATCH?</div>
+      <div class="mode-options">
+        <button type="button" class="mode-option" data-mode="1">
+          <span class="mode-num">1</span>
+          <span class="mode-text"><span class="mode-name">Describe it</span>
+          <span class="mode-desc">Talk or type, then check the whole form.</span></span>
+        </button>
+        <button type="button" class="mode-option" data-mode="2">
+          <span class="mode-num">2</span>
+          <span class="mode-text"><span class="mode-name">Talk, then fill gaps</span>
+          <span class="mode-desc">Say everything at once. Only the boxes the app didn't catch show up.</span></span>
+        </button>
+        <button type="button" class="mode-option" data-mode="3">
+          <span class="mode-num">3</span>
+          <span class="mode-text"><span class="mode-name">Guided</span>
+          <span class="mode-desc">It asks one question at a time and listens. Eyes stay on the field.</span></span>
+        </button>
+      </div>
+    </section>
+
+    <div id="mode-bar" class="mode-bar hidden">
+      <span class="mode-bar-text">This match: <strong id="mode-bar-name"></strong></span>
+      <button type="button" id="btn-mode-change" class="btn btn-ghost mode-bar-btn">CHANGE WAY</button>
+    </div>
+
+    <!-- Way 3: guided questions -->
+    <section id="guided-card" class="card guided-card hidden">
+      <div class="card-bar">GUIDED <span id="guided-progress" class="guided-progress"></span></div>
+      <div class="card-body">
+        <div id="guided-intro">
+          <p class="guided-lead">The app asks each question out loud and listens. Answer in a few words and it moves on by itself.</p>
+          <p class="guided-tip">Say <strong>skip</strong>, <strong>go back</strong>, <strong>repeat</strong> or <strong>I'm done</strong> at any time. You can also tap the answers.</p>
+          <label class="guided-switch"><input type="checkbox" id="guided-speak" checked> Read the questions out loud</label>
+          <button type="button" id="btn-guided-start" class="btn btn-primary btn-big">START</button>
+        </div>
+        <div id="guided-run" class="hidden">
+          <div id="guided-section" class="guided-section"></div>
+          <div id="guided-question" class="guided-question" aria-live="polite"></div>
+          <div id="guided-say" class="guided-say"></div>
+          <div id="guided-heard" class="guided-heard" aria-live="polite"></div>
+          <div id="guided-taps" class="guided-taps"></div>
+          <div id="guided-noted" class="guided-noted"></div>
+          <div class="guided-controls">
+            <button type="button" id="btn-guided-back" class="btn btn-outline">&larr; BACK</button>
+            <button type="button" id="btn-guided-repeat" class="btn btn-outline">REPEAT</button>
+            <button type="button" id="btn-guided-skip" class="btn btn-outline">SKIP</button>
+            <button type="button" id="btn-guided-done" class="btn btn-gold">DONE &middot; CHECK</button>
+          </div>
+          <div id="guided-status" class="mic-status hidden" role="status"><span class="mic-status-dot"></span><span id="guided-status-text"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ways 2 and 3: what still has to be filled before submitting -->
+    <div id="gaps-banner" class="gaps-banner hidden" role="status" aria-live="polite"></div>
+
     <!-- Session card (hidden by default) -->
     <div id="session-card" class="session-card hidden">
       <div class="session-head">
@@ -114,7 +172,7 @@
     </div>
 
     <!-- Reference -->
-    <div class="card">
+    <div class="card" id="ref-card">
       <button id="ref-toggle" class="ref-toggle">
         <span>QRSCOUT FORM REFERENCE</span>
         <svg id="ref-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -130,16 +188,17 @@
     </div>
 
     <!-- Step 2: review fields -->
-    <div class="card">
-      <div class="card-bar">STEP 2 · REVIEW FIELDS</div>
+    <div class="card" id="step-fields">
+      <div class="card-bar" id="step-fields-title">STEP 2 · REVIEW FIELDS</div>
       <div class="field-legend">
-        Fields marked <span class="req">*</span> are required. All others are optional.
+        <span id="field-legend-text">Fields marked <span class="req">*</span> are required. All others are optional.</span>
+        <button type="button" id="btn-all-fields" class="btn btn-ghost field-legend-btn hidden">SHOW EVERY FIELD</button>
       </div>
       <div id="fields-container"></div>
     </div>
 
     <!-- Step 3: output -->
-    <div class="card">
+    <div class="card" id="step-output">
       <div class="card-bar">STEP 3 · GENERATE OUTPUT</div>
       <div class="card-body">
 
@@ -279,11 +338,22 @@
           <h3>New game each year</h3>
           <p class="help-intro">The season's form lives in one file that ships with the app, so <strong>every scouter is on the identical form</strong>. There is deliberately no in-app form editor: if each person could rebuild the fields on their own phone, the columns would drift apart and the data would stop lining up.</p>
           <ol class="help-list">
-            <li>When the new game comes out, the form, the point values and the spreadsheet columns are rebuilt in one place from the game manual. The strategy team's Analytics app picks up the new point values from here by itself.</li>
+            <li>When the new game comes out, the form, the point values and the spreadsheet columns are rebuilt in one place from the game manual.</li>
             <li>That gets deployed once, and every scouter picks it up the next time they open the app. Nobody has to do anything.</li>
             <li>Point the settings at the new event, and that is the whole changeover.</li>
           </ol>
           <div class="help-note"><strong>Why it works this way:</strong> scouting data is only useful if every row has the same columns in the same order. One shipped form guarantees that. See <strong>SETUP-ONCE.md</strong> for the changeover steps.</div>
+        </section>
+
+        <section class="help-section">
+          <h3>Three ways to scout a match</h3>
+          <p class="help-intro">At the start of every match the app asks how you want to scout it. Pick whichever suits that match; the next match you choose again. <strong>CHANGE WAY</strong> switches in the middle without losing anything.</p>
+          <ol class="help-list">
+            <li><strong>Describe it.</strong> Talk or type the whole match, tap <strong>AUTO-FILL</strong>, then check every box on the form.</li>
+            <li><strong>Talk, then fill gaps.</strong> Talk through the match; the form stays out of the way. Tap <strong>DONE · CHECK WHAT I MISSED</strong> and only the boxes the app didn't catch appear. Fill them in. Submitting unlocks once every required box is filled.</li>
+            <li><strong>Guided.</strong> Tap <strong>START</strong>. The app asks one question at a time, out loud, and moves on by itself when it hears an answer. Answer in a few words ("twelve", "left side", "nope"). Say <strong>skip</strong>, <strong>go back</strong>, <strong>repeat</strong> or <strong>I'm done</strong> at any time. If you mention something else ("and they climbed level two"), it's filled in and that question is skipped. You can always tap the answer instead. At the end you check the form and submit.</li>
+          </ol>
+          <div class="help-note"><strong>Tips for guided:</strong> wear the headset, so the questions go to your ear and the app doesn't hear itself. Turn off <strong>Read the questions out loud</strong> if you'd rather read them. Questions that don't apply are skipped: no fuel scored means no "where did they shoot from", no climb means no "where did they climb", and a no-show goes straight to comments.</div>
         </section>
 
         <section class="help-section">
@@ -309,8 +379,6 @@
             <div class="flow-step flow-gate"><span class="flow-emoji">🔒</span><div class="flow-text"><strong>The Gate</strong> <span class="flow-dim">(Apps Script Web App)</span><span>Checks passcode · valid numbers · right event · no duplicates — runs as the host</span></div></div>
             <div class="flow-arrow"><span class="flow-num">2</span> writes a validated row</div>
             <div class="flow-step"><span class="flow-emoji">📊</span><div class="flow-text"><strong>Host's Sheet</strong><span>Only the host can open or edit it</span></div></div>
-            <div class="flow-arrow"><span class="flow-num">3</span> read by the strategy team</div>
-            <div class="flow-step"><span class="flow-emoji">📈</span><div class="flow-text"><strong>Analytics app</strong><span>A separate app with its own password · read-only</span></div></div>
           </div>
           <p class="help-intro"><strong>Why scouters can't reach the Sheet:</strong> the script is deployed as <em>“execute as the host · anyone can submit.”</em> A scouter's phone can only <em>call the gate</em> (send one match) — it is never given any role on the spreadsheet. The gate decides what gets written, so the Sheet stays the host's alone.</p>
           <table class="help-table">
@@ -318,11 +386,10 @@
             <tbody>
               <tr><td><strong>Host (you)</strong></td><td class="ht-yes">✅</td><td class="ht-yes">✅</td><td class="ht-yes">✅</td></tr>
               <tr><td><strong>Scouter</strong></td><td class="ht-no">❌</td><td class="ht-no">❌</td><td class="ht-yes">✅ gated</td></tr>
-              <tr><td><strong>Strategy team</strong></td><td class="ht-yes">✅ read-only, in the Analytics app</td><td class="ht-no">❌</td><td class="ht-no">❌</td></tr>
             </tbody>
           </table>
           <div class="help-note">
-            <strong>Why your data stays clean for analytics:</strong> the gate <strong>validates</strong> (rejects blank required fields &amp; impossible numbers), <strong>de-duplicates</strong> (re-sending the same match + team updates that one row instead of doubling), and <strong>stamps</strong> every row with the time it arrived. So the <strong>Data</strong> tab is always analysis-ready: the Sheet's own <strong>Analytics</strong> tab and the strategy team's Analytics app both read straight from it.
+            <strong>Why your data stays clean:</strong> the gate <strong>validates</strong> (rejects blank required fields &amp; impossible numbers), <strong>de-duplicates</strong> (re-sending the same match + team updates that one row instead of doubling), and <strong>stamps</strong> every row with the time it arrived. So every row in the <strong>Data</strong> tab is complete and counted once.
           </div>
         </section>
 
@@ -536,6 +603,7 @@
   </div>
 
   <script src="team-config.js"></script>
+  <script src="scout-modes.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

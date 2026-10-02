@@ -18,6 +18,16 @@ let recognition = null;
 let baseTranscript = '';      // text before this recording started
 let activeTab = 'qr';
 
+// The way this match is being scouted, chosen at the start of every match (scout-modes.js):
+// '1' describe it · '2' talk, then fill the gaps · '3' guided questions. null = not chosen yet.
+const MODES = window.SCOUT_MODES;
+const MODE_NAMES = { '1': '1 · Describe it', '2': '2 · Talk, then fill gaps', '3': '3 · Guided' };
+let scoutMode = null;
+let choosingMode = false;      // the picker reopened mid-match with CHANGE WAY
+let gapPlan = null;            // way 2: the boxes shown after CHECK, kept still while they're filled in
+let showAllFields = false;     // way 2: the whole form instead of only what was missed
+let guidedReview = false;      // way 3: the questions are over, the form is being checked
+
 
 function activeSections() { return CONFIG.sections || []; }
 function applyForm() {
@@ -551,21 +561,39 @@ function renderFieldHTML(f) {
 function renderAllFields() {
   const container = $('fields-container');
   let html = '';
-  activeSections().forEach(sec => {
-    html += `<div class="section-header">${escapeHTML(sec.name.toUpperCase())}</div>`;
+  fieldGroups().forEach(g => {
+    html += `<div class="section-header${g.cls ? ' ' + g.cls : ''}">${escapeHTML(g.heading)}</div>`;
+    if (g.note) html += `<div class="section-note">${escapeHTML(g.note)}</div>`;
     html += `<div class="field-grid">`;
-    // `hidden` fields stay in FIELD_ORDER (the Sheet and the Analytics app still
-    // want the column) but are derived rather than typed, so don't draw them.
-    sec.fields.forEach(f => { if (!f.hidden) html += renderFieldHTML(f); });
+    // `hidden` fields stay in FIELD_ORDER (the Sheet still wants the column) but
+    // are derived rather than typed, so don't draw them.
+    g.fields.forEach(f => { if (!f.hidden) html += renderFieldHTML(f); });
     html += `</div>`;
   });
   container.innerHTML = html;
-  attachFieldListeners();
+  attachFieldListeners(container);
 }
 
-function attachFieldListeners() {
+// The whole form, or in way 2 (until SHOW EVERY FIELD) only the boxes the app didn't catch.
+function fieldGroups() {
+  if (scoutMode === '2' && gapPlan && !showAllFields) {
+    // Grouped by match period, because some titles repeat ("Climbed" in auto and endgame).
+    const out = [];
+    const add = (codes, label, cls) => activeSections().forEach(sec => {
+      const here = sec.fields.filter(f => codes.indexOf(f.code) !== -1);
+      if (here.length) out.push({ heading: label + ' · ' + sec.name.toUpperCase(), fields: here, cls: cls });
+    });
+    add(gapPlan.must, 'STILL NEEDED', 'section-must');
+    add(gapPlan.maybe, 'NOT CAUGHT, FILL IN IF IT HAPPENED', '');
+    if (!out.length) out.push({ heading: 'NOTHING MISSING', fields: [], note: 'The app caught everything. Tap SHOW EVERY FIELD to check its work.' });
+    return out;
+  }
+  return activeSections().map(sec => ({ heading: sec.name.toUpperCase(), fields: sec.fields }));
+}
+
+function attachFieldListeners(root) {
   // Inputs (text/number/select/range)
-  $$('[data-input]').forEach(el => {
+  root.querySelectorAll('[data-input]').forEach(el => {
     el.addEventListener('input', e => {
       const code = el.getAttribute('data-input');
       const field = ALL_FIELDS.find(f => f.code === code);
@@ -581,7 +609,7 @@ function attachFieldListeners() {
   });
 
   // Toggles
-  $$('[data-toggle]').forEach(el => {
+  root.querySelectorAll('[data-toggle]').forEach(el => {
     el.addEventListener('click', e => {
       const code = el.getAttribute('data-toggle');
       setField(code, !fields[code]);
@@ -591,7 +619,7 @@ function attachFieldListeners() {
   });
 
   // Counter pads
-  $$('[data-count]').forEach(el => {
+  root.querySelectorAll('[data-count]').forEach(el => {
     el.addEventListener('click', () => {
       const code = el.getAttribute('data-count');
       const f = ALL_FIELDS.find(x => x.code === code) || {};
@@ -605,7 +633,7 @@ function attachFieldListeners() {
   });
 
   // Multi-select chips
-  $$('[data-multi]').forEach(el => {
+  root.querySelectorAll('[data-multi]').forEach(el => {
     el.addEventListener('click', () => {
       const code = el.getAttribute('data-multi');
       const key = el.getAttribute('data-key');
@@ -648,6 +676,9 @@ function setField(code, value) {
   if (code === 'matchNumber' || code === 'startPos' || code === 'matchType' || code === 'eventKey') {
     maybeAutoFillTeam();
   }
+  // Way 2: an answer can make another box matter (a climb opens "where did they climb").
+  const f = ALL_FIELDS.find(x => x.code === code);
+  if (scoutMode === '2' && gapPlan && !showAllFields && f && /^(select|multiselect|boolean)$/.test(f.type)) growGapPlan();
 }
 
 // =====================================================================
@@ -668,10 +699,17 @@ function getMissingRequired() {
   return missing;
 }
 
+// Ways 2 and 3 need every required box that applies; way 1 keeps its original check.
+function missingForSubmit() {
+  if (scoutMode === '2' || scoutMode === '3') return MODES.requiredGaps(CONFIG, fields, modeCtx(), answeredNow()).map(f => f.title);
+  return getMissingRequired();
+}
+
 function updateGenerateButton() {
+  updateGapsBanner();
   const btn = $('btn-generate');
   if (!btn) return;
-  const missing = getMissingRequired();
+  const missing = missingForSubmit();
   btn.disabled = missing.length > 0;
   const help = btn.parentElement && btn.parentElement.querySelector('.help-text');
   if (help) {
@@ -704,6 +742,8 @@ let lastResultAt = 0;
 let silenceTimer = null;
 let micDeviceLabel = '';        // e.g. "Logitech USB Headset H390"
 let micProbed = false;
+let voiceSink = null;           // way 3 takes the words it hears, instead of the transcript box
+let voicePaused = false;        // while the app is speaking, so it doesn't hear itself
 
 const HEADSET_HINT = /headset|headphone|h390|h340|h650|usb audio|wireless|airpods|buds|bluetooth/i;
 
@@ -820,6 +860,10 @@ function beginRecognition() {
       if (res.isFinal) final += res[0].transcript + ' ';
       else interim += res[0].transcript;
     }
+    if (voiceSink) {
+      if (!voicePaused) voiceSink(final.trim(), interim.trim());
+      return;
+    }
     if (final) baseTranscript += final;
     $('transcript').value = baseTranscript + interim;
     if (wantRecording) {
@@ -852,6 +896,7 @@ function beginRecognition() {
   // the scouter can keep talking through the whole match.
   recognition.onend = () => {
     if (!wantRecording) { finishRecording(); return; }
+    if (voicePaused) return;            // the app is speaking; resumeListening() starts it again
     micRestarts++;
     if (micRestarts > 12) {
       wantRecording = false;
@@ -878,7 +923,10 @@ function startSilenceWatch() {
   silenceTimer = setInterval(async () => {
     if (!wantRecording) { stopSilenceWatch(); return; }
     const quiet = Date.now() - lastResultAt;
-    if (quiet > 9000 && !$('transcript').value.trim()) {
+    // In guided mode, long quiet stretches are normal (waiting for the match), so only
+    // warn if nothing at all has been heard yet.
+    const heardSomething = voiceSink ? guide.heardAny : !!$('transcript').value.trim();
+    if (quiet > 9000 && !heardSomething && !voicePaused) {
       const extra = /h390|logitech/i.test(micDeviceLabel)
         ? ' The H390 has a mute switch on the cable — check it is not muted.'
         : ' If your headset has a mute switch or button, check it.';
@@ -892,8 +940,28 @@ function stopSilenceWatch() {
 
 function stopRecording() {
   wantRecording = false;
+  voicePaused = false;
   if (recognition) { try { recognition.stop(); } catch (e) {} }
   finishRecording();
+}
+
+// Guided mode stops listening while it speaks, then starts again.
+function pauseListening() {
+  if (!wantRecording || voicePaused) return;
+  voicePaused = true;
+  try { recognition.stop(); } catch (e) {}
+}
+function resumeListening() {
+  if (!voicePaused) return;
+  voicePaused = false;
+  if (!wantRecording) return;
+  try { beginRecognition(); recognition.start(); }
+  catch (e) {
+    setTimeout(() => {
+      if (!wantRecording || voicePaused) return;
+      try { beginRecognition(); recognition.start(); } catch (err) { guidedStatus('The microphone stopped. Tap the answers, or press START again.', 'warn'); }
+    }, 350);
+  }
 }
 
 function finishRecording() {
@@ -915,6 +983,7 @@ function setRecordingState(rec) {
 }
 
 function showMicStatus(msg, kind) {
+  if (guide.running) guidedStatus(msg, kind);
   const el = $('mic-status');
   if (!el) return;
   $('mic-status-text').textContent = msg;
@@ -927,6 +996,7 @@ function hideMicStatus() {
 }
 
 function showMicError(msg) {
+  if (guide.running) guidedStatus(msg, 'warn');
   $('mic-error-text').textContent = msg;
   $('mic-error').classList.remove('hidden');
 }
@@ -942,9 +1012,12 @@ function hideMicError() {
 function processTranscript() {
   const text = $('transcript').value.trim();
   if (!text) return;
+  // Remember which boxes the scout set by hand, so they still count as answered.
+  const byHand = {};
+  Object.keys(confidence).forEach(k => { if (confidence[k] === 'user') byHand[k] = 'user'; });
   const result = parseTranscript(text, fields);
   fields = result.fields;
-  confidence = result.confidence;
+  confidence = Object.assign(byHand, result.confidence);
   maybeAutoFillTeam();
   renderAllFields();
   updateGenerateButton();
@@ -952,7 +1025,7 @@ function processTranscript() {
 }
 
 function generateOutput() {
-  const missing = getMissingRequired();
+  const missing = missingForSubmit();
   if (missing.length > 0) {
     alert('Please fill required fields first:\n• ' + missing.join('\n• '));
     return;
@@ -1096,6 +1169,9 @@ function resetMatch() {
   $('output-section').classList.add('hidden');
   $('generate-row').classList.remove('hidden');
   const ss = $('submit-status'); if (ss) ss.classList.add('hidden');
+  guidedStop();
+  scoutMode = null; gapPlan = null; showAllFields = false; guidedReview = false; choosingMode = false;
+  applyModeUI();
   renderAllFields();
   updateProcessButton();
   updateGenerateButton();
@@ -1113,6 +1189,9 @@ function clearAll() {
   $('output-section').classList.add('hidden');
   $('generate-row').classList.remove('hidden');
   hideMicError();
+  guidedStop();
+  scoutMode = null; gapPlan = null; showAllFields = false; guidedReview = false; choosingMode = false;
+  applyModeUI();
   try {
     localStorage.removeItem('scout_name');
     localStorage.removeItem('event_key');
@@ -1187,33 +1266,38 @@ const TOUR_STEPS = [
     body: 'Tap ⚡ SETUP any time you are stuck. It asks whether you are a scouter or the host and then walks you down a numbered checklist — your name, the event code, a mic test, and for hosts, the whole spreadsheet setup with the script copied for you.'
   },
   {
+    selector: '#mode-bar',
+    title: '2 · Pick a way for each match',
+    body: 'At the start of every match, pick how to scout it: 1 describe it, 2 talk then fill the gaps the app missed, or 3 guided, where the app asks one question at a time and listens. CHANGE WAY switches without losing anything. This tour shows way 1.'
+  },
+  {
     selector: '.voice-row',
-    title: '2 · Describe the match',
+    title: '3 · Describe the match',
     body: 'Tap the maroon mic and just talk — or type — in plain English. Example: "Team 177, scored 4 in auto, climbed the mid rung." No special wording needed.'
   },
   {
     selector: '#btn-process',
-    title: '3 · Auto-fill the fields',
+    title: '4 · Auto-fill the fields',
     body: 'Tap AUTO-FILL FIELDS. The app reads your description and fills in the scouting form for you automatically.'
   },
   {
     selector: '#fields-container',
-    title: '4 · Review & fix',
+    title: '5 · Review & fix',
     body: 'Check the filled values. A green "AI" badge means it was auto-filled — tap any field to correct it. Fields marked with a red * are required.'
   },
   {
     selector: '#btn-generate',
-    title: '5 · Generate output',
+    title: '6 · Generate output',
     body: 'Once the required fields are set, tap GENERATE to get a scannable QR code (works with no internet) plus TSV and JSON for your QRScout pipeline.'
   },
   {
     selector: '#btn-sheet',
-    title: '6 · Send to the Sheet (optional)',
+    title: '7 · Send to the Sheet (optional)',
     body: 'If your host connected a Google Sheet — tap ⚙ SHEET, or just open the link they shared — each match auto-submits here, no scanning. Offline, it queues and sends later. The dot shows the status.'
   },
   {
     selector: '#btn-help',
-    title: '7 · Save & keep going',
+    title: '8 · Save & keep going',
     body: 'Use SAVE & NEXT MATCH — it saves, submits to the Sheet if connected, and bumps the match number automatically. Scout as many matches as you want — there is no limit. Reopen this walkthrough anytime from HELP.'
   }
 ];
@@ -1224,6 +1308,7 @@ let tourTimer = null;
 const TOUR_AUTOPLAY_MS = 4500;
 
 function startTour() {
+  if (scoutMode !== '1') chooseMode('1');     // the tour points at way 1's boxes
   $('help-overlay').classList.add('hidden');
   document.body.classList.remove('no-scroll'); // tour needs to scroll the page
   tourIndex = 0;
@@ -1890,7 +1975,8 @@ function wireUI() {
   setupVoice();
 
   // Buttons
-  $('btn-process').addEventListener('click', processTranscript);
+  $('btn-process').addEventListener('click', () => (scoutMode === '2' ? checkWhatWasMissed() : processTranscript()));
+  wireModes();
   $('btn-sample').addEventListener('click', () => {
     $('transcript').value = SAMPLE_TEXT;
     resetTranscriptBuffer();
@@ -1970,6 +2056,465 @@ function wireUI() {
 }
 
 // =====================================================================
+// THE THREE WAYS TO SCOUT A MATCH (the thinking is in scout-modes.js)
+// =====================================================================
+
+function lastMode() {
+  try { return localStorage.getItem('scout_mode_last') || '1'; } catch (e) { return '1'; }
+}
+function modeCtx() {
+  return {
+    normalizeNumbers: normalizeNumberWords,
+    // On the first match of the day the match number isn't known yet; after that it counts up.
+    askMatchNumber: !sessionMatches.some(m => String(m.eventKey || '') === String(fields.eventKey || ''))
+  };
+}
+function answeredNow() {
+  const a = MODES.answeredSet(CONFIG, fields, confidence, modeCtx());
+  const team = teamFromSchedule();
+  if (!a.teamNumber && team && String(team) === String(fields.teamNumber)) a.teamNumber = true;
+  return a;
+}
+// Fill what can be worked out (no fuel scored: no scoring style, no shooting spot), from scratch
+// each time, so changing an earlier answer changes what follows.
+function refreshDerived() {
+  Object.keys(confidence).forEach(k => { if (confidence[k] === 'derived') delete confidence[k]; });
+  const d = MODES.derive(CONFIG, fields, answeredNow());
+  Object.keys(d).forEach(k => { fields[k] = d[k]; confidence[k] = 'derived'; if (k === 'startPos') fields.alliance = slotToAlliance(d[k]); });
+}
+
+function chooseMode(mode) {
+  if (scoutMode === '3' && mode !== '3') guidedStop();
+  scoutMode = mode;
+  choosingMode = false;
+  try { localStorage.setItem('scout_mode_last', mode); } catch (e) {}
+  showAllFields = false;
+  if (mode === '3') guidedReady();
+  applyModeUI();
+  renderAllFields();
+  updateGenerateButton();
+  saveDraft();
+  const target = mode === '3' ? $('guided-card') : $('step-describe');
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function applyModeUI() {
+  const m = choosingMode ? null : scoutMode;
+  const show = (id, on) => { const el = $(id); if (el) el.classList.toggle('hidden', !on); };
+  show('mode-card', !m);
+  show('mode-bar', !!m);
+  if ($('mode-bar-name')) $('mode-bar-name').textContent = m ? MODE_NAMES[m] : '';
+  show('step-describe', m === '1' || m === '2');
+  show('ref-card', m === '1');
+  show('guided-card', m === '3' && !guidedReview);
+  const formOn = m === '1' || (m === '2' && !!gapPlan) || (m === '3' && guidedReview);
+  show('step-fields', formOn);
+  show('step-output', formOn);
+  show('btn-all-fields', m === '2' && !!gapPlan);
+  if ($('btn-all-fields')) $('btn-all-fields').textContent = showAllFields ? 'ONLY WHAT WAS MISSED' : 'SHOW EVERY FIELD';
+  const bar = document.querySelector('#step-describe .card-bar');
+  if (bar) bar.textContent = m === '2' ? 'STEP 1 · TALK THROUGH THE WHOLE MATCH' : 'STEP 1 · DESCRIBE THE MATCH';
+  if ($('btn-process')) $('btn-process').textContent = m === '2' ? 'DONE · CHECK WHAT I MISSED →' : 'AUTO-FILL FIELDS →';
+  if ($('step-fields-title')) {
+    $('step-fields-title').textContent = m === '2' && !showAllFields ? 'STEP 2 · FILL IN WHAT THE APP DIDN’T CATCH'
+      : m === '3' ? 'CHECK YOUR WORK' : 'STEP 2 · REVIEW FIELDS';
+  }
+  const last = lastMode();
+  $$('.mode-option').forEach(b => b.classList.toggle('mode-last', b.getAttribute('data-mode') === last));
+  updateGapsBanner();
+}
+
+// Way 2: read everything said, then show only what's still open.
+function checkWhatWasMissed() {
+  processTranscript();
+  refreshDerived();
+  const g = MODES.gaps(CONFIG, fields, modeCtx(), answeredNow());
+  gapPlan = { must: g.must.map(f => f.code), maybe: g.maybe.map(f => f.code) };
+  showAllFields = false;
+  applyModeUI();
+  renderAllFields();
+  updateGenerateButton();
+  saveDraft();
+  $('step-fields').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+// An answer can make another box matter; add it to the list (answered boxes stay visible).
+function growGapPlan() {
+  const g = MODES.gaps(CONFIG, fields, modeCtx(), answeredNow());
+  let added = false;
+  g.must.concat(g.maybe).forEach(f => {
+    if (gapPlan.must.indexOf(f.code) !== -1 || gapPlan.maybe.indexOf(f.code) !== -1) return;
+    (f.required ? gapPlan.must : gapPlan.maybe).push(f.code);
+    added = true;
+  });
+  if (added) { renderAllFields(); saveDraft(); }
+}
+
+// Ways 2 and 3: the required boxes still empty, each a link to its box.
+function updateGapsBanner() {
+  const el = $('gaps-banner');
+  if (!el || !CONFIG) return;
+  const on = !choosingMode && ((scoutMode === '2' && gapPlan) || (scoutMode === '3' && guidedReview));
+  el.classList.toggle('hidden', !on);
+  if (!on) return;
+  const gaps = MODES.requiredGaps(CONFIG, fields, modeCtx(), answeredNow());
+  el.className = 'gaps-banner ' + (gaps.length ? 'gaps-open' : 'gaps-done');
+  el.innerHTML = gaps.length
+    ? '<strong>' + gaps.length + ' required ' + (gaps.length === 1 ? 'box' : 'boxes') + ' left:</strong> ' +
+      gaps.map(f => `<button type="button" class="gap-chip" data-goto="${escapeHTML(f.code)}">${escapeHTML(fieldLabel(f))}</button>`).join(' ')
+    : '<strong>✓ Every required box is filled.</strong> Tap GENERATE, then SUBMIT TO SHEET or SAVE &amp; NEXT MATCH.';
+}
+
+// A field's title, plus its match period when another field has the same title.
+function fieldLabel(f) {
+  const twin = ALL_FIELDS.some(x => x !== f && x.title === f.title);
+  if (!twin) return f.title;
+  const sec = activeSections().find(sc => sc.fields.indexOf(f) !== -1);
+  return sec ? f.title + ' (' + sec.name + ')' : f.title;
+}
+
+function wireModes() {
+  $$('.mode-option').forEach(b => b.addEventListener('click', () => chooseMode(b.getAttribute('data-mode'))));
+  $('btn-mode-change').addEventListener('click', () => {
+    if (guide.running) guidedPause();
+    choosingMode = true;
+    applyModeUI();
+    $('mode-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  $('btn-all-fields').addEventListener('click', () => {
+    showAllFields = !showAllFields;
+    applyModeUI();
+    renderAllFields();
+  });
+  $('gaps-banner').addEventListener('click', e => {
+    const chip = e.target.closest('[data-goto]');
+    if (!chip) return;
+    const box = document.querySelector(`#fields-container [data-field="${chip.getAttribute('data-goto')}"]`);
+    if (!box) return;
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const input = box.querySelector('input, select, textarea, button');
+    if (input) setTimeout(() => input.focus({ preventScroll: true }), 400);
+  });
+  // Guided
+  $('btn-guided-start').addEventListener('click', guidedStart);
+  $('btn-guided-back').addEventListener('click', () => guidedCommand('back'));
+  $('btn-guided-repeat').addEventListener('click', () => guidedCommand('repeat'));
+  $('btn-guided-skip').addEventListener('click', () => guidedCommand('skip'));
+  $('btn-guided-done').addEventListener('click', () => guidedCommand('done'));
+  $('guided-speak').addEventListener('change', () => {
+    try { localStorage.setItem('guided_speak', $('guided-speak').checked ? 'on' : 'off'); } catch (e) {}
+    if (!$('guided-speak').checked && window.speechSynthesis) speechSynthesis.cancel();
+  });
+  $('guided-taps').addEventListener('click', onGuidedTap);
+  $('guided-taps').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.matches('input')) { e.preventDefault(); onGuidedTap({ target: $('guided-taps').querySelector('[data-gnext]') }); }
+  });
+}
+
+// =====================================================================
+// WAY 3 · GUIDED — one question at a time, out loud, eyes on the field
+// =====================================================================
+
+const guide = { running: false, current: null, history: [], skipped: {}, comment: '', commentTimer: null, heardAny: false, advanceTimer: null };
+const COMMENT_PAUSE_MS = 2500;   // this long without talking ends a comment
+
+function guidedReady() {
+  guidedReview = false;
+  guide.running = false;
+  $('guided-intro').classList.remove('hidden');
+  $('guided-run').classList.add('hidden');
+  $('guided-progress').textContent = '';
+  $('btn-guided-start').textContent = Object.keys(confidence).length ? 'CARRY ON' : 'START';
+  try { $('guided-speak').checked = localStorage.getItem('guided_speak') !== 'off'; } catch (e) {}
+}
+
+function guidedStart() {
+  Object.assign(guide, { running: true, current: null, comment: '', heardAny: false });
+  guide.history = [];
+  guide.skipped = {};
+  $('guided-intro').classList.add('hidden');
+  $('guided-run').classList.remove('hidden');
+  unlockSpeech();
+  voiceSink = onGuidedHeard;
+  if (window.SpeechRecognition || window.webkitSpeechRecognition) startRecording();
+  else guidedStatus('This browser can’t listen (iPhone: use Safari). Tap the answers instead.', 'warn');
+  guidedNext();
+}
+
+// Stop everything without finishing (a new match, or another way chosen).
+function guidedStop() {
+  clearTimeout(guide.commentTimer);
+  clearTimeout(guide.advanceTimer);
+  const was = guide.running;
+  guide.running = false;
+  voiceSink = null;
+  if (was && wantRecording) stopRecording();
+  if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
+}
+// CHANGE WAY in the middle: stop listening; START (CARRY ON) picks up where it left off.
+function guidedPause() {
+  guidedStop();
+  guidedReady();
+}
+
+function questionPosition(q) {
+  const ctx = modeCtx(), answered = answeredNow();
+  const all = MODES.questions(CONFIG).filter(x => x.fields.some(f => MODES.needed(f, fields, ctx, answered)));
+  const at = all.findIndex(x => x.id === q.id);
+  return (at < 0 ? all.length : at + 1) + ' of ' + all.length;
+}
+
+function guidedNext(prefix) {
+  clearTimeout(guide.advanceTimer);
+  clearTimeout(guide.commentTimer);
+  refreshDerived();
+  const q = MODES.nextQuestion(CONFIG, fields, answeredNow(), guide.skipped, modeCtx());
+  guide.current = q;
+  guide.comment = '';
+  if (!q) { guidedFinish(prefix); return; }
+  $('guided-progress').textContent = '· ' + questionPosition(q);
+  $('guided-section').textContent = String(q.section || '').toUpperCase();
+  $('guided-question').textContent = q.ask;
+  $('guided-say').textContent = q.say ? 'Say: ' + q.say : '';
+  $('guided-heard').textContent = '';
+  $('guided-heard').className = 'guided-heard';
+  renderGuidedTaps(q);
+  // Options are read out too, so the scout never has to look down to know what to say.
+  const readSay = q.say && /select|boolean|flags|range/.test(q.kind);
+  speak((prefix ? prefix + ' ' : '') + q.ask + (readSay ? ' ' + q.say + '.' : ''));
+}
+
+function onGuidedHeard(final, interim) {
+  if (!guide.running || !guide.current) return;
+  if (final || interim) guide.heardAny = true;
+  const q = guide.current;
+  const live = ((guide.comment ? guide.comment + ' ' : '') + (final || interim || '')).trim();
+  if (live) { $('guided-heard').textContent = '“' + live + '”'; $('guided-heard').className = 'guided-heard'; }
+  if (!final) return;
+  const cmd = MODES.command(final);
+  if (q.kind === 'textarea' && cmd !== 'back' && cmd !== 'repeat') { onCommentHeard(final, cmd); return; }
+  if (cmd) { guidedCommand(cmd); return; }
+  const res = MODES.answer(q, final, modeCtx());
+  // Anything else mentioned is only taken alongside a real answer: words that don't fit the
+  // question shouldn't quietly fill other boxes ("while driving" alone isn't auto or teleop).
+  if (res) { applyGuidedAnswer(q, res, noteExtras(final, q)); return; }
+  $('guided-heard').textContent = '“' + final + '” — didn’t catch an answer.';
+  $('guided-heard').className = 'guided-heard guided-miss';
+  speak(q.say ? 'Say ' + q.say + '.' : 'Say that again?');
+}
+
+// Comments run on until a pause, or "next" / "I'm done". "None" ends them at once.
+function onCommentHeard(final, cmd) {
+  const q = guide.current;
+  if (cmd === 'skip' || cmd === 'done') { commitComment(cmd === 'done'); return; }
+  if (!guide.comment) {
+    const quick = MODES.answer(q, final, modeCtx());
+    if (quick && quick.values[q.fields[0].code] === 'None') { applyGuidedAnswer(q, quick, []); return; }
+  }
+  guide.comment = (guide.comment + ' ' + final).trim();
+  $('guided-heard').textContent = '“' + guide.comment + '”';
+  clearTimeout(guide.commentTimer);
+  guide.commentTimer = setTimeout(() => commitComment(false), COMMENT_PAUSE_MS);
+}
+function commitComment(thenFinish) {
+  clearTimeout(guide.commentTimer);
+  const q = guide.current;
+  if (!q || q.kind !== 'textarea') return;
+  const text = guide.comment.trim();
+  guide.comment = '';
+  if (text) {
+    Object.keys(MODES.answer(q, text, modeCtx()).values).forEach(code => setField(code, text));
+    guide.history.push(q.id);
+  } else {
+    guide.skipped[q.id] = true;
+    guide.history.push(q.id);
+  }
+  if (thenFinish) guidedFinish();
+  else guidedNext(text ? 'Got it.' : 'Skipped.');
+}
+
+// Anything else the scout mentioned that the form hasn't got yet ("…and they climbed level two").
+function noteExtras(final, q) {
+  const clause = MODES.extraClause(final);
+  if (!clause) return [];
+  const answered = answeredNow();
+  const own = q.fields.map(f => f.code);
+  const r = parseTranscript(clause, fields);
+  const notes = [];
+  Object.keys(r.confidence).forEach(code => {
+    if (code === 'co' || own.indexOf(code) !== -1 || answered[code]) return;
+    const f = ALL_FIELDS.find(x => x.code === code);
+    // Not the same question for another period: "while driving" for auto says nothing about teleop.
+    if (!f || f.hidden || MODES.twinOf(q, f)) return;
+    setField(code, r.fields[code]);
+    const v = r.fields[code];
+    notes.push(fieldLabel(f) + ': ' + (Array.isArray(v) ? v.join(', ') : (typeof v === 'boolean' ? (v ? 'yes' : 'no') : v)));
+  });
+  return notes;
+}
+
+function applyGuidedAnswer(q, res, extras) {
+  Object.keys(res.values).forEach(code => setField(code, res.values[code]));
+  guide.history.push(q.id);
+  delete guide.skipped[q.id];
+  $('guided-heard').textContent = '✓ ' + res.said;
+  $('guided-heard').className = 'guided-heard guided-got';
+  $('guided-noted').textContent = extras && extras.length ? 'Also noted: ' + extras.join(' · ') : '';
+  clearTimeout(guide.advanceTimer);
+  guide.advanceTimer = setTimeout(() => guidedNext(res.said + '.'), 500);
+}
+
+function guidedCommand(cmd) {
+  const q = guide.current;
+  if (cmd === 'repeat') { if (q) speak(q.ask + (q.say ? ' ' + q.say + '.' : '')); return; }
+  if (cmd === 'done') { if (q && q.kind === 'textarea' && guide.comment) { commitComment(true); return; } guidedFinish(); return; }
+  if (cmd === 'skip') {
+    if (!q) return;
+    if (q.kind === 'textarea' && guide.comment) { commitComment(false); return; }
+    guide.skipped[q.id] = true;
+    guide.history.push(q.id);
+    guidedNext('Skipped.');
+    return;
+  }
+  if (cmd === 'back') {
+    const prev = guide.history.pop();
+    if (!prev) { speak('That was the first question.'); return; }
+    // Open the previous question again: forget its answer, and that it was skipped.
+    const pq = MODES.questions(CONFIG).find(x => x.id === prev);
+    const fresh = initialFieldState();
+    if (pq) pq.fields.forEach(f => { delete confidence[f.code]; fields[f.code] = fresh[f.code]; });
+    delete guide.skipped[prev];
+    guidedNext('Going back.');
+  }
+}
+
+function guidedFinish(prefix) {
+  guidedStop();
+  guidedReview = true;
+  refreshDerived();
+  applyModeUI();
+  renderAllFields();
+  updateGenerateButton();
+  saveDraft();
+  const left = missingForSubmit().length;
+  speak((prefix ? prefix + ' ' : '') + (left
+    ? 'Done. ' + left + ' required ' + (left === 1 ? 'box is' : 'boxes are') + ' still empty. Check the form.'
+    : 'Done. Check your answers, then submit.'), true);
+  $('gaps-banner').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function guidedStatus(msg, kind) {
+  const el = $('guided-status');
+  if (!el) return;
+  $('guided-status-text').textContent = msg;
+  el.className = 'mic-status ' + (kind === 'warn' ? 'mic-status-warn' : 'mic-status-live');
+}
+
+// Tapping is always an option: buttons for choices, a box for numbers and words.
+function renderGuidedTaps(q) {
+  const f = q.fields[0], g = MODES.GUIDE[f.code] || {};
+  let h = '';
+  if (q.kind === 'select') {
+    h = (f.options || []).filter(o => o.k !== '').map(o => `<button type="button" class="gtap" data-gtap="${escapeHTML(o.k)}">${escapeHTML(o.v)}</button>`).join('');
+  } else if (q.kind === 'boolean') {
+    h = g.invert
+      ? '<button type="button" class="gtap" data-gtap="false">Showed up</button><button type="button" class="gtap" data-gtap="true">No-show</button>'
+      : '<button type="button" class="gtap" data-gtap="true">Yes</button><button type="button" class="gtap" data-gtap="false">No</button>';
+  } else if (q.kind === 'range') {
+    const vals = [];
+    for (let v = Number(f.min) || 0; v <= Number(f.max); v += Number(f.step) || 1) vals.push(v);
+    h = vals.map(v => `<button type="button" class="gtap" data-gtap="${v}">${v}${Number(f.max) === 100 ? '%' : ''}</button>`).join('');
+  } else if (q.kind === 'multiselect' || q.kind === 'flags') {
+    const items = q.kind === 'flags' ? q.fields.map(x => ({ k: x.code, v: x.title })) : (f.options || []);
+    h = items.map(o => `<button type="button" class="gchip chip" data-gchip="${escapeHTML(o.k)}">${escapeHTML(o.v)}</button>`).join('') +
+      (q.kind === 'flags' ? '<button type="button" class="gtap" data-gnone="1">None of these</button>' : '') +
+      '<button type="button" class="btn btn-primary gnext" data-gnext="1">NEXT →</button>';
+  } else if (q.kind === 'number') {
+    h = `<input type="number" inputmode="numeric" class="ginput" data-ginput="1" min="${f.min === undefined ? 0 : f.min}" ${f.max === undefined ? '' : 'max="' + f.max + '"'}>` +
+      '<button type="button" class="btn btn-primary gnext" data-gnext="1">NEXT →</button>';
+  } else {
+    h = (q.kind === 'textarea' ? '<textarea class="ginput" data-ginput="1" rows="2"></textarea>' : '<input type="text" class="ginput" data-ginput="1">') +
+      '<button type="button" class="btn btn-primary gnext" data-gnext="1">NEXT →</button>';
+  }
+  $('guided-taps').innerHTML = h;
+  $('guided-noted').textContent = '';
+}
+
+function onGuidedTap(e) {
+  const q = guide.current;
+  const t = e.target && e.target.closest ? e.target.closest('[data-gtap], [data-gchip], [data-gnext], [data-gnone]') : null;
+  if (!q || !t) return;
+  const f = q.fields[0];
+  if (t.hasAttribute('data-gchip')) { t.classList.toggle('chip-on'); return; }
+  let values = {}, said = '';
+  if (t.hasAttribute('data-gnone')) {
+    q.fields.forEach(x => { values[x.code] = false; });
+    said = 'none of them';
+  } else if (t.hasAttribute('data-gtap')) {
+    const raw = t.getAttribute('data-gtap');
+    values[f.code] = q.kind === 'boolean' ? raw === 'true' : (q.kind === 'range' ? Number(raw) : raw);
+    said = t.textContent;
+  } else {
+    if (q.kind === 'flags') {
+      const on = Array.from($('guided-taps').querySelectorAll('[data-gchip].chip-on')).map(b => b.getAttribute('data-gchip'));
+      q.fields.forEach(x => { values[x.code] = on.indexOf(x.code) !== -1; });
+      said = on.length ? q.fields.filter(x => on.indexOf(x.code) !== -1).map(x => x.title).join(', ') : 'none of them';
+    } else if (q.kind === 'multiselect') {
+      const on = Array.from($('guided-taps').querySelectorAll('[data-gchip].chip-on')).map(b => b.getAttribute('data-gchip'));
+      if (!on.length) { guidedCommand('skip'); return; }
+      values[f.code] = on;
+      said = on.map(k => ((f.options || []).find(o => o.k === k) || { v: k }).v).join(', ');
+    } else {
+      const input = $('guided-taps').querySelector('[data-ginput]');
+      const raw = input ? input.value.trim() : '';
+      if (!raw) { guidedCommand('skip'); return; }
+      const res = q.kind === 'number' ? MODES.answer(q, raw, modeCtx()) : { values: { [f.code]: raw }, said: raw };
+      if (!res) { $('guided-heard').textContent = 'That number is out of range.'; return; }
+      values = res.values; said = res.said;
+    }
+  }
+  applyGuidedAnswer(q, { values: values, said: said }, []);
+}
+
+// Speech out. Browsers only allow it after a tap, so START unlocks it.
+let speechUnlocked = false;
+function unlockSpeech() {
+  if (speechUnlocked || !window.speechSynthesis) return;
+  try { speechSynthesis.speak(new SpeechSynthesisUtterance('')); speechUnlocked = true; } catch (e) {}
+}
+function speakingOn() {
+  return !!(window.speechSynthesis && $('guided-speak') && $('guided-speak').checked);
+}
+// Speaks, with the microphone paused so the app doesn't hear itself. Resolves when done.
+function speak(text, finalWords) {
+  return new Promise(resolve => {
+    if (!text || !speakingOn()) return resolve();
+    if (!finalWords) pauseListening();
+    if (guide.running) guidedStatus('🔊 Asking… (the mic is off while the app talks)', 'live');
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      setTimeout(() => {
+        resumeListening();
+        if (guide.running && wantRecording) guidedStatus('🎙 Your turn. Listening…', 'live');
+        resolve();
+      }, 200);
+    };
+    const timer = setTimeout(finish, 2000 + text.length * 70);   // some browsers never say they finished
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = 1.08;
+      u.onend = finish;
+      u.onerror = finish;
+      speechSynthesis.speak(u);
+    } catch (e) { finish(); }
+  });
+}
+
+// =====================================================================
 // DRAFT AUTOSAVE — persist the in-progress match so a refresh/crash never loses it
 // =====================================================================
 
@@ -1979,7 +2524,10 @@ function saveDraft() {
       fields: fields,
       confidence: confidence,
       matchId: currentMatchId,
-      transcript: $('transcript') ? $('transcript').value : ''
+      transcript: $('transcript') ? $('transcript').value : '',
+      mode: scoutMode,
+      gapPlan: gapPlan,
+      guidedReview: guidedReview
     }));
   } catch (e) {}
 }
@@ -1993,6 +2541,9 @@ function loadDraft() {
     fields = Object.assign(initialFieldState(), d.fields);
     confidence = d.confidence || {};
     if (d.matchId) currentMatchId = d.matchId;
+    scoutMode = d.mode || null;
+    gapPlan = d.gapPlan || null;
+    guidedReview = !!d.guidedReview;
     return d;
   } catch (e) { return null; }
 }
@@ -2011,10 +2562,30 @@ function isDuplicateInSession(d) {
   );
 }
 
+let reloadingForUpdate = false;
 function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').catch(() => {});
-  }
+  if (!('serviceWorker' in navigator)) return;
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  // A new version of the app just took over. Load it now, so nobody keeps scouting on an
+  // old copy, unless someone is mid-recording: then offer it instead. The draft is saved,
+  // so a reload loses nothing.
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloadingForUpdate) return;
+    if (wantRecording || guide.running) { showUpdateBanner(); return; }
+    reloadingForUpdate = true;
+    saveDraft();
+    location.reload();
+  });
+}
+function showUpdateBanner() {
+  if ($('update-banner')) return;
+  const bar = document.createElement('div');
+  bar.id = 'update-banner';
+  bar.className = 'update-banner';
+  bar.innerHTML = 'A new version of Bobcat Scout is ready. <button type="button" class="btn btn-gold">LOAD IT</button>';
+  bar.querySelector('button').addEventListener('click', () => { saveDraft(); location.reload(); });
+  document.body.appendChild(bar);
 }
 
 // =====================================================================
@@ -2071,15 +2642,20 @@ function slotToStation(slot) {
   return n >= 1 && n <= 6 ? ((n - 1) % 3) + 1 : 0;
 }
 
-function maybeAutoFillTeam() {
-  if (!scheduleCache) return;
-  if (scheduleCache.event !== String(fields.eventKey || '').toLowerCase()) return;
-  if (fields.matchType !== 'qm') return;
+// The team the match schedule puts in this match and starting position, or null.
+function teamFromSchedule() {
+  if (!scheduleCache) return null;
+  if (scheduleCache.event !== String(fields.eventKey || '').toLowerCase()) return null;
+  if (fields.matchType !== 'qm') return null;
   const m = scheduleCache.matches[String(fields.matchNumber)];
-  if (!m) return;
+  if (!m) return null;
   const arr = m[slotToAlliance(fields.startPos)];
-  if (!arr) return;
-  const team = arr[slotToStation(fields.startPos) - 1];
+  if (!arr) return null;
+  return arr[slotToStation(fields.startPos) - 1] || null;
+}
+
+function maybeAutoFillTeam() {
+  const team = teamFromSchedule();
   if (!team || String(fields.teamNumber) === String(team)) return;
   fields.teamNumber = parseInt(team, 10) || team;
   confidence.teamNumber = 'high';
@@ -2594,6 +3170,7 @@ function handleSetupAction(act, stepId) {
 }
 
 function runPracticeMatch() {
+  if (scoutMode !== '1') chooseMode('1');
   const btn = $('btn-sample');
   if (btn) btn.click();
   setTimeout(() => { const p = $('btn-process'); if (p && !p.disabled) p.click(); }, 250);
@@ -2776,8 +3353,10 @@ async function init() {
     }
   } catch (e) {}
 
+  if (scoutMode === '3' && !guidedReview) guidedReady();   // a guided match interrupted by a reload
   renderAllFields();
   wireUI();
+  applyModeUI();
   if (draft && draft.transcript) { $('transcript').value = draft.transcript; resetTranscriptBuffer(); }
   updateProcessButton();
   updateGenerateButton();

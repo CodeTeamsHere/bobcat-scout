@@ -3,13 +3,14 @@
    stale-while-revalidate (instant from cache, refreshed in the background).
    Cross-origin requests (e.g. the Google Apps Script submit) are left untouched. */
 
-const CACHE = 'bobcat-scout-v19';
+const CACHE = 'bobcat-scout-v20';
 const ASSETS = [
   '.',
   'index.html',
   'styles.css',
   'app.js',
   'team-config.js',
+  'scout-modes.js',
   'config.json',
   'assets/field-layout.jpg',
   'vendor/qrcode-generator.js',
@@ -23,7 +24,9 @@ const ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE)
-      .then((cache) => cache.addAll(ASSETS))
+      // cache: 'reload' skips the browser's own HTTP cache, which could hand back the
+      // previous version's files for a few minutes after an update.
+      .then((cache) => cache.addAll(ASSETS.map((url) => new Request(url, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   );
 });
