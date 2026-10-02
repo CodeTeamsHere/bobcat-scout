@@ -27,7 +27,7 @@ Paste that into the File Explorer address bar and press Enter to jump straight t
 | Ratings, predictions, pick list | the separate Analytics app (not in this folder) | No |
 | Google Sheet script | `apps-script\Code.gs` | No |
 | One-time setup walkthrough | `SETUP-ONCE.md` | No |
-| The three ways to scout: guided questions and the words for each option | `scout-modes.js` | Only at a new game (job 4) |
+| The ways to scout: guided questions and the words for each option | `scout-modes.js` | Only at a new game (job 4) |
 | Tests | `tools\test-parser.js`, `tools\test-modes.js`, `tools\test-apps-script.js`, `tools\test-config.js` | No |
 
 **The live app:** <https://codeteamshere.github.io/bobcat-scout>

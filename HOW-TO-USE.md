@@ -82,7 +82,7 @@ Every row the gate writes is already analysis-ready, because it:
 - **Validates** — blank required fields or impossible numbers (bad team #, 350 scored in a 30-second period) are rejected at the door.
 - **De-duplicates** — re-sending the same match + team **updates** that one row instead of doubling it.
 - **Stamps** — each row records the scout's email + timestamp, so bad data is traceable.
-- **Auto-tunes the Analytics tab** — the first submission teaches the Sheet your scoring model; the Sheet's **Analytics** tab and the separate **Analytics app** read straight from the clean Data tab (the app can also compare against the official Blue Alliance results).
+- **Stays raw** — the Sheet does no analysis of its own; the separate **Analytics app** reads straight from the clean Data tab (and can compare against the official Blue Alliance results).
 
 ---
 
@@ -100,7 +100,7 @@ Every row the gate writes is already analysis-ready, because it:
 6. Click the **save icon 💾**.
 7. In the function dropdown at the top, pick **`firstTimeSetup`**, then click **▶ Run**.
    - Google will ask for permission the first time: **Review permissions → pick your account → Advanced → Go to (project) → Allow.** (This is normal — it's your own script writing to your own Sheet.)
-8. Back in the Sheet you'll now see four tabs at the bottom: **Config, Data, Pit, Analytics**.
+8. Back in the Sheet you'll now see three tabs at the bottom: **Config, Data, Pit**. (A Sheet made with an older version of the script may also have an **Analytics** tab. It no longer updates: right-click its name at the bottom → **Delete**.)
 
 ## Step 2 — Set your passcode, then publish the script
 
@@ -172,7 +172,8 @@ The game changes every season. You don't touch any code:
    - **1 · Describe it:** tap the **mic** and describe the match (or type), e.g. *"Team 177 red 2, scored 4 in auto, climbed high."* Tap **AUTO-FILL FIELDS**, then check every box.
    - **2 · Talk, then fill gaps:** talk through the whole match; the form stays hidden. Tap **DONE · CHECK WHAT I MISSED** and only the boxes the app didn't catch appear. Fill those in.
    - **3 · Guided:** tap **START**. The app asks one question at a time out loud and moves on by itself when it hears the answer ("twelve", "left side", "nope"). Say **skip**, **go back**, **repeat** or **I'm done** any time, or tap the answer.
-   - Then tap **GENERATE**, then **SUBMIT TO SHEET**, or just **SAVE & NEXT MATCH**, which submits *and* sets up the next match. In ways 2 and 3, GENERATE unlocks once every required box is filled.
+   - **4 · Describe it, strict:** the same as 1, but **GENERATE** stays locked until every required box that applies to this match is filled, dropdowns included. A bar at the top lists what's left; tap a name to jump to it.
+   - Then tap **GENERATE**, then **SUBMIT TO SHEET**, or just **SAVE & NEXT MATCH**, which submits *and* sets up the next match. In ways 2, 3 and 4, GENERATE unlocks once every required box is filled.
 4. **Keep going.** One scouter scouts as many matches as they want — there's no limit, and the match number bumps up automatically.
 5. **No signal?** The app saves your matches on the phone and shows a **SHEET (n)** counter; it sends them automatically once you're back online. The **QR code** is always there as a backup too.
 
@@ -188,7 +189,7 @@ Password** from the Config tab) plus The Blue Alliance, and shows each team's ca
 predictions, a pick list, and a check against the real results. Its own README has the click-by-click
 steps.
 
-Without it, the Sheet's own **Analytics** tab still gives a live per-team table you can sort.
+The Sheet itself does no analysis: its Data tab is the raw rows, which you can still sort or filter like any spreadsheet.
 
 ---
 

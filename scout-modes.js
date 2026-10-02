@@ -1,5 +1,5 @@
 /* ==========================================================================
-   BOBCAT SCOUT — the three ways to scout a match
+   BOBCAT SCOUT — the ways to scout a match
    --------------------------------------------------------------------------
      1. Describe it         talk or type, then check the whole form (the original way)
      2. Talk, then fill gaps talk; the app shows only the boxes it didn't hear
@@ -172,10 +172,29 @@
     return null;
   }
 
+  // Speech recognition often writes a number said on its own as a word that sounds like it
+  // ("for" for 4). Only trusted when that word is the whole answer, or follows "number".
+  var SOUNDS_LIKE = { to: 2, too: 2, for: 4, fore: 4, won: 1, ate: 8, tree: 3, free: 3 };
+  var NUMBER_LEAD = { number: 1, match: 1, team: 1, um: 1, uh: 1, about: 1 };
   function firstNumber(heard, normalize) {
     var t = normalize ? normalize(String(heard || '').toLowerCase()) : String(heard || '');
     var m = t.match(/-?\d+(?:\.\d+)?/);
-    return m ? Number(m[0]) : null;
+    if (m) return Number(m[0]);
+    var w = words(heard).split(' ');
+    var last = w[w.length - 1];
+    if (SOUNDS_LIKE[last] !== undefined && (w.length === 1 || (w.length === 2 && NUMBER_LEAD[w[0]]))) return SOUNDS_LIKE[last];
+    return null;
+  }
+
+  // Did the microphone just hear the app's own question instead of the scout? Only when what
+  // was heard is long, nearly all words of the question, and a good part of it: a short
+  // answer that repeats the question's words ("they did climb") is still an answer.
+  function isEcho(heard, spoken) {
+    var h = words(heard).split(' ').filter(Boolean), q = words(spoken).split(' ').filter(Boolean);
+    if (h.length < 4 || !q.length) return false;
+    var s = ' ' + q.join(' ') + ' ';
+    var inside = h.filter(function (x) { return s.indexOf(' ' + x + ' ') !== -1; }).length;
+    return inside / h.length >= 0.8 && h.length >= q.length * 0.5;
   }
 
   // great / good / okay / poor / bad as a share of the top of the scale.
@@ -517,6 +536,7 @@
   }
 
   root.SCOUT_MODES = {
+    isEcho: isEcho,
     twinOf: twinOf,
     extraClause: extraClause,
     GUIDE: GUIDE, GROUPS: GROUPS, command: command, questions: questions, nextQuestion: nextQuestion,

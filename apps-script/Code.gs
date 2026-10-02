@@ -7,8 +7,10 @@
      • Config    — settings the team lead controls (passcode, event/date gate, login)
      • Data      — one row per MATCH report (quantitative match scouting)
      • Pit       — one row per TEAM (qualitative pit scouting: robot capabilities)
-     • Analytics — a LIVE per-team info guide that tunes itself to whatever game
-                    the app is set to (the app sends a scoring model; formulas rebuild)
+
+   It does no analysis itself: the Bobcat Scout Analytics app does that, reading the
+   Data tab (below). Sheets set up before 2026-10 may still have an "Analytics" tab
+   from older versions of this script; it is no longer updated and can be deleted.
 
    It enforces: passcode • event gate • date gate • validation • dedupe • stamping,
    plus optional Google-login lockdown with an email/domain allow-list.
@@ -21,7 +23,7 @@
    ----- ONE-TIME SETUP -----------------------------------------------------
    1. sheets.google.com → new blank spreadsheet.
    2. Extensions → Apps Script. Delete the sample, paste THIS FILE, save (💾).
-   3. Run `firstTimeSetup` once (authorize when asked). Creates Config/Data/Pit/Analytics.
+   3. Run `firstTimeSetup` once (authorize when asked). Creates Config/Data/Pit.
    4. Config tab → set Passcode (+ optional Active Event / dates / Google login),
       and an Analytics Password for the strategy team's Analytics app.
    5. Deploy → New deployment → Web app → Execute as: Me, Access: Anyone → copy /exec URL.
@@ -33,13 +35,11 @@
    the same, so nothing in the apps needs changing. (Saving alone is not enough:
    the web app keeps running the old version until you deploy a new one.)
 
-   The "Bobcat Scout" menu (top of the Sheet) has "Rebuild Analytics" if you ever need it.
    ========================================================================== */
 
 var DATA_SHEET = 'Data';
 var PIT_SHEET = 'Pit';
 var CONFIG_SHEET = 'Config';
-var ANALYTICS_SHEET = 'Analytics';
 var META_COLS = ['_id', '_submittedAt', '_scoutEmail'];   // appended after the scouting fields
 
 // Server-side validation ranges for MATCH data. Anything outside is rejected as junk.
@@ -51,69 +51,12 @@ var RANGES = {
 var REQUIRED = ['scoutName', 'eventKey', 'matchNumber', 'teamNumber'];
 var PIT_REQUIRED = ['scoutName', 'teamNumber'];
 
-// Fallback field order (used only to locate columns if the Data header isn't readable yet).
-var EXPECTED_FIELDS = ['scoutName', 'eventKey', 'matchNumber', 'matchType', 'teamNumber', 'alliance',
-  'driverStation', 'noShow', 'startingPosition', 'preloadedFuel', 'autoLeft', 'autoHubMade', 'autoClimb',
-  'teleopHubMade', 'pickedFromDepot', 'pickedFromHP', 'pickedFromFloor', 'pickupEffectiveness',
-  'passingEffectiveness', 'endgameClimb', 'climbSeconds', 'driverSkill', 'defenseRating', 'wasDefended',
-  'tipped', 'disabled', 'cardStatus', 'comments'];
-
-// Scoring model the Analytics tab tunes itself to. The app sends `_scoring` (per game);
-// we remember the latest in Document Properties and fall back to this REBUILT default
-// so older sheets (and the very first build) still work.
-var REBUILT_MODEL = [
-  { code: 'autoHubMade', title: 'Auto Fuel', type: 'number', points: 1 },
-  { code: 'autoLeft', title: 'Auto Leave', type: 'boolean', points: 3 },
-  { code: 'autoClimb', title: 'Auto Climb', type: 'select', optionPoints: { level1: 15 } },
-  { code: 'teleopHubMade', title: 'Teleop Fuel', type: 'number', points: 1 },
-  { code: 'endgameClimb', title: 'Endgame Climb', type: 'select', optionPoints: { parked: 2, level1: 10, level2: 20, level3: 30 } },
-  { code: 'pickupEffectiveness', title: 'Pickup', type: 'range' },
-  { code: 'passingEffectiveness', title: 'Passing', type: 'range' },
-  { code: 'driverSkill', title: 'Driver Skill', type: 'range' },
-  { code: 'defenseRating', title: 'Defense', type: 'range' },
-  { code: 'noShow', title: 'No-Show', type: 'boolean', fail: true },
-  { code: 'tipped', title: 'Tipped', type: 'boolean', fail: true },
-  { code: 'disabled', title: 'Died', type: 'boolean', fail: true }
-];
-
-function getScoringModel_() {
-  try {
-    var raw = PropertiesService.getDocumentProperties().getProperty('scoringModel');
-    if (raw) { var m = JSON.parse(raw); if (Array.isArray(m) && m.length) return m; }
-  } catch (e) {}
-  return REBUILT_MODEL;
-}
-
-// Remember the latest scoring model the app sent; return true if it CHANGED (→ rebuild).
-function maybeUpdateModel_(data) {
-  try {
-    var incoming = data._scoring;
-    if (typeof incoming === 'string') incoming = JSON.parse(incoming);
-    if (!Array.isArray(incoming) || !incoming.length) return false;
-    var props = PropertiesService.getDocumentProperties();
-    var next = JSON.stringify(incoming);
-    if (props.getProperty('scoringModel') === next) return false;
-    props.setProperty('scoringModel', next);
-    return true;
-  } catch (e) { return false; }
-}
-
-// A "Bobcat Scout" menu appears at the top of the Sheet.
-function onOpen() {
-  try {
-    SpreadsheetApp.getUi().createMenu('Bobcat Scout')
-      .addItem('Rebuild Analytics', 'buildAnalytics')
-      .addToUi();
-  } catch (e) {}
-}
-
 // Run once from the editor to create all tabs.
 function firstTimeSetup() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   getConfigSheet_(ss);
   getDataSheet_(ss);
   getPitSheet_(ss);
-  buildAnalytics();
   SpreadsheetApp.flush();
 }
 
@@ -138,7 +81,6 @@ function handle_(e) {
     }
     checkData_(data);
     var res = upsertRow_(data, DATA_SHEET, ['eventKey', 'matchType', 'matchNumber', 'teamNumber', 'scoutName']);
-    if (maybeUpdateModel_(data)) { try { buildAnalytics(); } catch (e) {} }   // game changed → re-tune the Analytics tab
     return respond_({ ok: true, action: res.action, row: res.row }, cb);
   } catch (err) {
     return respond_({ ok: false, error: String((err && err.message) || err) }, cb);
@@ -329,93 +271,6 @@ function formatVal_(v) {
   if (typeof v === 'boolean') return v ? 'true' : 'false';
   if (Array.isArray(v)) return v.join(',');
   return v;
-}
-
-// ===== ANALYTICS — a live per-team info guide, tuned to THIS game's scoring model =====
-// Columns are generated from the model the app sent (see getScoringModel_): a weighted
-// "Avg Total Pts", an average for each counted scoring field, average points from each
-// tiered (select) field, average of each rating slider, and a count for each breakdown.
-// All live ARRAYFORMULAs over the Data tab, so they keep updating as matches arrive.
-function buildAnalytics() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var data = getDataSheet_(ss);
-  var an = ss.getSheetByName(ANALYTICS_SHEET) || ss.insertSheet(ANALYTICS_SHEET);
-  an.clear();
-
-  var model = getScoringModel_();
-  var present = dataHeaderCodes_(data);
-  function has(code) { return present.length === 0 || present.indexOf(code) !== -1; }
-
-  var team = colLetter_(data, 'teamNumber');
-  var D = 'Data!';
-  var teamCol = D + team + ':' + team;            // e.g. Data!E:E
-  var rng = '$A$3:$A$202';                         // up to ~200 teams
-  var countTeam = 'COUNTIF(' + teamCol + ',' + rng + ')';
-  function colRef(code) { var c = colLetter_(data, code); return D + c + ':' + c; }
-  function avgNum(code) { return 'IFERROR(SUMIF(' + teamCol + ',' + rng + ',' + colRef(code) + ')/' + countTeam + ',0)'; }
-  function boolRate(code) { return 'IFERROR(COUNTIFS(' + teamCol + ',' + rng + ',' + colRef(code) + ',"true")/' + countTeam + ',0)'; }
-  function boolCount(code) { return 'COUNTIFS(' + teamCol + ',' + rng + ',' + colRef(code) + ',"true")'; }
-  function selectAvgPts(field) {
-    var c = colRef(field.code), terms = [];
-    Object.keys(field.optionPoints || {}).forEach(function (opt) {
-      var p = Number(field.optionPoints[opt]) || 0; if (!p) return;
-      terms.push(p + '*COUNTIFS(' + teamCol + ',' + rng + ',' + c + ',"' + String(opt).replace(/"/g, '') + '")');
-    });
-    return terms.length ? 'IFERROR((' + terms.join('+') + ')/' + countTeam + ',0)' : '0';
-  }
-  function contrib(field) {           // a field's average point contribution per match
-    if (!has(field.code)) return null;
-    if (field.type === 'select' && field.optionPoints) return selectAvgPts(field);
-    if (field.type === 'boolean' && field.points != null) return '(' + (Number(field.points) || 0) + '*' + boolRate(field.code) + ')';
-    if ((field.type === 'number' || field.type === 'range') && field.points != null) return '(' + (Number(field.points) || 0) + '*' + avgNum(field.code) + ')';
-    return null;
-  }
-
-  var headers = ['Team', 'Matches', 'Avg Total Pts'];
-  var exprs = [
-    '=IFERROR(SORT(UNIQUE(FILTER(' + D + team + '2:' + team + ',' + D + team + '2:' + team + '<>""))),"")',
-    '=ARRAYFORMULA(IF(' + rng + '="","",' + countTeam + '))',
-    ''
-  ];
-  var totalTerms = model.map(contrib).filter(function (x) { return x; });
-  exprs[2] = '=ARRAYFORMULA(IF(' + rng + '="","",ROUND(' + (totalTerms.length ? totalTerms.join('+') : '0') + ',1)))';
-
-  function addCol(title, expr) { headers.push(title); exprs.push('=ARRAYFORMULA(IF(' + rng + '="","",' + expr + '))'); }
-  model.forEach(function (f) { if (has(f.code) && f.type === 'number' && f.points != null) addCol('Avg ' + f.title, 'ROUND(' + avgNum(f.code) + ',1)'); });
-  model.forEach(function (f) { if (has(f.code) && f.type === 'select' && f.optionPoints) addCol('Avg ' + f.title + ' Pts', 'ROUND(' + selectAvgPts(f) + ',1)'); });
-  model.forEach(function (f) { if (has(f.code) && f.type === 'range' && f.points == null) addCol('Avg ' + f.title, 'ROUND(' + avgNum(f.code) + ',1)'); });
-  model.forEach(function (f) { if (has(f.code) && f.fail) addCol(f.title + ' #', boolCount(f.code)); });
-
-  an.getRange('A1').setValue('TEAM ANALYTICS — live from the Data tab, tuned to this season’s scoring. Add matches and it updates automatically. Click a column header, then Data → Sort sheet by column to rank.')
-    .setFontWeight('bold');
-  an.getRange(2, 1, 1, headers.length).setValues([headers]).setFontWeight('bold').setBackground('#7B1F2B').setFontColor('#FFFFFF');
-  an.setFrozenRows(2);
-  for (var i = 0; i < exprs.length; i++) an.getRange(3, i + 1).setFormula(exprs[i]);
-  an.setColumnWidth(1, 70);
-  return an;
-}
-
-// The field codes currently in the Data tab header (so we don't build formulas for absent columns).
-function dataHeaderCodes_(sh) {
-  if (sh.getLastColumn() < 1 || sh.getLastRow() < 1) return [];
-  return sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
-}
-
-// Column letter for a field code: prefer the live Data header, fall back to EXPECTED_FIELDS.
-function colLetter_(sh, code) {
-  var idx = -1;
-  if (sh.getLastColumn() > 0 && sh.getLastRow() > 0) {
-    var header = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
-    idx = header.indexOf(code);
-  }
-  if (idx < 0) idx = EXPECTED_FIELDS.indexOf(code);
-  if (idx < 0) idx = 0;
-  return columnToLetter_(idx + 1);
-}
-function columnToLetter_(col) {
-  var s = '';
-  while (col > 0) { var m = (col - 1) % 26; s = String.fromCharCode(65 + m) + s; col = Math.floor((col - 1) / 26); }
-  return s;
 }
 
 function getConfigSheet_(ss) {

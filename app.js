@@ -21,7 +21,9 @@ let activeTab = 'qr';
 // The way this match is being scouted, chosen at the start of every match (scout-modes.js):
 // '1' describe it · '2' talk, then fill the gaps · '3' guided questions. null = not chosen yet.
 const MODES = window.SCOUT_MODES;
-const MODE_NAMES = { '1': '1 · Describe it', '2': '2 · Talk, then fill gaps', '3': '3 · Guided' };
+const MODE_NAMES = { '1': '1 · Describe it', '2': '2 · Talk, then fill gaps', '3': '3 · Guided', '4': '4 · Describe it, strict' };
+// Way 4 is way 1 with submitting locked until every required box that applies is filled.
+function strictMode() { return scoutMode === '2' || scoutMode === '3' || scoutMode === '4'; }
 let scoutMode = null;
 let choosingMode = false;      // the picker reopened mid-match with CHANGE WAY
 let gapPlan = null;            // way 2: the boxes shown after CHECK, kept still while they're filled in
@@ -699,9 +701,9 @@ function getMissingRequired() {
   return missing;
 }
 
-// Ways 2 and 3 need every required box that applies; way 1 keeps its original check.
+// Ways 2, 3 and 4 need every required box that applies; way 1 keeps its original check.
 function missingForSubmit() {
-  if (scoutMode === '2' || scoutMode === '3') return MODES.requiredGaps(CONFIG, fields, modeCtx(), answeredNow()).map(f => f.title);
+  if (strictMode()) return MODES.requiredGaps(CONFIG, fields, modeCtx(), answeredNow()).map(fieldLabel);
   return getMissingRequired();
 }
 
@@ -1018,6 +1020,7 @@ function processTranscript() {
   const result = parseTranscript(text, fields);
   fields = result.fields;
   confidence = Object.assign(byHand, result.confidence);
+  if (strictMode()) refreshDerived();
   maybeAutoFillTeam();
   renderAllFields();
   updateGenerateButton();
@@ -1580,25 +1583,7 @@ function buildPayload(data) {
     _id: data._id || currentMatchId || newMatchId()
   };
   if (googleTokenValid()) extra.idToken = googleIdToken;   // max-security mode
-  else extra._scoring = analyticsModel();                  // let the Sheet re-tune its Analytics tab to this game
   return Object.assign(clean, extra);
-}
-
-// Compact scoring model the Sheet uses to build a game-agnostic Analytics tab:
-// which fields score (points / per-option points), which are rating sliders, which
-// mark a breakdown. The Apps Script remembers the latest and rebuilds when it changes.
-function analyticsModel() {
-  const out = [];
-  (CONFIG.sections || []).forEach(s => (s.fields || []).forEach(f => {
-    const scoring = (f.points != null) || f.optionPoints;
-    if (!scoring && !f.fail && f.type !== 'range') return;
-    const m = { code: f.code, title: f.title, type: f.type };
-    if (f.points != null) m.points = f.points;
-    if (f.optionPoints) m.optionPoints = f.optionPoints;
-    if (f.fail) m.fail = true;
-    out.push(m);
-  }));
-  return out;
 }
 
 // JSONP call: works around the cross-origin limits of Apps Script web apps,
@@ -2104,10 +2089,11 @@ function applyModeUI() {
   show('mode-card', !m);
   show('mode-bar', !!m);
   if ($('mode-bar-name')) $('mode-bar-name').textContent = m ? MODE_NAMES[m] : '';
-  show('step-describe', m === '1' || m === '2');
-  show('ref-card', m === '1');
+  const describing = m === '1' || m === '4';
+  show('step-describe', describing || m === '2');
+  show('ref-card', describing);
   show('guided-card', m === '3' && !guidedReview);
-  const formOn = m === '1' || (m === '2' && !!gapPlan) || (m === '3' && guidedReview);
+  const formOn = describing || (m === '2' && !!gapPlan) || (m === '3' && guidedReview);
   show('step-fields', formOn);
   show('step-output', formOn);
   show('btn-all-fields', m === '2' && !!gapPlan);
@@ -2153,7 +2139,9 @@ function growGapPlan() {
 function updateGapsBanner() {
   const el = $('gaps-banner');
   if (!el || !CONFIG) return;
-  const on = !choosingMode && ((scoutMode === '2' && gapPlan) || (scoutMode === '3' && guidedReview));
+  // Way 4 shows it once the scout has filled something, not as a wall of names at the start.
+  const on = !choosingMode && ((scoutMode === '2' && gapPlan) || (scoutMode === '3' && guidedReview) ||
+    (scoutMode === '4' && Object.keys(confidence).length > 0));
   el.classList.toggle('hidden', !on);
   if (!on) return;
   const gaps = MODES.requiredGaps(CONFIG, fields, modeCtx(), answeredNow());
@@ -2214,7 +2202,7 @@ function wireModes() {
 // WAY 3 · GUIDED — one question at a time, out loud, eyes on the field
 // =====================================================================
 
-const guide = { running: false, current: null, history: [], skipped: {}, comment: '', commentTimer: null, heardAny: false, advanceTimer: null };
+const guide = { running: false, current: null, history: [], skipped: {}, comment: '', commentTimer: null, heardAny: false, advanceTimer: null, lastSpoken: '' };
 const COMMENT_PAUSE_MS = 2500;   // this long without talking ends a comment
 
 function guidedReady() {
@@ -2290,6 +2278,7 @@ function onGuidedHeard(final, interim) {
   const live = ((guide.comment ? guide.comment + ' ' : '') + (final || interim || '')).trim();
   if (live) { $('guided-heard').textContent = '“' + live + '”'; $('guided-heard').className = 'guided-heard'; }
   if (!final) return;
+  if (MODES.isEcho(final, guide.lastSpoken)) return;   // the app hearing its own question
   const cmd = MODES.command(final);
   if (q.kind === 'textarea' && cmd !== 'back' && cmd !== 'repeat') { onCommentHeard(final, cmd); return; }
   if (cmd) { guidedCommand(cmd); return; }
@@ -2484,12 +2473,17 @@ function unlockSpeech() {
 function speakingOn() {
   return !!(window.speechSynthesis && $('guided-speak') && $('guided-speak').checked);
 }
-// Speaks, with the microphone paused so the app doesn't hear itself. Resolves when done.
+// Speaks, with the microphone paused so the app doesn't hear itself, unless a headset is
+// in use: then the question goes to the scout's ear, not into the mic, so they can answer
+// over it. Resolves when done.
+function usingHeadset() { return HEADSET_HINT.test(micDeviceLabel || ''); }
 function speak(text, finalWords) {
   return new Promise(resolve => {
     if (!text || !speakingOn()) return resolve();
-    if (!finalWords) pauseListening();
-    if (guide.running) guidedStatus('🔊 Asking… (the mic is off while the app talks)', 'live');
+    guide.lastSpoken = text;
+    const overTheTop = usingHeadset();
+    if (!finalWords && !overTheTop) pauseListening();
+    if (guide.running) guidedStatus(overTheTop ? '🔊 Asking… you can answer any time' : '🔊 Asking… (the mic is off while the app talks)', 'live');
     let done = false;
     const finish = () => {
       if (done) return;

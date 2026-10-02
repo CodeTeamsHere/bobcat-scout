@@ -1,4 +1,4 @@
-/* Tests for the three ways to scout (scout-modes.js).
+/* Tests for the ways to scout (scout-modes.js).
  *
  *   node tools/test-modes.js
  *
@@ -92,6 +92,11 @@ says('teleopFuelScored', 'forty five', { teleopFuelScored: 45 });
 says('teamNumber', 'one seventy seven', { teamNumber: 177 });
 says('teamNumber', 'eleven fourteen', { teamNumber: 1114 });
 says('matchNumber', 'match fourteen', { matchNumber: 14 });
+// A number said alone often comes back as a word that sounds like it.
+says('autoFuelScored', 'for', { autoFuelScored: 4 });
+says('matchNumber', 'number to', { matchNumber: 2 });
+says('autoFuelScored', 'ate', { autoFuelScored: 8 });
+says('autoFuelScored', 'they went for it', null);
 
 // ---- ratings and percents ----
 says('pickupEffe', 'four', { pickupEffe: 4 });
@@ -179,6 +184,15 @@ check('teleop fuel and the endgame climb are not', !M.twinOf(Q.teleopFuelScored,
 for (const [heard, clause] of [['thirty and they climbed level two', 'they climbed level two'], ['twelve, also it tipped over', 'it tipped over'],
   ['left side near the depot', ''], ['while driving', ''], ['eight', '']]) {
   check(`extra clause of "${heard}" is "${clause}"`, M.extraClause(heard) === clause, JSON.stringify(M.extraClause(heard)));
+}
+
+// ---- the app hearing its own question (a headset can leak it into the mic) ----
+{
+  const spoken = 'Did any of these happen: crossed into the opposite zone, a mechanical issue, died, or tipped? say the ones that happened, or none.';
+  check('its own question read back is an echo', M.isEcho('did any of these happen crossed into the opposite zone a mechanical issue', spoken), 'not an echo');
+  check('a short answer in the question\'s words is not', !M.isEcho('a mechanical issue died', spoken), 'echo');
+  check('"they did climb" after "Did they climb?" is not', !M.isEcho('they did climb', 'Did they climb? yes or no.'), 'echo');
+  check('a normal answer is not', !M.isEcho('they started on the left by the depot', 'Where did they start? left, middle, or right.'), 'echo');
 }
 
 // ---- what to ask next ----

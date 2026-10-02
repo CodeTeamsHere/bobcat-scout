@@ -32,10 +32,11 @@ None needs any dependencies and each runs in under a second.
 
 - **test-parser** covers the voice patterns, including the spelled-out numbers speech
   recognition returns and the false positives that used to fill the wrong field.
-- **test-modes** covers the three ways to scout (`scout-modes.js`): turning a few spoken
+- **test-modes** covers the ways to scout (`scout-modes.js`): turning a few spoken
   words into the right box for the question being asked ("blue two" is starting position 5,
-  "nah" is no), which question comes next, which ones are skipped (no climb, no "where did
-  they climb"), and which boxes still block submitting.
+  "nah" is no, a lone "for" is 4), which question comes next, which ones are skipped (no
+  climb, no "where did they climb"), which boxes still block submitting, and telling the
+  app's own question apart from the scout's answer.
 - **test-apps-script** runs the Google Sheet script against a stand-in Sheet: saving
   matches, and answering the Analytics app's read only for the Analytics Password (never
   the scouts' passcode).
@@ -72,7 +73,7 @@ interchangeable — same field codes, same option keys. Do not hand-edit `config
 
 It's an installable **PWA**: open it once and it runs fully offline (essential at venues — the QR library is bundled, not loaded from a CDN), the in-progress match auto-saves through refreshes, and you can **Add to Home Screen** to use it like an app.
 
-Two modes (toggle at the top): **Match Scouting** (quantitative — auto/teleop/endgame) and **Pit Scouting** (qualitative — a robot's fixed capabilities, one row per team). Pit data routes to a separate **Pit** tab. The Sheet also auto-builds a live **Analytics** tab — a per-team info guide (matches, avg auto/teleop/total, climb %, avg driver/defense, reliability) that recomputes as data arrives; sort any column for a pick list.
+Two modes (toggle at the top): **Match Scouting** (quantitative — auto/teleop/endgame) and **Pit Scouting** (qualitative — a robot's fixed capabilities, one row per team). Pit data routes to a separate **Pit** tab. The Sheet only stores rows; all analysis (ratings, predictions, pick list) lives in the separate, private Bobcat Scout Analytics app, which reads the Data tab. Sheets set up with an older version of the script may still have an **Analytics** tab: it no longer updates and can be deleted.
 
 The game changes every season, so the form is fully editable in-app: tap **🛠 FORM** to add/rename/reorder sections and fields (text, number, yes/no, dropdown, rating), then **Apply** — the boxes rebuild instantly, no code. The config is saved on the device; **Export JSON** to share the exact form with your scouts (they **Upload JSON**), or hand-edit/paste a config. `config.json` is just the built-in REBUILT 2026 default; a custom config in localStorage overrides it.
 
@@ -108,8 +109,8 @@ See the deployment guide. Short version:
 
 - `index.html` — the page structure
 - `styles.css` — all styling (Bobcat maroon/gold/white)
-- `app.js` — main logic (parser, voice, QR generation, session save, Sheet submission + offline queue, walkthrough, the three ways to scout)
-- `scout-modes.js` — the thinking behind ways 2 and 3: what's still missing, which question comes next, and reading short spoken answers (this season's guided questions are in `GUIDE` at the top)
+- `app.js` — main logic (parser, voice, QR generation, session save, Sheet submission + offline queue, walkthrough, the four ways to scout)
+- `scout-modes.js` — the thinking behind ways 2, 3 and 4: what's still missing, which question comes next, and reading short spoken answers (this season's guided questions are in `GUIDE` at the top)
 - `config.json` — scouting field schema (edit to add or remove fields)
 - `vendor/qrcode-generator.js` — self-hosted QR library (bundled for offline use)
 - `manifest.webmanifest` / `icon.svg` — PWA manifest + app icon (installable / Add to Home Screen)
