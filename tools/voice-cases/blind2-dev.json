@@ -1,0 +1,3316 @@
+[
+ {
+  "id": "c003",
+  "style": "asr",
+  "text": "this is jake scouting match thirty one team five eight one three blew three",
+  "expect": {
+   "scoutName": "Jake",
+   "matchNumber": 31,
+   "teamNumber": 5813,
+   "startPos": "6",
+   "alliance": "blue"
+  },
+  "absent": [
+   "autoFuelScored",
+   "teleopFuelScored",
+   "climbed"
+  ]
+ },
+ {
+  "id": "c004",
+  "style": "asr",
+  "text": "in otto they grabbed from the depo and scored six",
+  "expect": {
+   "autoFuelScored": 6,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT"
+   ],
+   "AutoScored": true
+  },
+  "absent": [
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "c005",
+  "style": "asr",
+  "text": "picked up off the floor all tele op and from the human layer too",
+  "expect": {
+   "pickupTele": [
+    "FLOOR",
+    "H_Player"
+   ]
+  },
+  "absent": [
+   "pickupfrom",
+   "AutoPickup"
+  ]
+ },
+ {
+  "id": "c006",
+  "style": "asr",
+  "text": "they went under the french like every single cycle",
+  "expect": {
+   "TrenchRizz": true
+  },
+  "absent": [
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "c007",
+  "style": "asr",
+  "text": "climbed el two on the left side",
+  "expect": {
+   "climbed": "L2",
+   "climbPos": "LS"
+  },
+  "absent": [
+   "autoClimbPos",
+   "autoClimbed"
+  ]
+ },
+ {
+  "id": "c008",
+  "style": "asr",
+  "text": "they played the fence the whole match and it was really good",
+  "expect": {
+   "robotDefended": "Yes",
+   "defenceEffe": 5
+  },
+  "absent": [
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "c009",
+  "style": "asr",
+  "text": "team eleven twenty four read three no show",
+  "expect": {
+   "teamNumber": 1124,
+   "startPos": "3",
+   "alliance": "red",
+   "noShow": true
+  },
+  "absent": [
+   "died",
+   "climbed"
+  ]
+ },
+ {
+  "id": "c010",
+  "style": "asr",
+  "text": "scored nine no wait ten in tele op",
+  "expect": {
+   "teleopFuelScored": 10
+  },
+  "absent": [
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "c011",
+  "style": "asr",
+  "text": "otto they did the bump and back over the bump and scored three",
+  "expect": {
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "autoFuelScored": 3,
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c012",
+  "style": "asr",
+  "text": "um they tipped over going over the bump in tele op",
+  "expect": {
+   "tipped": true
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "c016",
+  "style": "asr",
+  "text": "accuracy maybe like seventy percent",
+  "expect": {
+   "scoringEffe": 70
+  },
+  "absent": [
+   "pickupEffe",
+   "passingEffe"
+  ]
+ },
+ {
+  "id": "c017",
+  "style": "asr",
+  "text": "they camped the depo all of tele op and shot from there without moving",
+  "expect": {
+   "pickupTele": [
+    "DEPOT"
+   ],
+   "scoringMannerismTele": "STATIONARY"
+  },
+  "absent": [
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "c018",
+  "style": "asr",
+  "text": "shoots on the move in otto and stationary in tele",
+  "expect": {
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "scoringMannerismTele": "STATIONARY"
+  }
+ },
+ {
+  "id": "c019",
+  "style": "asr",
+  "text": "intake broke like halfway through",
+  "expect": {
+   "mechIssue": true
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "c020",
+  "style": "asr",
+  "text": "lost comms for the last thirty seconds",
+  "expect": {
+   "died": true
+  },
+  "absent": [
+   "tipped"
+  ]
+ },
+ {
+  "id": "c021",
+  "style": "asr",
+  "text": "they crossed into the other alliances zone and they also grabbed fuel in the natural zone",
+  "expect": {
+   "crossedZone": true,
+   "pickupTele": [
+    "MID"
+   ]
+  }
+ },
+ {
+  "id": "c022",
+  "style": "asr",
+  "text": "their whole alliance climbed all three",
+  "expect": {
+   "AllianceClimb": 3
+  },
+  "absent": [
+   "climbed"
+  ]
+ },
+ {
+  "id": "c023",
+  "style": "asr",
+  "text": "practice match four team one ninety five",
+  "expect": {
+   "matchType": "pm",
+   "matchNumber": 4,
+   "teamNumber": 195
+  }
+ },
+ {
+  "id": "c024",
+  "style": "asr",
+  "text": "qual sixty two team sixty three twenty eight read one",
+  "expect": {
+   "matchType": "qm",
+   "matchNumber": 62,
+   "teamNumber": 6328,
+   "startPos": "1",
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "c025",
+  "style": "asr",
+  "text": "semi final match two team twenty one sixty eight blew to",
+  "expect": {
+   "matchType": "sf",
+   "matchNumber": 2,
+   "teamNumber": 2168,
+   "startPos": "5",
+   "alliance": "blue"
+  }
+ },
+ {
+  "id": "c029",
+  "style": "asr",
+  "text": "they scored like forty in teleport while driving around",
+  "expect": {
+   "teleopFuelScored": 40,
+   "scoringMannerismTele": "WHILE_DRIVE"
+  },
+  "absent": [
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "c032",
+  "style": "asr",
+  "text": "they didnt score anything in tele op just played the fence",
+  "expect": {
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "robotDefended": "Yes"
+  }
+ },
+ {
+  "id": "c033",
+  "style": "asr",
+  "text": "the hob shots were like fifty percent",
+  "expect": {
+   "scoringEffe": 50
+  },
+  "absent": [
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "c034",
+  "style": "asr",
+  "text": "they scattered fuel everywhere when they passed",
+  "expect": {
+   "fuelPassed": [
+    "Scattered"
+   ]
+  }
+ },
+ {
+  "id": "c035",
+  "style": "asr",
+  "text": "no passing",
+  "expect": {
+   "fuelPassed": [
+    "No_Passing"
+   ]
+  },
+  "absent": [
+   "passingEffe"
+  ]
+ },
+ {
+  "id": "c036",
+  "style": "asr",
+  "text": "they bricked right at the start",
+  "expect": {
+   "died": true
+  },
+  "absent": [
+   "mechIssue",
+   "tipped"
+  ]
+ },
+ {
+  "id": "c037",
+  "style": "asr",
+  "text": "bumper fell off and they got a penalty for it",
+  "expect": {
+   "mechIssue": true
+  }
+ },
+ {
+  "id": "c038",
+  "style": "asr",
+  "text": "they fell over trying to clime",
+  "expect": {
+   "tipped": true,
+   "climbed": "F"
+  }
+ },
+ {
+  "id": "c040",
+  "style": "asr",
+  "text": "otto went out over the bump and back through the trench",
+  "expect": {
+   "AutoPath": [
+    "Bump-Trench"
+   ]
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "c041",
+  "style": "asr",
+  "text": "otto was trench trench",
+  "expect": {
+   "AutoPath": [
+    "Trench/Trench"
+   ]
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "c045",
+  "style": "asr",
+  "text": "otto they went straight to the out post",
+  "expect": {
+   "AutoPath": [
+    "Outpost"
+   ]
+  }
+ },
+ {
+  "id": "c046",
+  "style": "asr",
+  "text": "the human layer fed them a bunch and they scored like thirty",
+  "expect": {
+   "pickupTele": [
+    "H_Player"
+   ],
+   "teleopFuelScored": 30
+  }
+ },
+ {
+  "id": "c047",
+  "style": "asr",
+  "text": "level three clime right side",
+  "expect": {
+   "climbed": "L3",
+   "climbPos": "RS"
+  },
+  "absent": [
+   "autoClimbed",
+   "autoClimbPos"
+  ]
+ },
+ {
+  "id": "c048",
+  "style": "asr",
+  "text": "two robots on their alliance climbed",
+  "expect": {
+   "AllianceClimb": 2
+  }
+ },
+ {
+  "id": "c049",
+  "style": "asr",
+  "text": "they tried to play defense but couldnt really catch anyone",
+  "expect": {
+   "robotDefended": "Attempted"
+  }
+ },
+ {
+  "id": "c050",
+  "style": "asr",
+  "text": "no defense",
+  "expect": {
+   "robotDefended": "No"
+  },
+  "absent": [
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "c051",
+  "style": "asr",
+  "text": "they got defended hard the whole match",
+  "expect": {},
+  "absent": [
+   "robotDefended",
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "c052",
+  "style": "asr",
+  "text": "team nine nine nine blew to scored twelve in tele op the intake was elite",
+  "expect": {
+   "teamNumber": 999,
+   "startPos": "5",
+   "alliance": "blue",
+   "teleopFuelScored": 12,
+   "pickupEffe": 5
+  }
+ },
+ {
+  "id": "c053",
+  "style": "asr",
+  "text": "they passed it into the opponent zone",
+  "expect": {
+   "fuelPassed": [
+    "Opp_Zone"
+   ]
+  },
+  "absent": [
+   "passingEffe"
+  ]
+ },
+ {
+  "id": "c054",
+  "style": "asr",
+  "text": "they did intentional passes to their partner passing was great",
+  "expect": {
+   "fuelPassed": [
+    "Intentional"
+   ],
+   "passingEffe": 5
+  }
+ },
+ {
+  "id": "c058",
+  "style": "asr",
+  "text": "scored won in otto",
+  "expect": {
+   "autoFuelScored": 1,
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c059",
+  "style": "asr",
+  "text": "tele op they scored a hundred and ten",
+  "expect": {
+   "teleopFuelScored": 110
+  },
+  "absent": [
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "c061",
+  "style": "asr",
+  "text": "teamed seventy four oh seven read won",
+  "expect": {
+   "teamNumber": 7407,
+   "startPos": "1",
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "c062",
+  "style": "asr",
+  "text": "team fifty one twelve they crossed the center line into the opponents side a bunch",
+  "expect": {
+   "teamNumber": 5112,
+   "crossedZone": true
+  }
+ },
+ {
+  "id": "c063",
+  "style": "asr",
+  "text": "they were the fence bot pretty good at it too",
+  "expect": {
+   "robotDefended": "Yes",
+   "defenceEffe": 4
+  }
+ },
+ {
+  "id": "c064",
+  "style": "asr",
+  "text": "the robot died in the middle of tele op no clime",
+  "expect": {
+   "died": true,
+   "climbed": "No"
+  }
+ },
+ {
+  "id": "c065",
+  "style": "asr",
+  "text": "otto scored seven while moving",
+  "expect": {
+   "autoFuelScored": 7,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c066",
+  "style": "asr",
+  "text": "otto stationary scored for",
+  "expect": {
+   "scoringMannerismAuto": "STATIONARY",
+   "autoFuelScored": 4,
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c067",
+  "style": "asr",
+  "text": "both stationary and moving in tele",
+  "expect": {
+   "scoringMannerismTele": "BOTH"
+  },
+  "absent": [
+   "scoringMannerismAuto"
+  ]
+ },
+ {
+  "id": "c070",
+  "style": "asr",
+  "text": "otto they intake from the floor and the natural zone and scored nine",
+  "expect": {
+   "AutoPickup": true,
+   "pickupfrom": [
+    "FLOOR",
+    "MID"
+   ],
+   "autoFuelScored": 9,
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c074",
+  "style": "asr",
+  "text": "the chain snapped on their shooter",
+  "expect": {
+   "mechIssue": true
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "c075",
+  "style": "asr",
+  "text": "it flipped over in end game",
+  "expect": {
+   "tipped": true
+  },
+  "absent": [
+   "died",
+   "climbed"
+  ]
+ },
+ {
+  "id": "c076",
+  "style": "asr",
+  "text": "clime level won on the right",
+  "expect": {
+   "climbed": "L1",
+   "climbPos": "RS"
+  }
+ },
+ {
+  "id": "c077",
+  "style": "asr",
+  "text": "climb middle level two",
+  "expect": {
+   "climbed": "L2",
+   "climbPos": "MD"
+  }
+ },
+ {
+  "id": "c078",
+  "style": "asr",
+  "text": "all three robots climbed on their alliance",
+  "expect": {
+   "AllianceClimb": 3
+  }
+ },
+ {
+  "id": "c079",
+  "style": "asr",
+  "text": "nobody on their alliance climbed",
+  "expect": {
+   "AllianceClimb": 0,
+   "climbed": "No"
+  }
+ },
+ {
+  "id": "c080",
+  "style": "asr",
+  "text": "only them climbed out of their alliance level one",
+  "expect": {
+   "AllianceClimb": 1,
+   "climbed": "L1"
+  }
+ },
+ {
+  "id": "c081",
+  "style": "asr",
+  "text": "otto clime failed on the left side",
+  "expect": {
+   "autoClimbed": "Failed",
+   "autoClimbPos": "LS"
+  },
+  "absent": [
+   "climbed"
+  ]
+ },
+ {
+  "id": "c082",
+  "style": "asr",
+  "text": "they tried to climb in auto and slipped off",
+  "expect": {
+   "autoClimbed": "Failed"
+  }
+ },
+ {
+  "id": "c083",
+  "style": "asr",
+  "text": "picked up from the human player station in otto",
+  "expect": {
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ]
+  },
+  "absent": [
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "c087",
+  "style": "asr",
+  "text": "passing was okay",
+  "expect": {
+   "passingEffe": 3
+  },
+  "absent": [
+   "fuelPassed"
+  ]
+ },
+ {
+  "id": "c088",
+  "style": "asr",
+  "text": "the fence was weak",
+  "expect": {
+   "robotDefended": "Yes",
+   "defenceEffe": 2
+  }
+ },
+ {
+  "id": "c089",
+  "style": "asr",
+  "text": "eighty percent accuracy maybe",
+  "expect": {
+   "scoringEffe": 80
+  },
+  "absent": [
+   "pickupEffe"
+  ]
+ },
+ {
+  "id": "c090",
+  "style": "asr",
+  "text": "they made like half there shots",
+  "expect": {
+   "scoringEffe": 50
+  }
+ },
+ {
+  "id": "c091",
+  "style": "asr",
+  "text": "scored about thirty five in tele op mostly from the depo and the human player",
+  "expect": {
+   "teleopFuelScored": 35,
+   "pickupTele": [
+    "DEPOT",
+    "H_Player"
+   ]
+  },
+  "absent": [
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "c092",
+  "style": "asr",
+  "text": "in tele op they didnt pick anything up",
+  "expect": {
+   "pickupTele": [
+    "NONE"
+   ]
+  }
+ },
+ {
+  "id": "c093",
+  "style": "asr",
+  "text": "they never showed up actually no show",
+  "expect": {
+   "noShow": true
+  }
+ },
+ {
+  "id": "c094",
+  "style": "asr",
+  "text": "robot wasnt even on the field",
+  "expect": {
+   "noShow": true
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "c095",
+  "style": "asr",
+  "text": "they used the trench a lot and played some defense",
+  "expect": {
+   "TrenchRizz": true,
+   "robotDefended": "Yes"
+  }
+ },
+ {
+  "id": "c096",
+  "style": "asr",
+  "text": "otto they went for the depo and shot six standing still",
+  "expect": {
+   "pickupfrom": [
+    "DEPOT"
+   ],
+   "AutoPickup": true,
+   "autoFuelScored": 6,
+   "scoringMannerismAuto": "STATIONARY",
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c100",
+  "style": "asr",
+  "text": "team 177 red 2 scored 4 in auto climbed high",
+  "expect": {
+   "teamNumber": 177,
+   "startPos": "2",
+   "alliance": "red",
+   "autoFuelScored": 4,
+   "climbed": "L3",
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c104",
+  "style": "asr",
+  "text": "okay this is marcus match twenty team two three six blue station one scored three fuel otto then they scored eighteen in tele op off the floor climbed level one left side",
+  "expect": {
+   "scoutName": "Marcus",
+   "matchNumber": 20,
+   "teamNumber": 236,
+   "startPos": "4",
+   "alliance": "blue",
+   "autoFuelScored": 3,
+   "teleopFuelScored": 18,
+   "pickupTele": [
+    "FLOOR"
+   ],
+   "climbed": "L1",
+   "climbPos": "LS",
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c105",
+  "style": "asr",
+  "text": "in auto they scored five and picked up from the floor and the depo",
+  "expect": {
+   "autoFuelScored": 5,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "FLOOR",
+    "DEPOT"
+   ],
+   "AutoScored": true
+  },
+  "absent": [
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "c106",
+  "style": "asr",
+  "text": "they scored twenty two all from the human player in tele",
+  "expect": {
+   "teleopFuelScored": 22,
+   "pickupTele": [
+    "H_Player"
+   ]
+  },
+  "absent": [
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "c107",
+  "style": "asr",
+  "text": "team eight oh eight five read three um they died in otto",
+  "expect": {
+   "teamNumber": 8085,
+   "startPos": "3",
+   "alliance": "red",
+   "died": true
+  }
+ },
+ {
+  "id": "c108",
+  "style": "asr",
+  "text": "team for five seven two blew to",
+  "expect": {
+   "teamNumber": 4572,
+   "startPos": "5",
+   "alliance": "blue"
+  }
+ },
+ {
+  "id": "c109",
+  "style": "asr",
+  "text": "uh team ninety seven eighty four they tipped and died",
+  "expect": {
+   "teamNumber": 9784,
+   "tipped": true,
+   "died": true
+  }
+ },
+ {
+  "id": "c110",
+  "style": "asr",
+  "text": "uh clime l two middle wait i mean level three middle",
+  "expect": {
+   "climbed": "L3",
+   "climbPos": "MD"
+  }
+ },
+ {
+  "id": "c111",
+  "style": "asr",
+  "text": "they climbed level to",
+  "expect": {
+   "climbed": "L2"
+  },
+  "absent": [
+   "autoClimbed"
+  ]
+ },
+ {
+  "id": "c112",
+  "style": "asr",
+  "text": "they clamped level won",
+  "expect": {
+   "climbed": "L1"
+  }
+ },
+ {
+  "id": "c113",
+  "style": "asr",
+  "text": "they did a buddy climb in otto with the other robot",
+  "expect": {
+   "doubleClimb": true
+  },
+  "absent": [
+   "autoClimbed"
+  ]
+ },
+ {
+  "id": "c117",
+  "style": "asr",
+  "text": "otto both moving and stationary scored ten",
+  "expect": {
+   "scoringMannerismAuto": "BOTH",
+   "autoFuelScored": 10,
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c118",
+  "style": "asr",
+  "text": "no scoring in otto",
+  "expect": {
+   "scoringMannerismAuto": "NONE"
+  },
+  "absent": [
+   "AutoPickup"
+  ]
+ },
+ {
+  "id": "c119",
+  "style": "asr",
+  "text": "didnt score at all in tele op they just pushed people around",
+  "expect": {
+   "scoringMannerismTele": "NONE",
+   "teleopFuelScored": 0,
+   "robotDefended": "Yes"
+  }
+ },
+ {
+  "id": "c120",
+  "style": "asr",
+  "text": "pickup was perfect never missed one",
+  "expect": {
+   "pickupEffe": 5
+  },
+  "absent": [
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "c121",
+  "style": "asr",
+  "text": "pickup was okay i guess",
+  "expect": {
+   "pickupEffe": 3
+  }
+ },
+ {
+  "id": "c122",
+  "style": "asr",
+  "text": "pick up was horrible",
+  "expect": {
+   "pickupEffe": 1
+  }
+ },
+ {
+  "id": "c123",
+  "style": "asr",
+  "text": "pickup was consistent",
+  "expect": {
+   "pickupEffe": 4
+  }
+ },
+ {
+  "id": "c124",
+  "style": "asr",
+  "text": "passing was rough",
+  "expect": {
+   "passingEffe": 2
+  },
+  "absent": [
+   "fuelPassed"
+  ]
+ },
+ {
+  "id": "c125",
+  "style": "asr",
+  "text": "passing was awesome super quick",
+  "expect": {
+   "passingEffe": 5
+  }
+ },
+ {
+  "id": "c126",
+  "style": "asr",
+  "text": "passing was solid",
+  "expect": {
+   "passingEffe": 4
+  }
+ },
+ {
+  "id": "c133",
+  "style": "asr",
+  "text": "they were like a hundred percent accurate",
+  "expect": {
+   "scoringEffe": 100
+  }
+ },
+ {
+  "id": "c134",
+  "style": "asr",
+  "text": "shooting was maybe forty percent",
+  "expect": {
+   "scoringEffe": 40
+  }
+ },
+ {
+  "id": "c135",
+  "style": "asr",
+  "text": "they went under the trench and over the bump all game",
+  "expect": {
+   "TrenchRizz": true
+  },
+  "absent": [
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "c136",
+  "style": "asr",
+  "text": "they could fit under the french",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "c137",
+  "style": "asr",
+  "text": "they drove under the trench to the natural zone a bunch",
+  "expect": {
+   "TrenchRizz": true,
+   "pickupTele": [
+    "MID"
+   ]
+  }
+ },
+ {
+  "id": "c138",
+  "style": "asr",
+  "text": "they went into the opponent zone to get balls",
+  "expect": {
+   "crossedZone": true
+  },
+  "absent": [
+   "pickupTele",
+   "fuelPassed"
+  ]
+ },
+ {
+  "id": "c139",
+  "style": "asr",
+  "text": "they crossed into the other side of the field into the opposing zone",
+  "expect": {
+   "crossedZone": true
+  }
+ },
+ {
+  "id": "c140",
+  "style": "asr",
+  "text": "their intake got stuck for the whole second half",
+  "expect": {
+   "mechIssue": true
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "c141",
+  "style": "asr",
+  "text": "something broke on the climber",
+  "expect": {
+   "mechIssue": true
+  },
+  "absent": [
+   "climbed"
+  ]
+ },
+ {
+  "id": "c142",
+  "style": "asr",
+  "text": "their shooter wheel came loose",
+  "expect": {
+   "mechIssue": true
+  }
+ },
+ {
+  "id": "c146",
+  "style": "asr",
+  "text": "they tipped over",
+  "expect": {
+   "tipped": true
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "c147",
+  "style": "asr",
+  "text": "robot rolled over on its side going over the bump",
+  "expect": {
+   "tipped": true
+  }
+ },
+ {
+  "id": "c148",
+  "style": "asr",
+  "text": "team one thousand seventy one read won no show",
+  "expect": {
+   "teamNumber": 1071,
+   "startPos": "1",
+   "alliance": "red",
+   "noShow": true
+  },
+  "absent": [
+   "tipped",
+   "died"
+  ]
+ },
+ {
+  "id": "c149",
+  "style": "asr",
+  "text": "no show for team five thousand",
+  "expect": {
+   "noShow": true,
+   "teamNumber": 5000
+  }
+ },
+ {
+  "id": "c150",
+  "style": "asr",
+  "text": "passing to center and also scattered",
+  "expect": {
+   "fuelPassed": [
+    "Center",
+    "Scattered"
+   ]
+  }
+ },
+ {
+  "id": "c151",
+  "style": "asr",
+  "text": "they passed to the middle of the field and into the opponents zone",
+  "expect": {
+   "fuelPassed": [
+    "Center",
+    "Opp_Zone"
+   ]
+  }
+ },
+ {
+  "id": "c152",
+  "style": "asr",
+  "text": "they didnt pass at all",
+  "expect": {
+   "fuelPassed": [
+    "No_Passing"
+   ]
+  },
+  "absent": [
+   "passingEffe"
+  ]
+ },
+ {
+  "id": "c153",
+  "style": "asr",
+  "text": "passes were intentional right to their partner",
+  "expect": {
+   "fuelPassed": [
+    "Intentional"
+   ]
+  }
+ },
+ {
+  "id": "c154",
+  "style": "asr",
+  "text": "end game their alliance got two up",
+  "expect": {
+   "AllianceClimb": 2
+  }
+ },
+ {
+  "id": "c155",
+  "style": "asr",
+  "text": "only one robot on their alliance climbed and it wasnt them",
+  "expect": {
+   "AllianceClimb": 1,
+   "climbed": "No"
+  }
+ },
+ {
+  "id": "c159",
+  "style": "asr",
+  "text": "auto climbed left side",
+  "expect": {
+   "autoClimbed": "Success",
+   "autoClimbPos": "LS"
+  },
+  "absent": [
+   "climbed",
+   "climbPos"
+  ]
+ },
+ {
+  "id": "c162",
+  "style": "asr",
+  "text": "they didnt go for the otto clime",
+  "expect": {
+   "autoClimbed": "NA"
+  },
+  "absent": [
+   "climbed"
+  ]
+ },
+ {
+  "id": "c163",
+  "style": "asr",
+  "text": "otto no clime attempted",
+  "expect": {
+   "autoClimbed": "NA"
+  }
+ },
+ {
+  "id": "c164",
+  "style": "asr",
+  "text": "the tower clime was l won left side",
+  "expect": {
+   "climbed": "L1",
+   "climbPos": "LS"
+  }
+ },
+ {
+  "id": "c165",
+  "style": "asr",
+  "text": "climbed on the right el too",
+  "expect": {
+   "climbed": "L2",
+   "climbPos": "RS"
+  }
+ },
+ {
+  "id": "c166",
+  "style": "asr",
+  "text": "high clime middle of the tower",
+  "expect": {
+   "climbed": "L3",
+   "climbPos": "MD"
+  }
+ },
+ {
+  "id": "c167",
+  "style": "asr",
+  "text": "they tried climbing at the end but didnt make it",
+  "expect": {
+   "climbed": "F"
+  }
+ },
+ {
+  "id": "c168",
+  "style": "asr",
+  "text": "failed clime",
+  "expect": {
+   "climbed": "F"
+  },
+  "absent": [
+   "tipped"
+  ]
+ },
+ {
+  "id": "c170",
+  "style": "asr",
+  "text": "qualification eighty team three four six seven",
+  "expect": {
+   "matchType": "qm",
+   "matchNumber": 80,
+   "teamNumber": 3467
+  }
+ },
+ {
+  "id": "c171",
+  "style": "asr",
+  "text": "play off match five team one nine nine one read to",
+  "expect": {
+   "matchType": "sf",
+   "matchNumber": 5,
+   "teamNumber": 1991,
+   "startPos": "2",
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "c175",
+  "style": "asr",
+  "text": "team five six eighty seven read two",
+  "expect": {
+   "teamNumber": 5687,
+   "startPos": "2",
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "c176",
+  "style": "asr",
+  "text": "team sixty seven thirty one blue one",
+  "expect": {
+   "teamNumber": 6731,
+   "startPos": "4",
+   "alliance": "blue"
+  }
+ },
+ {
+  "id": "c177",
+  "style": "asr",
+  "text": "team three two oh five read three",
+  "expect": {
+   "teamNumber": 3205,
+   "startPos": "3",
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "c178",
+  "style": "asr",
+  "text": "this is ella match seven",
+  "expect": {
+   "scoutName": "Ella",
+   "matchNumber": 7
+  },
+  "absent": [
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "c179",
+  "style": "asr",
+  "text": "scouter name noah match ninety one",
+  "expect": {
+   "scoutName": "Noah",
+   "matchNumber": 91
+  },
+  "absent": [
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "c180",
+  "style": "asr",
+  "text": "event key 2026 c t w a t",
+  "expect": {
+   "eventKey": "2026ctwat"
+  }
+ },
+ {
+  "id": "c181",
+  "style": "asr",
+  "text": "otto went over the bump twice",
+  "expect": {
+   "AutoPath": [
+    "Bump/Bump"
+   ]
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "c182",
+  "style": "asr",
+  "text": "otto went bump out then trench back",
+  "expect": {
+   "AutoPath": [
+    "Bump-Trench"
+   ]
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "c183",
+  "style": "asr",
+  "text": "otto trench out bump back",
+  "expect": {
+   "AutoPath": [
+    "Trench-Bump"
+   ]
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "c184",
+  "style": "asr",
+  "text": "otto path trench to trench and they scored too",
+  "expect": {
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "autoFuelScored": 2,
+   "AutoScored": true
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "c188",
+  "style": "asr",
+  "text": "straight to the deep oh in otto and they picked up there",
+  "expect": {
+   "AutoPath": [
+    "Depot"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT"
+   ]
+  }
+ },
+ {
+  "id": "c189",
+  "style": "asr",
+  "text": "they scored fourteen in teleop no fifteen no fourteen yeah fourteen",
+  "expect": {
+   "teleopFuelScored": 14
+  },
+  "absent": [
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "c191",
+  "style": "asr",
+  "text": "in otto they scored for",
+  "expect": {
+   "autoFuelScored": 4,
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c192",
+  "style": "asr",
+  "text": "they scored eleven in auto",
+  "expect": {
+   "autoFuelScored": 11,
+   "AutoScored": true
+  },
+  "absent": [
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "c193",
+  "style": "asr",
+  "text": "they scored sixteen in tele op and in otto they scored for",
+  "expect": {
+   "teleopFuelScored": 16,
+   "autoFuelScored": 4,
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c194",
+  "style": "asr",
+  "text": "they scored zero in otto",
+  "expect": {
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE"
+  }
+ },
+ {
+  "id": "c195",
+  "style": "asr",
+  "text": "team one two five read three scored fifty in tele op from the depo and the floor shooting while moving pickup was strong",
+  "expect": {
+   "teamNumber": 125,
+   "startPos": "3",
+   "alliance": "red",
+   "teleopFuelScored": 50,
+   "pickupTele": [
+    "DEPOT",
+    "FLOOR"
+   ],
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupEffe": 4
+  }
+ },
+ {
+  "id": "c196",
+  "style": "asr",
+  "text": "team seven eight six nine blew to otto scored six went bump bump climbed level one in otto then twenty in tele op and a level three clime",
+  "expect": {
+   "teamNumber": 7869,
+   "startPos": "5",
+   "alliance": "blue",
+   "autoFuelScored": 6,
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "autoClimbed": "Success",
+   "teleopFuelScored": 20,
+   "climbed": "L3",
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c197",
+  "style": "asr",
+  "text": "teamed twenty four twenty three they crossed into the other zone played defense it was decent",
+  "expect": {
+   "teamNumber": 2423,
+   "crossedZone": true,
+   "robotDefended": "Yes",
+   "defenceEffe": 3
+  }
+ },
+ {
+  "id": "c200",
+  "style": "asr",
+  "text": "human player gave them like everything",
+  "expect": {
+   "pickupTele": [
+    "H_Player"
+   ]
+  },
+  "absent": [
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "c201",
+  "style": "asr",
+  "text": "picked up from the natural zone and the floor",
+  "expect": {
+   "pickupTele": [
+    "MID",
+    "FLOOR"
+   ]
+  },
+  "absent": [
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "c205",
+  "style": "asr",
+  "text": "tele op no pickup",
+  "expect": {
+   "pickupTele": [
+    "NONE"
+   ]
+  }
+ },
+ {
+  "id": "c206",
+  "style": "asr",
+  "text": "a crawled under the french in tele op",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "c207",
+  "style": "typed",
+  "text": "177 red 2. Auto: 4 fuel from depot. Tele: 22. Climbed L2 left. No defense.",
+  "expect": {
+   "teamNumber": 177,
+   "startPos": "2",
+   "alliance": "red",
+   "autoFuelScored": 4,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT"
+   ],
+   "teleopFuelScored": 22,
+   "climbed": "L2",
+   "climbPos": "LS",
+   "robotDefended": "No",
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c208",
+  "style": "typed",
+  "text": "Team 2168, Blue 1, Q14. Preload only in auto (scored 8). Teleop 31 shooting on the move. L3 middle.",
+  "expect": {
+   "teamNumber": 2168,
+   "startPos": "4",
+   "alliance": "blue",
+   "matchType": "qm",
+   "matchNumber": 14,
+   "AutoPath": [
+    "Pre-Load"
+   ],
+   "autoFuelScored": 8,
+   "teleopFuelScored": 31,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "climbed": "L3",
+   "climbPos": "MD",
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c209",
+  "style": "typed",
+  "text": "no show",
+  "expect": {
+   "noShow": true
+  },
+  "absent": [
+   "died",
+   "tipped",
+   "climbed"
+  ]
+ },
+ {
+  "id": "c210",
+  "style": "typed",
+  "text": "Scout: Ava. Event 2026ctwat. Match 3.",
+  "expect": {
+   "scoutName": "Ava",
+   "eventKey": "2026ctwat",
+   "matchNumber": 3
+  },
+  "absent": [
+   "teamNumber",
+   "startPos"
+  ]
+ },
+ {
+  "id": "c211",
+  "style": "typed",
+  "text": "event key 2026ctgla",
+  "expect": {
+   "eventKey": "2026ctgla"
+  }
+ },
+ {
+  "id": "c212",
+  "style": "typed",
+  "text": "Practice match 2, team 230 red 3",
+  "expect": {
+   "matchType": "pm",
+   "matchNumber": 2,
+   "teamNumber": 230,
+   "startPos": "3",
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "c213",
+  "style": "typed",
+  "text": "SF 4 - 195 blue 3",
+  "expect": {
+   "matchType": "sf",
+   "matchNumber": 4,
+   "teamNumber": 195,
+   "startPos": "6",
+   "alliance": "blue"
+  }
+ },
+ {
+  "id": "c214",
+  "style": "typed",
+  "text": "auto: bump/bump sweep, 6 scored while driving, picked up from neutral zone",
+  "expect": {
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "autoFuelScored": 6,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID"
+   ],
+   "AutoScored": true
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "c218",
+  "style": "typed",
+  "text": "auto: nothing. sat still.",
+  "expect": {
+   "AutoPath": [
+    "N/A"
+   ]
+  }
+ },
+ {
+  "id": "c219",
+  "style": "typed",
+  "text": "Auto: went straight to the outpost. Tele: HP fed them, scored 40.",
+  "expect": {
+   "AutoPath": [
+    "Outpost"
+   ],
+   "pickupTele": [
+    "H_Player"
+   ],
+   "teleopFuelScored": 40
+  }
+ },
+ {
+  "id": "c221",
+  "style": "typed",
+  "text": "teleop: 0 scored, no pickup, played D all match (good)",
+  "expect": {
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "pickupTele": [
+    "NONE"
+   ],
+   "robotDefended": "Yes",
+   "defenceEffe": 5
+  }
+ },
+ {
+  "id": "c222",
+  "style": "typed",
+  "text": "defense: attempted",
+  "expect": {
+   "robotDefended": "Attempted"
+  }
+ },
+ {
+  "id": "c223",
+  "style": "typed",
+  "text": "D was solid",
+  "expect": {
+   "robotDefended": "Yes",
+   "defenceEffe": 4
+  }
+ },
+ {
+  "id": "c224",
+  "style": "typed",
+  "text": "defense rating poor",
+  "expect": {
+   "robotDefended": "Yes",
+   "defenceEffe": 2
+  }
+ },
+ {
+  "id": "c225",
+  "style": "typed",
+  "text": "no D",
+  "expect": {
+   "robotDefended": "No"
+  }
+ },
+ {
+  "id": "c226",
+  "style": "typed",
+  "text": "accuracy ~70%",
+  "expect": {
+   "scoringEffe": 70
+  }
+ },
+ {
+  "id": "c227",
+  "style": "typed",
+  "text": "scoring eff 40%",
+  "expect": {
+   "scoringEffe": 40
+  }
+ },
+ {
+  "id": "c230",
+  "style": "typed",
+  "text": "intake: decent",
+  "expect": {
+   "pickupEffe": 3
+  }
+ },
+ {
+  "id": "c234",
+  "style": "typed",
+  "text": "passing - opp zone, scattered. passing eff fine",
+  "expect": {
+   "fuelPassed": [
+    "Opp_Zone",
+    "Scattered"
+   ],
+   "passingEffe": 3
+  }
+ },
+ {
+  "id": "c235",
+  "style": "typed",
+  "text": "passing effectiveness: awful",
+  "expect": {
+   "passingEffe": 1
+  }
+ },
+ {
+  "id": "c236",
+  "style": "typed",
+  "text": "passing was nice",
+  "expect": {
+   "passingEffe": 4
+  }
+ },
+ {
+  "id": "c237",
+  "style": "typed",
+  "text": "used trench in teleop",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "c238",
+  "style": "typed",
+  "text": "goes under trench",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "c239",
+  "style": "typed",
+  "text": "crossed zone",
+  "expect": {
+   "crossedZone": true
+  }
+ },
+ {
+  "id": "c240",
+  "style": "typed",
+  "text": "crossed into opp zone twice",
+  "expect": {
+   "crossedZone": true
+  }
+ },
+ {
+  "id": "c241",
+  "style": "typed",
+  "text": "mech issue: intake jammed",
+  "expect": {
+   "mechIssue": true
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "c242",
+  "style": "typed",
+  "text": "mechanical issue - lost a bumper",
+  "expect": {
+   "mechIssue": true
+  }
+ },
+ {
+  "id": "c243",
+  "style": "typed",
+  "text": "died last 20s",
+  "expect": {
+   "died": true
+  }
+ },
+ {
+  "id": "c247",
+  "style": "typed",
+  "text": "climb: L1 left",
+  "expect": {
+   "climbed": "L1",
+   "climbPos": "LS"
+  }
+ },
+ {
+  "id": "c248",
+  "style": "typed",
+  "text": "climb L2 right",
+  "expect": {
+   "climbed": "L2",
+   "climbPos": "RS"
+  }
+ },
+ {
+  "id": "c249",
+  "style": "typed",
+  "text": "climb fail",
+  "expect": {
+   "climbed": "F"
+  }
+ },
+ {
+  "id": "c250",
+  "style": "typed",
+  "text": "no climb",
+  "expect": {
+   "climbed": "No"
+  }
+ },
+ {
+  "id": "c251",
+  "style": "typed",
+  "text": "alliance climb 3",
+  "expect": {
+   "AllianceClimb": 3
+  }
+ },
+ {
+  "id": "c252",
+  "style": "typed",
+  "text": "2 robots climbed on their alliance",
+  "expect": {
+   "AllianceClimb": 2
+  }
+ },
+ {
+  "id": "c253",
+  "style": "typed",
+  "text": "only 1 of the 3 climbed (them, L1)",
+  "expect": {
+   "AllianceClimb": 1,
+   "climbed": "L1"
+  }
+ },
+ {
+  "id": "c254",
+  "style": "typed",
+  "text": "auto climb failed, left",
+  "expect": {
+   "autoClimbed": "Failed",
+   "autoClimbPos": "LS"
+  }
+ },
+ {
+  "id": "c255",
+  "style": "typed",
+  "text": "auto climb: not attempted",
+  "expect": {
+   "autoClimbed": "NA"
+  }
+ },
+ {
+  "id": "c256",
+  "style": "typed",
+  "text": "auto climb succeeded (double climb w/ partner), middle",
+  "expect": {
+   "autoClimbed": "Success",
+   "doubleClimb": true,
+   "autoClimbPos": "MD"
+  }
+ },
+ {
+  "id": "c263",
+  "style": "typed",
+  "text": "scored in auto, both moving and stopped",
+  "expect": {
+   "AutoScored": true,
+   "scoringMannerismAuto": "BOTH"
+  },
+  "absent": [
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "c264",
+  "style": "typed",
+  "text": "tele: shoots while driving and while parked",
+  "expect": {
+   "scoringMannerismTele": "BOTH"
+  }
+ },
+ {
+  "id": "c265",
+  "style": "typed",
+  "text": "tele no scoring",
+  "expect": {
+   "scoringMannerismTele": "NONE"
+  }
+ },
+ {
+  "id": "c266",
+  "style": "typed",
+  "text": "Team 254?? no sorry 2713, red 1",
+  "expect": {
+   "teamNumber": 2713,
+   "startPos": "1",
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "c267",
+  "style": "typed",
+  "text": "match 12... wait 21. team 8604 blue 2",
+  "expect": {
+   "matchNumber": 21,
+   "teamNumber": 8604,
+   "startPos": "5",
+   "alliance": "blue"
+  }
+ },
+ {
+  "id": "c268",
+  "style": "typed",
+  "text": "team 9443 r3",
+  "expect": {
+   "teamNumber": 9443,
+   "startPos": "3",
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "c269",
+  "style": "typed",
+  "text": "1474 B1 Q66",
+  "expect": {
+   "teamNumber": 1474,
+   "startPos": "4",
+   "alliance": "blue",
+   "matchType": "qm",
+   "matchNumber": 66
+  }
+ },
+ {
+  "id": "c270",
+  "style": "typed",
+  "text": "team 6329 blue 3, qual 101",
+  "expect": {
+   "teamNumber": 6329,
+   "startPos": "6",
+   "alliance": "blue",
+   "matchType": "qm",
+   "matchNumber": 101
+  }
+ },
+ {
+  "id": "c271",
+  "style": "typed",
+  "text": "team 3634 red 2, playoff match 7",
+  "expect": {
+   "teamNumber": 3634,
+   "startPos": "2",
+   "alliance": "red",
+   "matchType": "sf",
+   "matchNumber": 7
+  }
+ },
+ {
+  "id": "c272",
+  "style": "typed",
+  "text": "scouter: Liam",
+  "expect": {
+   "scoutName": "Liam"
+  },
+  "absent": [
+   "teamNumber",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "c276",
+  "style": "typed",
+  "text": "bricked in auto, never moved again",
+  "expect": {
+   "died": true
+  }
+ },
+ {
+  "id": "c277",
+  "style": "typed",
+  "text": "defended by 2 bots all match, still scored 25 in tele",
+  "expect": {
+   "teleopFuelScored": 25
+  },
+  "absent": [
+   "robotDefended",
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "c278",
+  "style": "typed",
+  "text": "camped depot in tele, scored 33 stationary",
+  "expect": {
+   "pickupTele": [
+    "DEPOT"
+   ],
+   "teleopFuelScored": 33,
+   "scoringMannerismTele": "STATIONARY"
+  }
+ },
+ {
+  "id": "c279",
+  "style": "typed",
+  "text": "auto: depot run, 7 scored on the move",
+  "expect": {
+   "AutoPath": [
+    "Depot"
+   ],
+   "autoFuelScored": 7,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c280",
+  "style": "typed",
+  "text": "auto 5 fuel (stationary). tele 28 (moving). L2 mid. pickup solid. passing none. no D. trench yes.",
+  "expect": {
+   "autoFuelScored": 5,
+   "scoringMannerismAuto": "STATIONARY",
+   "teleopFuelScored": 28,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "climbed": "L2",
+   "climbPos": "MD",
+   "pickupEffe": 4,
+   "fuelPassed": [
+    "No_Passing"
+   ],
+   "robotDefended": "No",
+   "TrenchRizz": true,
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c281",
+  "style": "typed",
+  "text": "team 5687 blue 1: no show",
+  "expect": {
+   "teamNumber": 5687,
+   "startPos": "4",
+   "alliance": "blue",
+   "noShow": true
+  }
+ },
+ {
+  "id": "c282",
+  "style": "typed",
+  "text": "climbed L3 (left side), whole alliance up = 3",
+  "expect": {
+   "climbed": "L3",
+   "climbPos": "LS",
+   "AllianceClimb": 3
+  }
+ },
+ {
+  "id": "c283",
+  "style": "typed",
+  "text": "auto climb L1 right side, success",
+  "expect": {
+   "autoClimbed": "Success",
+   "autoClimbPos": "RS"
+  }
+ },
+ {
+  "id": "c284",
+  "style": "typed",
+  "text": "tipped while climbing, climb failed",
+  "expect": {
+   "tipped": true,
+   "climbed": "F"
+  }
+ },
+ {
+  "id": "c285",
+  "style": "typed",
+  "text": "chain broke + died",
+  "expect": {
+   "mechIssue": true,
+   "died": true
+  }
+ },
+ {
+  "id": "c289",
+  "style": "typed",
+  "text": "eff 90%",
+  "expect": {
+   "scoringEffe": 90
+  }
+ },
+ {
+  "id": "c292",
+  "style": "chatty",
+  "text": "Alright, team 177, we were red one. Auto was sick, they swept bump to bump and put in like seven. Then teleop they just cooked, I counted 64. Climbed all the way to level three in the middle.",
+  "expect": {
+   "teamNumber": 177,
+   "startPos": "1",
+   "alliance": "red",
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "autoFuelScored": 7,
+   "teleopFuelScored": 64,
+   "climbed": "L3",
+   "climbPos": "MD",
+   "AutoScored": true
+  },
+  "absent": [
+   "died",
+   "mechIssue"
+  ]
+ },
+ {
+  "id": "c293",
+  "style": "chatty",
+  "text": "So uh, I think they were blue two? Yeah blue two, team 4557. They tried to climb at the end and totally whiffed it.",
+  "expect": {
+   "startPos": "5",
+   "alliance": "blue",
+   "teamNumber": 4557,
+   "climbed": "F"
+  }
+ },
+ {
+  "id": "c294",
+  "style": "chatty",
+  "text": "Hi it is Mia again. Match 40. I am watching 3146 on red 3.",
+  "expect": {
+   "scoutName": "Mia",
+   "matchNumber": 40,
+   "teamNumber": 3146,
+   "startPos": "3",
+   "alliance": "red"
+  },
+  "absent": [
+   "autoFuelScored",
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "c295",
+  "style": "chatty",
+  "text": "So basically their human player was feeding them nonstop and they would just sit by the hub and fire, like they never moved while shooting. I would say they made around 80 percent.",
+  "expect": {
+   "pickupTele": [
+    "H_Player"
+   ],
+   "scoringMannerismTele": "STATIONARY",
+   "scoringEffe": 80
+  }
+ },
+ {
+  "id": "c296",
+  "style": "chatty",
+  "text": "They spent the whole teleop going under the trench back and forth to the neutral zone, scooping stuff off the floor out there.",
+  "expect": {
+   "TrenchRizz": true,
+   "pickupTele": [
+    "MID",
+    "FLOOR"
+   ]
+  }
+ },
+ {
+  "id": "c297",
+  "style": "chatty",
+  "text": "Defense-wise they played it pretty much the entire second half and they were honestly amazing at it, the other alliance could not score.",
+  "expect": {
+   "robotDefended": "Yes",
+   "defenceEffe": 5
+  }
+ },
+ {
+  "id": "c298",
+  "style": "chatty",
+  "text": "I do not think they played any defense, they were just scoring the whole time.",
+  "expect": {
+   "robotDefended": "No"
+  }
+ },
+ {
+  "id": "c300",
+  "style": "chatty",
+  "text": "Their passing was mostly them launching balls into the center so their partner could grab them, and it worked pretty well actually.",
+  "expect": {
+   "fuelPassed": [
+    "Center"
+   ],
+   "passingEffe": 4
+  }
+ },
+ {
+  "id": "c301",
+  "style": "chatty",
+  "text": "Oh and they lobbed a ton of fuel over into the opponent zone, which was weird.",
+  "expect": {
+   "fuelPassed": [
+    "Opp_Zone"
+   ]
+  }
+ },
+ {
+  "id": "c302",
+  "style": "chatty",
+  "text": "Passing was all over the place, just scattered everywhere, honestly bad.",
+  "expect": {
+   "fuelPassed": [
+    "Scattered"
+   ],
+   "passingEffe": 2
+  }
+ },
+ {
+  "id": "c306",
+  "style": "chatty",
+  "text": "Oof, they flipped completely over on the bump in the last 20 seconds and stayed there.",
+  "expect": {
+   "tipped": true
+  }
+ },
+ {
+  "id": "c307",
+  "style": "chatty",
+  "text": "So they crossed into the other alliance zone a few times to mess with them.",
+  "expect": {
+   "crossedZone": true
+  }
+ },
+ {
+  "id": "c308",
+  "style": "chatty",
+  "text": "In auto they climbed level one on the left side, that worked, then in endgame they went for level two on the right and got it.",
+  "expect": {
+   "autoClimbed": "Success",
+   "autoClimbPos": "LS",
+   "climbed": "L2",
+   "climbPos": "RS"
+  }
+ },
+ {
+  "id": "c309",
+  "style": "chatty",
+  "text": "For auto they did not even try to climb, they just scored their preload, I think it was like 8.",
+  "expect": {
+   "autoClimbed": "NA",
+   "AutoPath": [
+    "Pre-Load"
+   ],
+   "autoFuelScored": 8,
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c310",
+  "style": "chatty",
+  "text": "Auto climb, they went for the middle of the tower and slid right off, so that is a fail.",
+  "expect": {
+   "autoClimbed": "Failed",
+   "autoClimbPos": "MD"
+  }
+ },
+ {
+  "id": "c311",
+  "style": "chatty",
+  "text": "Oh this was cool, in auto they hung together with their alliance partner on level one, a double climb.",
+  "expect": {
+   "doubleClimb": true,
+   "autoClimbed": "Success"
+  }
+ },
+ {
+  "id": "c312",
+  "style": "chatty",
+  "text": "Endgame, all three robots on their alliance got up on the tower, nice.",
+  "expect": {
+   "AllianceClimb": 3
+  }
+ },
+ {
+  "id": "c313",
+  "style": "chatty",
+  "text": "At the end only two of their alliance climbed, them and the 230 bot.",
+  "expect": {
+   "AllianceClimb": 2
+  }
+ },
+ {
+  "id": "c314",
+  "style": "chatty",
+  "text": "Nobody on that alliance climbed, including them.",
+  "expect": {
+   "AllianceClimb": 0,
+   "climbed": "No"
+  }
+ },
+ {
+  "id": "c315",
+  "style": "chatty",
+  "text": "They did not climb at the end, they kept shooting until the buzzer.",
+  "expect": {
+   "climbed": "No"
+  }
+ },
+ {
+  "id": "c319",
+  "style": "chatty",
+  "text": "In auto they ran out to the middle of the field, picked up from the neutral zone and the floor near it, came back under the trench and back over the bump... wait no, they went out the trench and back over the bump.",
+  "expect": {
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID",
+    "FLOOR"
+   ],
+   "AutoPath": [
+    "Trench-Bump"
+   ]
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "c322",
+  "style": "chatty",
+  "text": "Auto was literally just a climb.",
+  "expect": {
+   "AutoPath": [
+    "Climb"
+   ]
+  }
+ },
+ {
+  "id": "c323",
+  "style": "chatty",
+  "text": "In auto they headed straight to the outpost.",
+  "expect": {
+   "AutoPath": [
+    "Outpost"
+   ]
+  }
+ },
+ {
+  "id": "c324",
+  "style": "chatty",
+  "text": "In auto they did not pick anything up, just shot what they started with.",
+  "expect": {
+   "pickupfrom": [
+    "NONE"
+   ]
+  }
+ },
+ {
+  "id": "c325",
+  "style": "chatty",
+  "text": "Teleop they did not pick up anything at all, which was weird, they just defended.",
+  "expect": {
+   "pickupTele": [
+    "NONE"
+   ],
+   "robotDefended": "Yes"
+  }
+ },
+ {
+  "id": "c326",
+  "style": "chatty",
+  "text": "Pickup from the floor was honestly elite, they vacuumed everything up.",
+  "expect": {
+   "pickupTele": [
+    "FLOOR"
+   ],
+   "pickupEffe": 5
+  }
+ },
+ {
+  "id": "c327",
+  "style": "chatty",
+  "text": "Their pickup was fine, nothing special.",
+  "expect": {
+   "pickupEffe": 3
+  }
+ },
+ {
+  "id": "c328",
+  "style": "chatty",
+  "text": "Their pickup was terrible, like they could not get anything into the robot at all.",
+  "expect": {
+   "pickupEffe": 1
+  }
+ },
+ {
+  "id": "c330",
+  "style": "chatty",
+  "text": "Passing was elite honestly, every pass landed right where their partner was, totally intentional.",
+  "expect": {
+   "passingEffe": 5,
+   "fuelPassed": [
+    "Intentional"
+   ]
+  }
+ },
+ {
+  "id": "c331",
+  "style": "chatty",
+  "text": "The defense was kind of messy, lots of fouls.",
+  "expect": {
+   "robotDefended": "Yes",
+   "defenceEffe": 2
+  }
+ },
+ {
+  "id": "c335",
+  "style": "chatty",
+  "text": "They scored 20 in teleop, and in auto they put in 3.",
+  "expect": {
+   "teleopFuelScored": 20,
+   "autoFuelScored": 3,
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "c336",
+  "style": "chatty",
+  "text": "They got like a hundred in teleop, insane robot, accuracy was probably 95 percent.",
+  "expect": {
+   "teleopFuelScored": 100,
+   "scoringEffe": 95
+  }
+ },
+ {
+  "id": "c337",
+  "style": "chatty",
+  "text": "Shooting was pretty inaccurate, maybe 20 percent made it in.",
+  "expect": {
+   "scoringEffe": 20
+  }
+ },
+ {
+  "id": "c338",
+  "style": "chatty",
+  "text": "This one was a no-show, team 9442 red 2 never came out.",
+  "expect": {
+   "noShow": true,
+   "teamNumber": 9442,
+   "startPos": "2",
+   "alliance": "red"
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "c339",
+  "style": "chatty",
+  "text": "Okay so qual 77, I have team 8546 on blue one, scout is Ethan.",
+  "expect": {
+   "matchType": "qm",
+   "matchNumber": 77,
+   "teamNumber": 8546,
+   "startPos": "4",
+   "alliance": "blue",
+   "scoutName": "Ethan"
+  }
+ },
+ {
+  "id": "c340",
+  "style": "chatty",
+  "text": "Practice match number 6, team 1100 on red one.",
+  "expect": {
+   "matchType": "pm",
+   "matchNumber": 6,
+   "teamNumber": 1100,
+   "startPos": "1",
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "c341",
+  "style": "chatty",
+  "text": "This is a playoff match, match 11, team 2064 on blue 3.",
+  "expect": {
+   "matchType": "sf",
+   "matchNumber": 11,
+   "teamNumber": 2064,
+   "startPos": "6",
+   "alliance": "blue"
+  }
+ },
+ {
+  "id": "c342",
+  "style": "chatty",
+  "text": "Event is 2026necmp by the way.",
+  "expect": {
+   "eventKey": "2026necmp"
+  }
+ },
+ {
+  "id": "c343",
+  "style": "chatty",
+  "text": "Hey, Zoe here, event 2026ctwat, match 2.",
+  "expect": {
+   "scoutName": "Zoe",
+   "eventKey": "2026ctwat",
+   "matchNumber": 2
+  },
+  "absent": [
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "c344",
+  "style": "chatty",
+  "text": "They did a buddy climb in auto with the robot next to them, both hung on level one on the right side.",
+  "expect": {
+   "doubleClimb": true,
+   "autoClimbed": "Success",
+   "autoClimbPos": "RS"
+  }
+ },
+ {
+  "id": "c348",
+  "style": "chatty",
+  "text": "They got stuck halfway up the tower and fell back down, so failed climb.",
+  "expect": {
+   "climbed": "F"
+  }
+ },
+ {
+  "id": "c349",
+  "style": "chatty",
+  "text": "The whole match they were going over the bump only, they never used the trench... oh wait actually they did go under the trench once in teleop.",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "c351",
+  "style": "chatty",
+  "text": "A wheel came off their drivetrain in teleop, mech issue for sure, but they still limped around.",
+  "expect": {
+   "mechIssue": true
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "c352",
+  "style": "chatty",
+  "text": "They lost connection for like 15 seconds and then came back. So they did die for a bit.",
+  "expect": {
+   "died": true
+  }
+ },
+ {
+  "id": "c353",
+  "style": "chatty",
+  "text": "Their robot tipped over onto the bumper after getting hit.",
+  "expect": {
+   "tipped": true
+  }
+ },
+ {
+  "id": "c354",
+  "style": "chatty",
+  "text": "They tipped over, died, and the chain on the arm broke. Rough match for them.",
+  "expect": {
+   "tipped": true,
+   "died": true,
+   "mechIssue": true
+  }
+ },
+ {
+  "id": "c355",
+  "style": "chatty",
+  "text": "Teleop they grabbed from the depot and the outpost human player, then mostly shot standing still.",
+  "expect": {
+   "pickupTele": [
+    "DEPOT",
+    "H_Player"
+   ],
+   "scoringMannerismTele": "STATIONARY"
+  }
+ },
+ {
+  "id": "c356",
+  "style": "chatty",
+  "text": "They scored in auto, not sure how many, I was watching the other side.",
+  "expect": {
+   "AutoScored": true
+  },
+  "absent": [
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "c357",
+  "style": "chatty",
+  "text": "Teleop they scored 15 while moving around the field.",
+  "expect": {
+   "teleopFuelScored": 15,
+   "scoringMannerismTele": "WHILE_DRIVE"
+  }
+ },
+ {
+  "id": "c360",
+  "style": "chatty",
+  "text": "During teleop they did not score at all.",
+  "expect": {
+   "scoringMannerismTele": "NONE",
+   "teleopFuelScored": 0
+  }
+ },
+ {
+  "id": "c364",
+  "style": "chatty",
+  "text": "Team 571, I think blue 1. No wait, blue 2.",
+  "expect": {
+   "teamNumber": 571,
+   "startPos": "5",
+   "alliance": "blue"
+  }
+ },
+ {
+  "id": "c365",
+  "style": "chatty",
+  "text": "I had 694 on red three, they were awesome at everything but I did not see their auto.",
+  "expect": {
+   "teamNumber": 694,
+   "startPos": "3",
+   "alliance": "red"
+  },
+  "absent": [
+   "autoFuelScored",
+   "AutoPath",
+   "autoClimbed"
+  ]
+ },
+ {
+  "id": "c366",
+  "style": "chatty",
+  "text": "They camped the depot the whole match, like they never left it, just kept shooting from there, about 40 points of fuel.",
+  "expect": {
+   "pickupTele": [
+    "DEPOT"
+   ],
+   "scoringMannerismTele": "STATIONARY",
+   "teleopFuelScored": 40
+  }
+ },
+ {
+  "id": "c367",
+  "style": "chatty",
+  "text": "Accuracy I would say around 65 percent.",
+  "expect": {
+   "scoringEffe": 65
+  }
+ },
+ {
+  "id": "c368",
+  "style": "chatty",
+  "text": "Their alliance had one robot climb and that was them, level 1.",
+  "expect": {
+   "AllianceClimb": 1,
+   "climbed": "L1"
+  }
+ },
+ {
+  "id": "c369",
+  "style": "chatty",
+  "text": "Their passing was honestly horrible, every pass went out of bounds.",
+  "expect": {
+   "passingEffe": 1
+  }
+ },
+ {
+  "id": "c370",
+  "style": "chatty",
+  "text": "So their defense was okay, kind of average, they slowed down one robot a little.",
+  "expect": {
+   "robotDefended": "Yes",
+   "defenceEffe": 3
+  }
+ },
+ {
+  "id": "c371",
+  "style": "chatty",
+  "text": "They tried to play defense, but they were too slow and could not do it at all.",
+  "expect": {
+   "robotDefended": "Attempted",
+   "defenceEffe": 1
+  }
+ },
+ {
+  "id": "c372",
+  "style": "noise",
+  "text": "testing testing one two three is this thing on",
+  "expect": {},
+  "absent": [
+   "matchNumber",
+   "teamNumber",
+   "autoFuelScored",
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "c373",
+  "style": "noise",
+  "text": "mic check mic check",
+  "expect": {},
+  "absent": [
+   "matchNumber",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "c377",
+  "style": "noise",
+  "text": "that other robot broke its intake",
+  "expect": {},
+  "absent": [
+   "mechIssue"
+  ]
+ },
+ {
+  "id": "c378",
+  "style": "noise",
+  "text": "the robot next to them tipped over",
+  "expect": {},
+  "absent": [
+   "tipped"
+  ]
+ },
+ {
+  "id": "c379",
+  "style": "noise",
+  "text": "did you see 254 climb level three that was crazy",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "climbed"
+  ]
+ },
+ {
+  "id": "c380",
+  "style": "noise",
+  "text": "wait which team am i supposed to be watching",
+  "expect": {},
+  "absent": [
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "c381",
+  "style": "noise",
+  "text": "uh hold on the match hasnt started yet",
+  "expect": {},
+  "absent": [
+   "matchNumber",
+   "noShow"
+  ]
+ },
+ {
+  "id": "c382",
+  "style": "noise",
+  "text": "yo can you pass me a water",
+  "expect": {},
+  "absent": [
+   "fuelPassed"
+  ]
+ },
+ {
+  "id": "c383",
+  "style": "noise",
+  "text": "field fault they are resetting the field",
+  "expect": {},
+  "absent": [
+   "died",
+   "mechIssue"
+  ]
+ },
+ {
+  "id": "c384",
+  "style": "noise",
+  "text": "the announcer said match fifty is next but this is still forty nine",
+  "expect": {},
+  "absent": [
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "c385",
+  "style": "noise",
+  "text": "score is like sixty to forty right now",
+  "expect": {},
+  "absent": [
+   "teleopFuelScored",
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "c386",
+  "style": "noise",
+  "text": "the blue robot on the other side is playing crazy defense",
+  "expect": {},
+  "absent": [
+   "robotDefended",
+   "defenceEffe",
+   "alliance"
+  ]
+ },
+ {
+  "id": "c393",
+  "style": "noise",
+  "text": "did we get ranking points last match",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "c394",
+  "style": "noise",
+  "text": "our robot is in the queue for match thirty",
+  "expect": {},
+  "absent": [
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "c395",
+  "style": "noise",
+  "text": "lets go bobcats",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "c396",
+  "style": "noise",
+  "text": "the human player on blue keeps missing",
+  "expect": {},
+  "absent": [
+   "pickupTele",
+   "alliance"
+  ]
+ },
+ {
+  "id": "c397",
+  "style": "noise",
+  "text": "they are calling a timeout on the red side",
+  "expect": {},
+  "absent": [
+   "alliance",
+   "died"
+  ]
+ },
+ {
+  "id": "c398",
+  "style": "noise",
+  "text": "is it auto yet no not yet",
+  "expect": {},
+  "absent": [
+   "autoFuelScored",
+   "scoringMannerismAuto"
+  ]
+ },
+ {
+  "id": "c399",
+  "style": "noise",
+  "text": "the ref is talking to the drive team of 1071 i think it is a penalty",
+  "expect": {},
+  "absent": [
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "c400",
+  "style": "noise",
+  "text": "hmm",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "c401",
+  "style": "noise",
+  "text": "sorry that was my friend talking",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "c402",
+  "style": "noise",
+  "text": "the depot on the red side looks empty",
+  "expect": {},
+  "absent": [
+   "pickupTele",
+   "pickupfrom",
+   "alliance"
+  ]
+ },
+ {
+  "id": "c403",
+  "style": "noise",
+  "text": "team 2370 across the field scored like 50 they are so good",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "c407",
+  "style": "noise",
+  "text": "i think the match is replaying because of a field fault",
+  "expect": {},
+  "absent": [
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "c408",
+  "style": "noise",
+  "text": "the score table says one forty two",
+  "expect": {},
+  "absent": [
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "c409",
+  "style": "noise",
+  "text": "the blue one went bump to bump in auto not my robot though",
+  "expect": {},
+  "absent": [
+   "AutoPath",
+   "alliance"
+  ]
+ },
+ {
+  "id": "c410",
+  "style": "noise",
+  "text": "oh whatever the battery on our cart is low",
+  "expect": {},
+  "absent": [
+   "mechIssue"
+  ]
+ },
+ {
+  "id": "c411",
+  "style": "noise",
+  "text": "who is scouting red three this match",
+  "expect": {},
+  "absent": [
+   "startPos",
+   "alliance"
+  ]
+ },
+ {
+  "id": "c412",
+  "style": "noise",
+  "text": "next match is qual sixty three i think",
+  "expect": {},
+  "absent": [
+   "matchNumber",
+   "matchType"
+  ]
+ },
+ {
+  "id": "c413",
+  "style": "noise",
+  "text": "their partners passing was really good",
+  "expect": {},
+  "absent": [
+   "passingEffe",
+   "fuelPassed"
+  ]
+ },
+ {
+  "id": "c414",
+  "style": "asr",
+  "text": "event key twenty twenty six c t w a t match thirty three team two thirty six read won",
+  "expect": {
+   "eventKey": "2026ctwat",
+   "matchNumber": 33,
+   "teamNumber": 236,
+   "startPos": "1",
+   "alliance": "red"
+  },
+  "absent": [
+   "autoFuelScored",
+   "teleopFuelScored",
+   "scoutName"
+  ]
+ },
+ {
+  "id": "c415",
+  "style": "asr",
+  "text": "event 2026 n e c m p",
+  "expect": {
+   "eventKey": "2026necmp"
+  },
+  "absent": [
+   "matchNumber",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "c416",
+  "style": "asr",
+  "text": "no show no show team sixty six nineteen blew three never came out of the queue",
+  "expect": {
+   "noShow": true,
+   "teamNumber": 6619,
+   "startPos": "6",
+   "alliance": "blue"
+  },
+  "absent": [
+   "died",
+   "tipped",
+   "mechIssue"
+  ]
+ },
+ {
+  "id": "c423",
+  "style": "asr",
+  "text": "they shot a lot",
+  "expect": {},
+  "absent": [
+   "teleopFuelScored",
+   "autoFuelScored",
+   "scoringEffe"
+  ]
+ },
+ {
+  "id": "c424",
+  "style": "asr",
+  "text": "team eighty seven twenty four blew one they were okay",
+  "expect": {
+   "teamNumber": 8724,
+   "startPos": "4",
+   "alliance": "blue"
+  },
+  "absent": [
+   "pickupEffe",
+   "passingEffe",
+   "defenceEffe",
+   "scoringEffe"
+  ]
+ },
+ {
+  "id": "c425",
+  "style": "asr",
+  "text": "they went to the tower at the end",
+  "expect": {},
+  "absent": [
+   "climbed",
+   "climbPos",
+   "AllianceClimb"
+  ]
+ },
+ {
+  "id": "c426",
+  "style": "typed",
+  "text": "event: 2026ctwat. scout: Ben. Q8, team 177, red 3.",
+  "expect": {
+   "eventKey": "2026ctwat",
+   "scoutName": "Ben",
+   "matchType": "qm",
+   "matchNumber": 8,
+   "teamNumber": 177,
+   "startPos": "3",
+   "alliance": "red"
+  },
+  "absent": [
+   "autoFuelScored",
+   "teleopFuelScored",
+   "climbed"
+  ]
+ },
+ {
+  "id": "c427",
+  "style": "typed",
+  "text": "2026ctwat Q19 team 3467 blue 2",
+  "expect": {
+   "eventKey": "2026ctwat",
+   "matchType": "qm",
+   "matchNumber": 19,
+   "teamNumber": 3467,
+   "startPos": "5",
+   "alliance": "blue"
+  },
+  "absent": [
+   "autoFuelScored",
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "c428",
+  "style": "typed",
+  "text": "auto: double climb L1 w/ 5687, middle",
+  "expect": {
+   "doubleClimb": true,
+   "autoClimbed": "Success",
+   "autoClimbPos": "MD"
+  },
+  "absent": [
+   "climbed",
+   "climbPos",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "c429",
+  "style": "typed",
+  "text": "they were defended a lot, scored 10 tele",
+  "expect": {
+   "teleopFuelScored": 10
+  },
+  "absent": [
+   "robotDefended",
+   "defenceEffe",
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "c430",
+  "style": "typed",
+  "text": "robot was there but never moved all match",
+  "expect": {
+   "died": true
+  },
+  "absent": [
+   "noShow",
+   "mechIssue"
+  ]
+ },
+ {
+  "id": "c431",
+  "style": "chatty",
+  "text": "Event key is 2026ctwat and I am Harper. This is match 45.",
+  "expect": {
+   "eventKey": "2026ctwat",
+   "scoutName": "Harper",
+   "matchNumber": 45
+  },
+  "absent": [
+   "teamNumber",
+   "startPos",
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "c432",
+  "style": "chatty",
+  "text": "They were a no-show this match, the drive team was still fixing it in the pit.",
+  "expect": {
+   "noShow": true
+  },
+  "absent": [
+   "died",
+   "mechIssue",
+   "tipped"
+  ]
+ },
+ {
+  "id": "c436",
+  "style": "chatty",
+  "text": "The opposing team kept bumping into them, so they spent a lot of time getting knocked around.",
+  "expect": {},
+  "absent": [
+   "robotDefended",
+   "tipped",
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "c437",
+  "style": "noise",
+  "text": "that team 6328 robot over there did a double climb in auto",
+  "expect": {},
+  "absent": [
+   "doubleClimb",
+   "autoClimbed",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "c438",
+  "style": "noise",
+  "text": "the blue alliance robot was a no show",
+  "expect": {},
+  "absent": [
+   "noShow",
+   "alliance"
+  ]
+ },
+ {
+  "id": "c439",
+  "style": "noise",
+  "text": "event key for this comp is on the whiteboard right",
+  "expect": {},
+  "absent": [
+   "eventKey"
+  ]
+ }
+]

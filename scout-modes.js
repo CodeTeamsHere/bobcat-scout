@@ -48,7 +48,7 @@
     scoringMannerismAuto: {
       ask: 'How did they score in auto?', say: 'stationary, while driving, both, or none',
       derive: function (f, a) { return a.autoFuelScored && Number(f.autoFuelScored) === 0 ? 'NONE' : undefined; },
-      words: { NONE: ['none', 'no scoring', 'didn\'t score', 'did not score', 'nothing'], STATIONARY: ['stationary', 'standing', 'still', 'not moving', 'parked', 'stopped'], WHILE_DRIVE: ['driving', 'moving', 'on the move', 'while moving'], BOTH: ['both', 'mix', 'mixed'] }
+      words: { NONE: ['none', 'no scoring', 'didn\'t score', 'did not score', 'nothing'], STATIONARY: ['stationary', 'standing', 'still', 'not moving', 'parked', 'stopped', 'standstill', 'from a stop', 'planted', 'sat still'], WHILE_DRIVE: ['driving', 'moving', 'on the move', 'while moving', 'on the fly', 'on the run', 'in motion', 'running'], BOTH: ['both', 'mix', 'mixed', 'both ways', 'a bit of both'] }
     },
     AutoPickup: { never: true, derive: function (f, a) { return a.pickupfrom ? (f.pickupfrom || []).some(function (k) { return k !== 'NONE'; }) : undefined; } },
     pickupfrom: {
@@ -90,7 +90,7 @@
     scoringMannerismTele: {
       ask: 'How did they score in teleop?', say: 'stationary, while driving, both, or none',
       derive: function (f, a) { return a.teleopFuelScored && Number(f.teleopFuelScored) === 0 ? 'NONE' : undefined; },
-      words: { NONE: ['none', 'no scoring', 'didn\'t score', 'did not score', 'nothing'], STATIONARY: ['stationary', 'standing', 'still', 'not moving', 'parked', 'stopped'], WHILE_DRIVE: ['driving', 'moving', 'on the move', 'while moving'], BOTH: ['both', 'mix', 'mixed'] }
+      words: { NONE: ['none', 'no scoring', 'didn\'t score', 'did not score', 'nothing'], STATIONARY: ['stationary', 'standing', 'still', 'not moving', 'parked', 'stopped', 'standstill', 'from a stop', 'planted', 'sat still'], WHILE_DRIVE: ['driving', 'moving', 'on the move', 'while moving', 'on the fly', 'on the run', 'in motion', 'running'], BOTH: ['both', 'mix', 'mixed', 'both ways', 'a bit of both'] }
     },
     TeleSL: {
       ask: 'Where did they shoot from in teleop?', say: 'for example right side near outpost, middle near hub, or no shooting',
@@ -133,9 +133,9 @@
     },
     AllianceClimb: { ask: 'How many robots on their alliance climbed?', say: '0 to 3' },
     crossedZone: { group: 'problems', words: { 'true': ['crossed', 'opposite zone', 'other zone', 'crossed over', 'into their zone'] } },
-    mechIssue: { group: 'problems', words: { 'true': ['mechanical', 'broke', 'broken', 'jammed', 'jam', 'fell apart', 'chain', 'issue'] } },
-    died: { group: 'problems', words: { 'true': ['died', 'dead', 'disabled', 'stopped working', 'lost power', 'browned out', 'brownout'] } },
-    tipped: { group: 'problems', words: { 'true': ['tipped', 'tip', 'fell over', 'flipped', 'tipped over'] } },
+    mechIssue: { group: 'problems', words: { 'true': ['mechanical', 'broke', 'broken', 'jammed', 'jam', 'fell apart', 'chain', 'issue', 'snapped', 'came off', 'lost a wheel', 'stuck', 'smoke'] } },
+    died: { group: 'problems', words: { 'true': ['died', 'dead', 'disabled', 'stopped working', 'lost power', 'browned out', 'brownout', 'lost comms', 'lost connection', 'disconnected', 'stopped moving', 'froze', 'bricked'] } },
+    tipped: { group: 'problems', words: { 'true': ['tipped', 'tip', 'fell over', 'flipped', 'tipped over', 'on its side', 'toppled', 'rolled over'] } },
     co: { ask: 'Any comments? Penalties, defense, anything unusual.', say: 'say them, or say none' },
   };
   var GROUPS = {

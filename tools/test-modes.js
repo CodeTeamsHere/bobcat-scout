@@ -17,6 +17,8 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'config.json'), 'utf8'));
 const M = require('../scout-modes.js').SCOUT_MODES;
+require('../scout-lexicon.js');
+const LEX = globalThis.SCOUT_LEXICON;
 
 // The app's own spoken-number reader, lifted out of app.js the way test-parser.js does it.
 const src = fs.readFileSync(path.join(ROOT, 'app.js'), 'utf8');
@@ -55,11 +57,15 @@ function same(a, b) {
 function says(id, heard, expect) {
   const q = Q[id];
   if (!q) { failures.push(`question ${id}\n      no such question (is the field in config.json?)`); return; }
-  const r = M.answer(q, heard, ctx);
-  if (expect === null) { check(`"${heard}" is not an answer to ${id}`, r === null, JSON.stringify(r && r.values)); return; }
-  const got = r ? r.values : null;
-  const ok = !!got && Object.entries(expect).every(([k, v]) => same(got[k], v));
-  check(`"${heard}" -> ${JSON.stringify(expect)}`, ok, `got ${JSON.stringify(got)}`);
+  // Guided mode runs every answer through the speech dictionary first (scout-lexicon.js),
+  // so each answer is checked both ways: as heard, and as the dictionary rewrites it.
+  for (const [how, text] of [['', heard], [' (after the dictionary)', LEX.fix(heard)]]) {
+    const r = M.answer(q, text, ctx);
+    if (expect === null) { check(`"${heard}" is not an answer to ${id}${how}`, r === null, JSON.stringify(r && r.values)); continue; }
+    const got = r ? r.values : null;
+    const ok = !!got && Object.entries(expect).every(([k, v]) => same(got[k], v));
+    check(`"${heard}" -> ${JSON.stringify(expect)}${how}`, ok, `got ${JSON.stringify(got)} from "${text}"`);
+  }
 }
 
 // ---- every guided question refers to a real field and real options ----
@@ -159,6 +165,36 @@ says('AutoSL', 'left side near the depot', { AutoSL: ['LSH/Depot'] });
 says('AutoSL', 'middle near the tower', { AutoSL: ['MH/Tower'] });
 says('TeleSL', 'right side near outpost', { TeleSL: ['RSH/Outpost'] });
 says('TeleSL', "didn't shoot", { TeleSL: ['NS'] });
+
+// ---- misheard answers, as the speech dictionary fixes them ----
+function heardAs(id, misheard, expect) {
+  const r = M.answer(Q[id], LEX.fix(misheard), ctx);
+  const got = r ? r.values : null;
+  const ok = !!got && Object.entries(expect).every(([k, v]) => same(got[k], v));
+  check(`misheard "${misheard}" -> ${JSON.stringify(expect)}`, ok, `got ${JSON.stringify(got)} from "${LEX.fix(misheard)}"`);
+}
+heardAs('startPos', 'read to', { startPos: '2' });
+heardAs('startPos', 'blew won', { startPos: '4' });
+heardAs('startPos', 'blue tree', { startPos: '6' });
+heardAs('climbed', 'level to', { climbed: 'L2' });
+heardAs('climbed', 'el three', { climbed: 'L3' });
+heardAs('climbed', 'the high wrong', { climbed: 'L3' });
+heardAs('climbed', 'l won', { climbed: 'L1' });
+heardAs('pickupfrom', 'the deep oh', { pickupfrom: ['DEPOT'] });
+heardAs('pickupfrom', 'out post', { pickupfrom: ['H_Player'] });
+heardAs('pickupfrom', 'the natural zone', { pickupfrom: ['MID'] });
+heardAs('pickupTele', 'human layer and the floor', { pickupTele: ['H_Player', 'FLOOR'] });
+heardAs('pickupTele', 'depo', { pickupTele: ['DEPOT'] });
+heardAs('robotDefended', 'yeah they played the fence', { robotDefended: 'Yes' });
+heardAs('AutoPath', 'french to french', { AutoPath: ['Trench/Trench'] });
+heardAs('AutoPath', 'bum to trench', { AutoPath: ['Bump-Trench'] });
+heardAs('AutoPath', 'free load only', { AutoPath: ['Pre-Load'] });
+heardAs('group:problems', 'it browned out', { died: true });
+heardAs('group:problems', 'they lost comes', { died: true });
+heardAs('scoringMannerismTele', 'on the fly', { scoringMannerismTele: 'WHILE_DRIVE' });
+heardAs('scoringMannerismAuto', 'from a standstill', { scoringMannerismAuto: 'STATIONARY' });
+heardAs('teamNumber', 'too fifty for', { teamNumber: 254 });
+heardAs('matchNumber', 'much fourteen', { matchNumber: 14 });
 
 // ---- "which of these happened" ----
 says('group:problems', 'it died and tipped over', { died: true, tipped: true, mechIssue: false, crossedZone: false });
