@@ -84,6 +84,14 @@
     // "D" for defense: "no D", "played D", "D was solid", "D rating"
     [/\b(no|played|play|plays|playing|good|great|solid|bad|tried|tried\s+to\s+play|did|on)\s+d\b/g, '$1 defense'],
     [/\bd\s+(?=(?:was|is|rating|all|eff|effectiveness)\b|\()/g, 'defense '],
+    // sides of the tower, misheard: "lift side", "write side", "the metal of the tower"
+    [/\blift\s+side\b/g, 'left side'], [/\b(?:write|wright|rite)\s+side\b/g, 'right side'],
+    [/\b(?:metal|meddle|medal)\s+of\s+the\s+tower\b/g, 'middle of the tower'],
+    // "stationery" is how speech recognition spells stationary
+    [/\bstationery\b/g, 'stationary'],
+    // typed: "WD" = while driving
+    [/\bwd\b/g, 'while driving'],
+    [/\bfor\s+d\b/g, 'for defense'],
     // more mishearings heard in testing
     [/\bd[\s-]+fence\b/g, 'defense'],
     [/\b(play|played|plays|playing)\s+d\b/g, '$1 defense'],

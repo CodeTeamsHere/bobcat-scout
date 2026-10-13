@@ -1,0 +1,1519 @@
+[
+ {
+  "id": "d003",
+  "style": "asr",
+  "text": "auto bump out bump back on the same side",
+  "expect": {
+   "AutoPath": [
+    "Same Side Bump"
+   ]
+  },
+  "absent": [
+   "crossedZone"
+  ]
+ },
+ {
+  "id": "d004",
+  "style": "asr",
+  "text": "they just shot the preload and that was it for auto",
+  "expect": {
+   "AutoPath": [
+    "Pre-Load"
+   ]
+  },
+  "absent": [
+   "AutoPickup",
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "d005",
+  "style": "asr",
+  "text": "in auto they beelined to the depot",
+  "expect": {
+   "AutoPath": [
+    "Depot"
+   ]
+  },
+  "absent": [
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "d010",
+  "style": "asr",
+  "text": "auto they drove straight to the outpost",
+  "expect": {
+   "AutoPath": [
+    "Outpost"
+   ]
+  },
+  "absent": [
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "d011",
+  "style": "asr",
+  "text": "they went out the trench and came back over the bump in auto",
+  "expect": {
+   "AutoPath": [
+    "Trench-Bump"
+   ]
+  }
+ },
+ {
+  "id": "d012",
+  "style": "asr",
+  "text": "auto out through the trench back through the same trench",
+  "expect": {
+   "AutoPath": [
+    "Same Side Trench"
+   ]
+  }
+ },
+ {
+  "id": "d027",
+  "style": "chatty",
+  "text": "So in auto they went out over the bump into the neutral zone, grabbed a few, and came back over the bump on the other side. I think they scored four.",
+  "expect": {
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID"
+   ],
+   "autoFuelScored": 4,
+   "AutoScored": true
+  },
+  "absent": [
+   "crossedZone",
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "d028",
+  "style": "chatty",
+  "text": "Honestly their auto was just the preload, nothing else, they didn't even leave the starting line.",
+  "expect": {
+   "AutoPath": [
+    "Pre-Load"
+   ]
+  },
+  "absent": [
+   "AutoPickup",
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "d029",
+  "style": "chatty",
+  "text": "They went out through the trench and came back through the other trench.",
+  "expect": {
+   "AutoPath": [
+    "Trench/Trench"
+   ]
+  }
+ },
+ {
+  "id": "d034",
+  "style": "asr",
+  "text": "out over the pump back through the trench same side",
+  "expect": {
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ]
+  }
+ },
+ {
+  "id": "d035",
+  "style": "asr",
+  "text": "auto trench to trench",
+  "expect": {
+   "AutoPath": [
+    "Trench/Trench"
+   ]
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "d036",
+  "style": "asr",
+  "text": "otto they went bump trench",
+  "expect": {
+   "AutoPath": [
+    "Bump-Trench"
+   ]
+  }
+ },
+ {
+  "id": "d041",
+  "style": "asr",
+  "text": "auto bump bump",
+  "expect": {
+   "AutoPath": [
+    "Bump/Bump"
+   ]
+  }
+ },
+ {
+  "id": "d042",
+  "style": "asr",
+  "text": "auto they did the trench bump thing",
+  "expect": {
+   "AutoPath": [
+    "Trench-Bump"
+   ]
+  }
+ },
+ {
+  "id": "d043",
+  "style": "typed",
+  "text": "auto trench/trench 9",
+  "expect": {
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "autoFuelScored": 9,
+   "AutoScored": true
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "d050",
+  "style": "asr",
+  "text": "auto they sat there and shot their preload",
+  "expect": {
+   "AutoPath": [
+    "Pre-Load"
+   ],
+   "scoringMannerismAuto": "STATIONARY"
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "d058",
+  "style": "asr",
+  "text": "yeah so auto they went um over the bum and back over the bum",
+  "expect": {
+   "AutoPath": [
+    "Bump/Bump"
+   ]
+  }
+ },
+ {
+  "id": "d059",
+  "style": "asr",
+  "text": "auto they went to the depo first then shot",
+  "expect": {
+   "AutoPath": [
+    "Depot"
+   ]
+  }
+ },
+ {
+  "id": "d065",
+  "style": "asr",
+  "text": "auto the pre load and then they went to the outpost",
+  "expect": {
+   "AutoPath": [
+    "Pre-Load",
+    "Outpost"
+   ]
+  }
+ },
+ {
+  "id": "d066",
+  "style": "asr",
+  "text": "in auto they stopped and shot from the starting spot",
+  "expect": {
+   "scoringMannerismAuto": "STATIONARY"
+  },
+  "absent": [
+   "scoringMannerismTele"
+  ]
+ },
+ {
+  "id": "d067",
+  "style": "asr",
+  "text": "auto they shot while driving the whole time",
+  "expect": {
+   "scoringMannerismAuto": "WHILE_DRIVE"
+  },
+  "absent": [
+   "scoringMannerismTele"
+  ]
+ },
+ {
+  "id": "d072",
+  "style": "typed",
+  "text": "auto: stationary shooting, 5",
+  "expect": {
+   "scoringMannerismAuto": "STATIONARY",
+   "autoFuelScored": 5,
+   "AutoScored": true
+  },
+  "absent": [
+   "scoringMannerismTele"
+  ]
+ },
+ {
+  "id": "d073",
+  "style": "typed",
+  "text": "auto shot moving, 8 made",
+  "expect": {
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "autoFuelScored": 8,
+   "AutoScored": true
+  }
+ },
+ {
+  "id": "d074",
+  "style": "typed",
+  "text": "auto - both moving and still",
+  "expect": {
+   "scoringMannerismAuto": "BOTH"
+  },
+  "absent": [
+   "scoringMannerismTele"
+  ]
+ },
+ {
+  "id": "d080",
+  "style": "asr",
+  "text": "auto stationery tele stationery",
+  "expect": {
+   "scoringMannerismAuto": "STATIONARY",
+   "scoringMannerismTele": "STATIONARY"
+  }
+ },
+ {
+  "id": "d081",
+  "style": "asr",
+  "text": "both auto and teleop they shot while moving",
+  "expect": {
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "scoringMannerismTele": "WHILE_DRIVE"
+  }
+ },
+ {
+  "id": "d089",
+  "style": "chatty",
+  "text": "They scored in auto, not sure how many, they stopped right in front of the hub to do it.",
+  "expect": {
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY"
+  },
+  "absent": [
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "d096",
+  "style": "typed",
+  "text": "Auto: 0 scored",
+  "expect": {
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE"
+  },
+  "absent": [
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "d097",
+  "style": "chatty",
+  "text": "They scored a few in auto, sometimes rolling, sometimes standing still.",
+  "expect": {
+   "AutoScored": true,
+   "scoringMannerismAuto": "BOTH"
+  },
+  "absent": [
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "d098",
+  "style": "asr",
+  "text": "auto shot the pre load while driving toward the hub",
+  "expect": {
+   "AutoPath": [
+    "Pre-Load"
+   ],
+   "scoringMannerismAuto": "WHILE_DRIVE"
+  }
+ },
+ {
+  "id": "d104",
+  "style": "asr",
+  "text": "they never stopped moving when they shot in teleop",
+  "expect": {
+   "scoringMannerismTele": "WHILE_DRIVE"
+  }
+ },
+ {
+  "id": "d105",
+  "style": "asr",
+  "text": "they parked by the hub and just fired in teleop",
+  "expect": {
+   "scoringMannerismTele": "STATIONARY"
+  },
+  "absent": [
+   "scoringMannerismAuto"
+  ]
+ },
+ {
+  "id": "d106",
+  "style": "asr",
+  "text": "they didnt score at all in teleop",
+  "expect": {
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE"
+  },
+  "absent": [
+   "autoFuelScored",
+   "scoringMannerismAuto"
+  ]
+ },
+ {
+  "id": "d111",
+  "style": "typed",
+  "text": "teleop both (moving + stopped) 22 fuel",
+  "expect": {
+   "scoringMannerismTele": "BOTH",
+   "teleopFuelScored": 22
+  }
+ },
+ {
+  "id": "d112",
+  "style": "typed",
+  "text": "tele: 0, no shooting",
+  "expect": {
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE"
+  }
+ },
+ {
+  "id": "d113",
+  "style": "typed",
+  "text": "tele - drive-by shots",
+  "expect": {
+   "scoringMannerismTele": "WHILE_DRIVE"
+  },
+  "absent": [
+   "scoringMannerismAuto"
+  ]
+ },
+ {
+  "id": "d120",
+  "style": "asr",
+  "text": "telly up they were stationery mostly",
+  "expect": {
+   "scoringMannerismTele": "STATIONARY"
+  }
+ },
+ {
+  "id": "d128",
+  "style": "typed",
+  "text": "teleop: moving shots 14",
+  "expect": {
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "teleopFuelScored": 14
+  }
+ },
+ {
+  "id": "d129",
+  "style": "chatty",
+  "text": "Shot from the same parked spot by the hub all of teleop, scored 27.",
+  "expect": {
+   "scoringMannerismTele": "STATIONARY",
+   "teleopFuelScored": 27
+  }
+ },
+ {
+  "id": "d135",
+  "style": "asr",
+  "text": "tele op they ran and gunned the whole time",
+  "expect": {
+   "scoringMannerismTele": "WHILE_DRIVE"
+  }
+ },
+ {
+  "id": "d136",
+  "style": "typed",
+  "text": "tele: none",
+  "expect": {
+   "scoringMannerismTele": "NONE"
+  },
+  "absent": [
+   "scoringMannerismAuto"
+  ]
+ },
+ {
+  "id": "d137",
+  "style": "asr",
+  "text": "they always stopped when shooting both in auto and teleop",
+  "expect": {
+   "scoringMannerismAuto": "STATIONARY",
+   "scoringMannerismTele": "STATIONARY"
+  }
+ },
+ {
+  "id": "d142",
+  "style": "asr",
+  "text": "climbed l two on the side closest to the depot",
+  "expect": {
+   "climbed": "L2",
+   "climbPos": "LS"
+  },
+  "absent": [
+   "autoClimbPos"
+  ]
+ },
+ {
+  "id": "d143",
+  "style": "asr",
+  "text": "they climbed on the outpost side level three",
+  "expect": {
+   "climbed": "L3",
+   "climbPos": "RS"
+  },
+  "absent": [
+   "autoClimbPos"
+  ]
+ },
+ {
+  "id": "d144",
+  "style": "asr",
+  "text": "center bar level two",
+  "expect": {
+   "climbed": "L2",
+   "climbPos": "MD"
+  }
+ },
+ {
+  "id": "d150",
+  "style": "asr",
+  "text": "climbed on the left of the tour got to level three",
+  "expect": {
+   "climbed": "L3",
+   "climbPos": "LS"
+  }
+ },
+ {
+  "id": "d151",
+  "style": "asr",
+  "text": "they tried to climb in the middle and slid off",
+  "expect": {
+   "climbed": "F",
+   "climbPos": "MD"
+  },
+  "absent": [
+   "tipped"
+  ]
+ },
+ {
+  "id": "d159",
+  "style": "chatty",
+  "text": "At the end they went up on the left side of the tower and made it to level two.",
+  "expect": {
+   "climbed": "L2",
+   "climbPos": "LS"
+  },
+  "absent": [
+   "autoClimbPos"
+  ]
+ },
+ {
+  "id": "d166",
+  "style": "asr",
+  "text": "they climbed the center level three",
+  "expect": {
+   "climbed": "L3",
+   "climbPos": "MD"
+  }
+ },
+ {
+  "id": "d167",
+  "style": "asr",
+  "text": "level one on the side by the depot",
+  "expect": {
+   "climbed": "L1",
+   "climbPos": "LS"
+  }
+ },
+ {
+  "id": "d168",
+  "style": "asr",
+  "text": "auto climb center",
+  "expect": {
+   "autoClimbed": "Success",
+   "autoClimbPos": "MD"
+  },
+  "absent": [
+   "climbPos",
+   "climbed"
+  ]
+ },
+ {
+  "id": "d173",
+  "style": "typed",
+  "text": "auto climb RS",
+  "expect": {
+   "autoClimbed": "Success",
+   "autoClimbPos": "RS"
+  },
+  "absent": [
+   "climbPos"
+  ]
+ },
+ {
+  "id": "d174",
+  "style": "typed",
+  "text": "auto climb attempted left side, failed",
+  "expect": {
+   "autoClimbed": "Failed",
+   "autoClimbPos": "LS"
+  },
+  "absent": [
+   "climbPos",
+   "climbed"
+  ]
+ },
+ {
+  "id": "d175",
+  "style": "chatty",
+  "text": "In auto they drove right to the tower and grabbed the left side for a level one.",
+  "expect": {
+   "autoClimbed": "Success",
+   "autoClimbPos": "LS"
+  },
+  "absent": [
+   "climbPos",
+   "climbed"
+  ]
+ },
+ {
+  "id": "d180",
+  "style": "chatty",
+  "text": "They went for the auto climb on the right side but missed the bar.",
+  "expect": {
+   "autoClimbed": "Failed",
+   "autoClimbPos": "RS"
+  },
+  "absent": [
+   "climbPos",
+   "climbed"
+  ]
+ },
+ {
+  "id": "d181",
+  "style": "asr",
+  "text": "auto climbed level one center bar with another robot",
+  "expect": {
+   "autoClimbed": "Success",
+   "autoClimbPos": "MD",
+   "doubleClimb": true
+  },
+  "absent": [
+   "climbPos"
+  ]
+ },
+ {
+  "id": "d182",
+  "style": "asr",
+  "text": "all three of them climbed",
+  "expect": {
+   "AllianceClimb": 3
+  },
+  "absent": [
+   "climbed",
+   "climbPos"
+  ]
+ },
+ {
+  "id": "d197",
+  "style": "chatty",
+  "text": "Their alliance got two robots up on the tower by the end.",
+  "expect": {
+   "AllianceClimb": 2
+  },
+  "absent": [
+   "climbed"
+  ]
+ },
+ {
+  "id": "d198",
+  "style": "chatty",
+  "text": "Every robot on their alliance climbed, it was a full triple.",
+  "expect": {
+   "AllianceClimb": 3
+  }
+ },
+ {
+  "id": "d199",
+  "style": "chatty",
+  "text": "Nobody climbed, not them and not their partners.",
+  "expect": {
+   "climbed": "No",
+   "AllianceClimb": 0
+  }
+ },
+ {
+  "id": "d205",
+  "style": "asr",
+  "text": "none of the robots on the alliance went up",
+  "expect": {
+   "AllianceClimb": 0
+  }
+ },
+ {
+  "id": "d206",
+  "style": "asr",
+  "text": "they fit under the trench",
+  "expect": {
+   "TrenchRizz": true
+  },
+  "absent": [
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "d207",
+  "style": "asr",
+  "text": "they went under the trench a bunch in teleop",
+  "expect": {
+   "TrenchRizz": true
+  },
+  "absent": [
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "d212",
+  "style": "asr",
+  "text": "they cant fit under the trench they always took the bump",
+  "expect": {
+   "TrenchRizz": false
+  },
+  "absent": [
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "d213",
+  "style": "asr",
+  "text": "ducked under the trench every cycle",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "d214",
+  "style": "asr",
+  "text": "they went under the trench like five times",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "d220",
+  "style": "typed",
+  "text": "trench: yes",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "d221",
+  "style": "typed",
+  "text": "fits under trench",
+  "expect": {
+   "TrenchRizz": true
+  },
+  "absent": [
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "d229",
+  "style": "chatty",
+  "text": "I saw them squeeze under the trench once in teleop.",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "d236",
+  "style": "asr",
+  "text": "they passed under the trench with no problem",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "d237",
+  "style": "typed",
+  "text": "under trench ✓",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "d238",
+  "style": "asr",
+  "text": "trench yeah they fit",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "d243",
+  "style": "typed",
+  "text": "no trench (too tall)",
+  "expect": {
+   "TrenchRizz": false
+  }
+ },
+ {
+  "id": "d244",
+  "style": "asr",
+  "text": "they went under the tranche a couple times",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "d245",
+  "style": "chatty",
+  "text": "They used the trench as a shortcut back to the depot.",
+  "expect": {
+   "TrenchRizz": true
+  }
+ },
+ {
+  "id": "d250",
+  "style": "asr",
+  "text": "they drove into enemy territory to play defense",
+  "expect": {
+   "crossedZone": true,
+   "robotDefended": "Yes"
+  }
+ },
+ {
+  "id": "d251",
+  "style": "asr",
+  "text": "they stayed on their side the whole match",
+  "expect": {
+   "crossedZone": false
+  }
+ },
+ {
+  "id": "d252",
+  "style": "asr",
+  "text": "went all the way across into the red zone and they were on blue",
+  "expect": {
+   "crossedZone": true,
+   "alliance": "blue"
+  }
+ },
+ {
+  "id": "d267",
+  "style": "chatty",
+  "text": "They crossed over into the blue zone even though they're red.",
+  "expect": {
+   "crossedZone": true,
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "d268",
+  "style": "asr",
+  "text": "they went into the opponents half",
+  "expect": {
+   "crossedZone": true
+  }
+ },
+ {
+  "id": "d269",
+  "style": "asr",
+  "text": "went across to the other side to pass balls back",
+  "expect": {
+   "crossedZone": true
+  }
+ },
+ {
+  "id": "d274",
+  "style": "asr",
+  "text": "they went over the bump into the neutral zone",
+  "expect": {},
+  "absent": [
+   "crossedZone"
+  ]
+ },
+ {
+  "id": "d275",
+  "style": "typed",
+  "text": "crossed: no",
+  "expect": {
+   "crossedZone": false
+  }
+ },
+ {
+  "id": "d276",
+  "style": "asr",
+  "text": "they stole balls from the opposing zone",
+  "expect": {
+   "crossedZone": true
+  }
+ },
+ {
+  "id": "d281",
+  "style": "typed",
+  "text": "opp zone: yes",
+  "expect": {
+   "crossedZone": true
+  }
+ },
+ {
+  "id": "d282",
+  "style": "chatty",
+  "text": "They crossed into the opponent zone to block their path to the depot.",
+  "expect": {
+   "crossedZone": true,
+   "robotDefended": "Yes"
+  }
+ },
+ {
+  "id": "d283",
+  "style": "asr",
+  "text": "they crossed into the opposite zone",
+  "expect": {
+   "crossedZone": true
+  }
+ },
+ {
+  "id": "d290",
+  "style": "asr",
+  "text": "their bumper came off",
+  "expect": {
+   "mechIssue": true
+  },
+  "absent": [
+   "tipped",
+   "died"
+  ]
+ },
+ {
+  "id": "d298",
+  "style": "asr",
+  "text": "they fell over on the bump",
+  "expect": {
+   "tipped": true
+  }
+ },
+ {
+  "id": "d299",
+  "style": "asr",
+  "text": "they browned out for a few seconds then came back",
+  "expect": {
+   "died": true
+  },
+  "absent": [
+   "tipped"
+  ]
+ },
+ {
+  "id": "d306",
+  "style": "asr",
+  "text": "flywheel was making a horrible noise and then quit",
+  "expect": {
+   "mechIssue": true
+  }
+ },
+ {
+  "id": "d307",
+  "style": "asr",
+  "text": "they were dead on the field the entire match",
+  "expect": {
+   "died": true
+  },
+  "absent": [
+   "noShow"
+  ]
+ },
+ {
+  "id": "d308",
+  "style": "asr",
+  "text": "their intake broke but they kept driving around fine",
+  "expect": {
+   "mechIssue": true
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "d313",
+  "style": "asr",
+  "text": "the battery fell out and they died",
+  "expect": {
+   "mechIssue": true,
+   "died": true
+  }
+ },
+ {
+  "id": "d314",
+  "style": "asr",
+  "text": "tipped over and died",
+  "expect": {
+   "tipped": true,
+   "died": true
+  }
+ },
+ {
+  "id": "d315",
+  "style": "asr",
+  "text": "they were on their side after getting hit",
+  "expect": {
+   "tipped": true
+  }
+ },
+ {
+  "id": "d320",
+  "style": "typed",
+  "text": "tipped",
+  "expect": {
+   "tipped": true
+  }
+ },
+ {
+  "id": "d321",
+  "style": "typed",
+  "text": "no comms whole match",
+  "expect": {
+   "died": true
+  }
+ },
+ {
+  "id": "d322",
+  "style": "typed",
+  "text": "climber broke, couldn't climb",
+  "expect": {
+   "mechIssue": true,
+   "climbed": "No"
+  }
+ },
+ {
+  "id": "d337",
+  "style": "asr",
+  "text": "they had a mechanical issue with the intake",
+  "expect": {
+   "mechIssue": true
+  }
+ },
+ {
+  "id": "d338",
+  "style": "asr",
+  "text": "the hood on the shooter got stuck up",
+  "expect": {
+   "mechIssue": true
+  }
+ },
+ {
+  "id": "d339",
+  "style": "asr",
+  "text": "a ball got jammed in their indexer",
+  "expect": {
+   "mechIssue": true
+  }
+ },
+ {
+  "id": "d344",
+  "style": "chatty",
+  "text": "Hi, this is Maya scouting. Match 12, team 177, red 2. Auto they went bump to bump and scored 5. Teleop they scored about 30 shooting on the move. Climbed level 2 on the left side, and all three robots on red climbed.",
+  "expect": {
+   "scoutName": "Maya",
+   "matchNumber": 12,
+   "teamNumber": 177,
+   "startPos": "2",
+   "alliance": "red",
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "autoFuelScored": 5,
+   "AutoScored": true,
+   "teleopFuelScored": 30,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "climbed": "L2",
+   "climbPos": "LS",
+   "AllianceClimb": 3
+  },
+  "absent": [
+   "autoClimbPos",
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "d345",
+  "style": "chatty",
+  "text": "Scout name Jordan. Quals match 7, team 2168 on blue 1. They didn't do anything in auto. Picked up off the floor in teleop, pretty good at it, scored 15 standing still. Two robots on their alliance climbed but they didn't.",
+  "expect": {
+   "scoutName": "Jordan",
+   "matchType": "qm",
+   "matchNumber": 7,
+   "teamNumber": 2168,
+   "startPos": "4",
+   "alliance": "blue",
+   "AutoPath": [
+    "N/A"
+   ],
+   "pickupTele": [
+    "FLOOR"
+   ],
+   "pickupEffe": 4,
+   "teleopFuelScored": 15,
+   "scoringMannerismTele": "STATIONARY",
+   "climbed": "No",
+   "AllianceClimb": 2
+  },
+  "absent": [
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "d346",
+  "style": "chatty",
+  "text": "Practice match 3, team 5000, they were a no show.",
+  "expect": {
+   "matchType": "pm",
+   "matchNumber": 3,
+   "teamNumber": 5000,
+   "noShow": true
+  },
+  "absent": [
+   "autoFuelScored",
+   "teleopFuelScored",
+   "climbed",
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "d351",
+  "style": "chatty",
+  "text": "They made maybe half their shots.",
+  "expect": {
+   "scoringEffe": 50
+  },
+  "absent": [
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "d352",
+  "style": "chatty",
+  "text": "Shots were like 3 out of 4 going in.",
+  "expect": {
+   "scoringEffe": 75
+  },
+  "absent": [
+   "teleopFuelScored",
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "d353",
+  "style": "chatty",
+  "text": "When they passed they sprayed fuel everywhere, totally scattered, pretty bad.",
+  "expect": {
+   "fuelPassed": [
+    "Scattered"
+   ],
+   "passingEffe": 2
+  }
+ },
+ {
+  "id": "d360",
+  "style": "chatty",
+  "text": "Their floor intake is elite, they vacuumed up everything in the neutral zone.",
+  "expect": {
+   "pickupTele": [
+    "MID",
+    "FLOOR"
+   ],
+   "pickupEffe": 5
+  },
+  "absent": [
+   "pickupfrom",
+   "crossedZone"
+  ]
+ },
+ {
+  "id": "d368",
+  "style": "chatty",
+  "text": "I think two out of three climbed on blue, and our robot wasn't one of them.",
+  "expect": {
+   "climbed": "No",
+   "AllianceClimb": 2
+  }
+ },
+ {
+  "id": "d369",
+  "style": "chatty",
+  "text": "Picked up from the depot and the floor in teleop, decent pickup.",
+  "expect": {
+   "pickupTele": [
+    "DEPOT",
+    "FLOOR"
+   ],
+   "pickupEffe": 3
+  },
+  "absent": [
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "d375",
+  "style": "typed",
+  "text": "pickup: floor + depot, good",
+  "expect": {
+   "pickupTele": [
+    "DEPOT",
+    "FLOOR"
+   ],
+   "pickupEffe": 5
+  },
+  "absent": [
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "d376",
+  "style": "typed",
+  "text": "passing: center, ok",
+  "expect": {
+   "fuelPassed": [
+    "Center"
+   ],
+   "passingEffe": 3
+  }
+ },
+ {
+  "id": "d377",
+  "style": "typed",
+  "text": "defense: yes, decent",
+  "expect": {
+   "robotDefended": "Yes",
+   "defenceEffe": 3
+  }
+ },
+ {
+  "id": "d382",
+  "style": "typed",
+  "text": "tele pickup: HP only",
+  "expect": {
+   "pickupTele": [
+    "H_Player"
+   ]
+  },
+  "absent": [
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "d383",
+  "style": "typed",
+  "text": "no pickup in tele",
+  "expect": {
+   "pickupTele": [
+    "NONE"
+   ]
+  }
+ },
+ {
+  "id": "d384",
+  "style": "typed",
+  "text": "def attempted, poor",
+  "expect": {
+   "robotDefended": "Attempted",
+   "defenceEffe": 2
+  }
+ },
+ {
+  "id": "d390",
+  "style": "typed",
+  "text": "team 6328 red2 m44 auto trench->trench 8, tele 41 both, L2 left, alliance 2/3",
+  "expect": {
+   "teamNumber": 6328,
+   "startPos": "2",
+   "alliance": "red",
+   "matchNumber": 44,
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "autoFuelScored": 8,
+   "AutoScored": true,
+   "teleopFuelScored": 41,
+   "scoringMannerismTele": "BOTH",
+   "climbed": "L2",
+   "climbPos": "LS",
+   "AllianceClimb": 2
+  }
+ },
+ {
+  "id": "d391",
+  "style": "typed",
+  "text": "ally climb 3/3",
+  "expect": {
+   "AllianceClimb": 3
+  }
+ },
+ {
+  "id": "d399",
+  "style": "asr",
+  "text": "match for team twenty one sixty eight read one",
+  "expect": {
+   "matchNumber": 4,
+   "teamNumber": 2168,
+   "startPos": "1",
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "d407",
+  "style": "asr",
+  "text": "the alliance climb was all three",
+  "expect": {
+   "AllianceClimb": 3
+  }
+ },
+ {
+  "id": "d408",
+  "style": "asr",
+  "text": "team one seventy seven did not show up",
+  "expect": {
+   "teamNumber": 177,
+   "noShow": true
+  },
+  "absent": [
+   "died",
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "d409",
+  "style": "asr",
+  "text": "practice match six team ninety nine ninety nine red two",
+  "expect": {
+   "matchType": "pm",
+   "matchNumber": 6,
+   "teamNumber": 9999,
+   "startPos": "2",
+   "alliance": "red"
+  }
+ },
+ {
+  "id": "d414",
+  "style": "noise",
+  "text": "the blue alliance won like one forty two to ninety eight",
+  "expect": {},
+  "absent": [
+   "teleopFuelScored",
+   "autoFuelScored",
+   "alliance"
+  ]
+ },
+ {
+  "id": "d415",
+  "style": "noise",
+  "text": "two fifty four is so cracked they climb level three every match",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "climbed"
+  ]
+ },
+ {
+  "id": "d416",
+  "style": "noise",
+  "text": "lol one of their partners tipped over",
+  "expect": {},
+  "absent": [
+   "tipped"
+  ]
+ },
+ {
+  "id": "d421",
+  "style": "noise",
+  "text": "announcer said match forty two is up next",
+  "expect": {},
+  "absent": [
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "d422",
+  "style": "noise",
+  "text": "the opponents are playing crazy defense on everybody",
+  "expect": {},
+  "absent": [
+   "robotDefended",
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "d423",
+  "style": "noise",
+  "text": "my phone is at eight percent",
+  "expect": {},
+  "absent": [
+   "scoringEffe"
+  ]
+ },
+ {
+  "id": "d430",
+  "style": "noise",
+  "text": "im gonna climb up the bleachers to get a better view",
+  "expect": {},
+  "absent": [
+   "climbed"
+  ]
+ },
+ {
+  "id": "d438",
+  "style": "noise",
+  "text": "their opponent on blue two climbed in the middle",
+  "expect": {},
+  "absent": [
+   "climbPos",
+   "startPos",
+   "alliance"
+  ]
+ },
+ {
+  "id": "d439",
+  "style": "noise",
+  "text": "dude the dj is playing the same song again",
+  "expect": {}
+ },
+ {
+  "id": "d445",
+  "style": "noise",
+  "text": "i think my mic is picking up the speakers",
+  "expect": {}
+ },
+ {
+  "id": "d446",
+  "style": "noise",
+  "text": "ok testing testing",
+  "expect": {}
+ },
+ {
+  "id": "d447",
+  "style": "noise",
+  "text": "what time is the robot inspection thing",
+  "expect": {}
+ },
+ {
+  "id": "d452",
+  "style": "noise",
+  "text": "the ref just threw a flag on the blue alliance",
+  "expect": {},
+  "absent": [
+   "alliance"
+  ]
+ },
+ {
+  "id": "d453",
+  "style": "noise",
+  "text": "i think i forgot to submit the last one",
+  "expect": {}
+ },
+ {
+  "id": "d454",
+  "style": "noise",
+  "text": "my sister is in the stands somewhere",
+  "expect": {}
+ },
+ {
+  "id": "d460",
+  "style": "noise",
+  "text": "this event is way bigger than last year",
+  "expect": {},
+  "absent": [
+   "eventKey"
+  ]
+ },
+ {
+  "id": "d461",
+  "style": "noise",
+  "text": "i'm so tired i woke up at five",
+  "expect": {},
+  "absent": [
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "d469",
+  "style": "noise",
+  "text": "the opposing team passed fuel all over the center",
+  "expect": {},
+  "absent": [
+   "fuelPassed"
+  ]
+ },
+ {
+  "id": "d476",
+  "style": "noise",
+  "text": "we should get snacks after match thirty",
+  "expect": {},
+  "absent": [
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "d477",
+  "style": "noise",
+  "text": "the blue robots all stopped to shoot",
+  "expect": {},
+  "absent": [
+   "scoringMannerismTele"
+  ]
+ },
+ {
+  "id": "d478",
+  "style": "noise",
+  "text": "the guy next to me keeps cheering for red three",
+  "expect": {},
+  "absent": [
+   "startPos",
+   "alliance"
+  ]
+ },
+ {
+  "id": "d483",
+  "style": "noise",
+  "text": "ok the next one i'm watching is someone else",
+  "expect": {},
+  "absent": [
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "d484",
+  "style": "noise",
+  "text": "all three opponent robots climbed level two",
+  "expect": {},
+  "absent": [
+   "climbed",
+   "AllianceClimb"
+  ]
+ }
+]
