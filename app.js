@@ -187,7 +187,9 @@ function normalizeNumberWords(text) {
     const atStart = p < 0 || /^[,.;!?]$/.test(tokens[p]);
     const before = atStart ? '' : wordAt(p);
     let pieces = chunks;
-    if (chunks.length > 1 && (atStart || /^(team|teams|robot|bot|number|scouting|watching|got|on)$/.test(before))) {
+    if (chunks.length === 2 && chunks[0] === '20' && chunks[1].length === 2 && !atStart && !/^(team|teams|robot|bot|number|scouting|watching|got|on|its|it's|report)$/.test(before)) {
+      pieces = [chunks.join('')];                    // a year: "twenty twenty six" -> 2026
+    } else if (chunks.length > 1 && (atStart || /^(team|teams|robot|bot|number|scouting|watching|got|on|its|it's|report)$/.test(before))) {
       pieces = [];
       let cur = '', curMult = false;
       chunks.forEach((c, k) => {
@@ -220,18 +222,28 @@ function parseTranscript(text, initialState) {
   // A scout who corrects themselves means the second number: "three, no wait, four",
   // "11 in auto, sorry, I mean 13".
   // "fourteen, no fifteen, no fourteen, yeah fourteen" keeps going until the last one.
-  const CORRECTION = /\b\d+((?:\s+(?:fuel|balls?))?(?:\s+(?:in|during)\s+(?:the\s+)?(?:auto|teleop))?)[\s,.?!]*(?:no\s*,?\s*wait|wait\s*,?\s*no|wait|actually|sorry|correction|scratch\s+that|make\s+that|i\s+mean|my\s+bad|hold\s+on|no\s+sorry|call\s+it|let'?s\s+say|let\s+us\s+say|no)[\s,.?!]*(?:(?:sorry|actually|wait|no|maybe|probably|like)[\s,.?!]*)?(?:i\s+mean[\s,]*|it\s+was\s+|it'?s\s+|make\s+that\s+|they\s+(?:got|scored|made|had)\s+)?(\d+)\b/;
-  let t0 = normalizeNumberWords(lex ? lex.fix(text) : text.toLowerCase());
+  const CORRECTION = /\b\d+((?:\s+(?:fuel|balls?))?(?:\s+(?:in|during)\s+(?:the\s+)?(?:auto|teleop))?)[\s,.?!]*(?:no\s+sorry\s+i\s+mean|no\s*,?\s*wait|wait\s*,?\s*no|wait|actually|sorry|correction|scratch\s+that|make\s+that|i\s+mean|my\s+bad|hold\s+on|no\s+sorry|call\s+it|let'?s\s+say|let\s+us\s+say|no)[\s,.?!]*(?:(?:sorry|actually|wait|no|maybe|probably|like)[\s,.?!]*)?(?:i\s+mean[\s,]*|it\s+was\s+|it'?s\s+|make\s+that\s+|they\s+(?:got|scored|made|had)\s+)?(?:level\s+|l)?(\d+)\b/;
+  let pre = lex ? lex.fix(text) : text.toLowerCase();
+  pre = pre.replace(/(\S)\s+(?:yeah|basically|honestly|literally|you\s+know|i\s+mean)\b/g, '$1')
+    .replace(/\b([a-z]+)\s+\1\b/g, (m, w) => (/^(?:zero|oh|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|no)$/.test(w) ? m : w));
+  let t0 = normalizeNumberWords(pre);
   for (let k = 0; k < 6 && CORRECTION.test(t0); k++) t0 = t0.replace(CORRECTION, '$2$1');
   // a corrected station: "blue 1. no wait, blue 2", "station 2... actually no, it's station 3"
-  t0 = t0.replace(/\b(?:(?:red|blue)\s+|station\s+)\d\b[\s,.?!]*(?:no\s*,?\s*wait|wait\s*,?\s*no|actually\s*,?\s*no|actually|sorry|i\s+mean|no)[\s,.?!]*(?:it'?s\s+|it\s+is\s+|they'?re\s+)?(?=(?:(?:red|blue)\s+|station\s+)\d\b)/g, '');
+  t0 = t0.replace(/\b(?:(?:red|blue)\s+|station\s+)\d\b[\s,.?!]*(?:(?:no|wait|actually|sorry|i\s+mean)[\s,.?!]*)+(?:it'?s\s+|it\s+is\s+|they'?re\s+)?(?=(?:(?:red|blue)\s+|station\s+)\d\b)/g, '');
   // event codes said letter by letter: "2026 c t w a t"
   t0 = t0.replace(/\b(20\d{2})\s+((?:[a-z]\s+){2,9}[a-z])\b/g, (m, y, letters) => y + letters.replace(/\s+/g, ''));
   // Talk about OTHER robots, other matches and the arena isn't about this robot: drop it.
   // A whole sentence that says "not my robot" goes; otherwise just the clause.
   // (no lookbehind in these patterns: older iPhones can't parse it)
-  t0 = t0.replace(/[^.!?]+[.!?]*/g, (sent) => (/\bnot\s+(?:my|our)\s+(?:robot|team|bot)\b|\bnot\s+(?:mine|ours)\b|\bnot\s+the\s+one\s+i'?m\s+(?:watching|scouting)\b|\bnot\s+this\s+one\b|\bevery\s+(?:single\s+)?match\b|\bis\s+so\s+(?:cracked|op|goated|good)\b|\b(?:quiz|homework|precalc|calc|class|parking|garage|coffee|street|lunch|dinner|bus|hotel|my\s+(?:phone|car|mom|dad|test))\b/.test(sent) ? ' ' : sent));
-  const OTHERS = /\b(?:did\s+you\s+see|(?:the\s+)?announcer|next\s+match\s+is|(?:our|my)\s+(?:robot|team)\s+is\s+in\s+the\s+queue|who\s+is\s+scouting|who'?s\s+scouting|(?:the|that|this)\s+(?:other\s+)?(?:robot|bot|team|one)\s+(?:next\s+to\s+(?:them|us|it)|across\s+the\s+field|over\s+there|on\s+the\s+other\s+side)|that\s+team\s+\d+|team\s+\d+\s+(?:across\s+the\s+field|over\s+there|on\s+the\s+other\s+side)|the\s+(?:blue|red)\s+(?:alliance\s+)?(?:robot|one|bot)\b|their\s+partners?'?s?\s+(?:passing|pickup|intake|defense|auto|robot|climb)|the\s+other\s+(?:robot|alliance|team)'?s?|(?:the\s+)?(?:red|blue)\s+alliance\s+partner|(?:the\s+)?human\s+player\s+on\s+(?:red|blue)|their\s+opponents?'?s?|(?:nobody|no\s+one)\s+on\s+the\s+(?:opponent|other|opposing)\s+alliance|\d+'s\s+(?:auto|robot|climb|teleop|defense|intake)|\d+\s+just\s+(?:did|got|scored|went|climbed)|(?:the\s+)?queue(?:\s+line)?|(?:the\s+)?(?:hub|trench|bump|tower|depot|outpost)\s+(?:on\s+the\s+(?:left|right|red|blue)(?:\s+side)?\s+)?(?:looks|is|was|seems)\s+(?:broken|bent|empty|full|damaged)|their\s+partner\s+had|(?:all\s+(?:3|three)\s+)?(?:opponent|opposing)\s+(?:robots?|teams?|alliance)|the\s+opposing\s+team|(?:the\s+)?(?:guy|girl|kid|person|people|dude|someone|lady|man)\s+(?:next\s+to|behind|in\s+front\s+of|beside)\s+me|one\s+of\s+their\s+partners\s+(?!climbed)|(?:that|their|the)\s+partner\s+robot|someone'?s\s+robot|somebody'?s\s+robot)\b[^.?!;|,]*/g;
+  const LIFE = /\b(?:quiz|homework|precalc|calc|class|parking|garage|coffee|street|lunch|dinner|bus|hotel|starving|hungry|bathroom|battery|my\s+(?:phone|car|mom|dad|test)|switch\s+seats|headset\s+keeps|cutting\s+out|hard\s+to\s+see|standing\s+in\s+front\s+of\s+me|next\s+match|rambly|forgetting\s+something)\b/;
+  t0 = t0.replace(/[^.!?]+[.!?]*/g, (sent) => {
+    if (/\bnot\s+(?:my|our)\s+(?:robot|team|bot)\b|\bnot\s+(?:mine|ours)\b|\bnot\s+the\s+one\s+i'?m\s+(?:watching|scouting)\b|\bnot\s+this\s+one\b|\bevery\s+(?:single\s+)?match\b|\bis\s+so\s+(?:cracked|op|goated|good)\b/.test(sent)) return ' ';
+    if (!LIFE.test(sent)) return sent;
+    if (sent.split(/\s+/).length <= 14) return ' ';
+    // a long run-on: cut out just the aside, from its start to the next "then/also/and then"
+    return sent.replace(/(?:\b(?:i|we|my|im|i'm|someone|the\s+announcer|gotta|sorry|it\s+was\s+really)\b(?:\s*[^.!?\s]+){0,8}?\s*)?\b(?:quiz|homework|precalc|calc|class|parking|garage|coffee|street|lunch|dinner|bus|hotel|starving|hungry|bathroom|battery|phone|switch\s+seats|headset|cutting\s+out|hard\s+to\s+see|standing\s+in\s+front\s+of\s+me|next\s+match|rambly|forgetting\s+something)\b(?:\s*[^.!?\s]+){0,7}?\s*(?=\b(?:then|also|and|so)\b|[.!?]|$)/g, ' ');
+  });
+  const OTHERS = /\b(?:did\s+you\s+see|(?:the\s+)?announcer|next\s+match\s+is|(?:our|my)\s+(?:robot|team)\s+is\s+in\s+the\s+queue|who\s+is\s+scouting|who'?s\s+scouting|(?:the|that|this)\s+(?:other\s+)?(?:robot|bot|team|one)\s+(?:next\s+to\s+(?:them|us|it)|across\s+the\s+field|over\s+there|on\s+the\s+other\s+side)|that\s+team\s+\d+|team\s+\d+\s+(?:across\s+the\s+field|over\s+there|on\s+the\s+other\s+side)|the\s+(?:blue|red)\s+(?:alliance\s+)?(?:robot|one|bot)\b|their\s+partners?'?s?\s+(?:passing|pickup|intake|defense|auto|robot|climb)|the\s+other\s+(?:robot|alliance|team)'?s?|(?:the\s+)?(?:red|blue)\s+alliance\s+partner|(?:the\s+)?human\s+player\s+on\s+(?:red|blue)|their\s+opponents?'?s?|(?:nobody|no\s+one)\s+on\s+the\s+(?:opponent|other|opposing)\s+alliance|\d+'s\s+(?:auto|robot|climb|teleop|defense|intake)|\d+\s+just\s+(?:did|got|scored|went|climbed)|(?:the\s+)?queue(?:\s+line)?|(?:the\s+)?(?:hub|trench|bump|tower|depot|outpost)\s+(?:on\s+the\s+(?:left|right|red|blue)(?:\s+side)?\s+)?(?:looks|is|was|seems)\s+(?:broken|bent|empty|full|damaged)|their\s+partner\s+had|(?:all\s+(?:3|three)\s+)?(?:opponent|opposing)\s+(?:robots?|teams?|alliance)|the\s+opposing\s+team|(?:the\s+)?(?:guy|girl|kid|person|people|dude|someone|lady|man)\s+(?:next\s+to|behind|in\s+front\s+of|beside)\s+me|one\s+of\s+their\s+partners\s+(?!climbed)|(?:that|their|the)\s+partner\s+robot|someone'?s\s+robot|somebody'?s\s+robot|the\s+mascot|(?:she|he)\s+(?:died|fell|tipped)|opponents?\s+(?:died|tipped|broke|fell))\b[^.?!;|,]*/g;
   // A sentence whose subject is clearly someone else: the announcer, the crowd, the refs,
   // the other alliance, or the scout talking about themselves ("we", "my", "I" + anything
   // but "I think / I've got / I'm on / I saw").
@@ -290,7 +302,7 @@ function parseTranscript(text, initialState) {
   // "def 4/5", "intake 3 out of 5" become a word the rating table knows
   const rated = t.replace(/\b([0-5])\s*(?:\/|out\s+of|of)\s*5\b/g, 'rate$1').replace(/\b(eff|effectiveness|rating|rated)\s*[:=]?\s*([0-5])\b(?!\s*(?:\/|out\s+of))/g, '$1 rate$2');
   const rateNear = (keywordRe) => {
-    const words = rated.replace(/[.!?]/g, ' || ').replace(/[,;]/g, ' | ').replace(/[:=()\-]/g, ' ').split(/\s+/).filter(Boolean);
+    const words = rated.replace(/[.!?]/g, ' || ').replace(/[,;]/g, ' | ').replace(/[:=()\-\/]/g, ' ').split(/\s+/).filter(Boolean);
     let best = null;
     for (let i = 0; i < words.length; i++) {
       if (!keywordRe.test(words[i])) continue;
@@ -299,6 +311,10 @@ function parseTranscript(text, initialState) {
       if (/\b(?:could\s*n'?t|could\s+not|unable\s+to|can'?t)\s+(?:do\s+it|stop\s+(?:anyone|anybody|anything)|do\s+anything)\b/.test(sentence) || (/\bat\s+all\b/.test(sentence) && /\b(?:could\s*n'?t|could\s+not|unable|can'?t)\b/.test(sentence))) { best = [0, 1]; break; }
       // after: "passing was really good", "intake: solid"; before: "great defense", "pretty good intake"
       const cands = [];
+      if (words[i + 1] === '|' && words[i + 2]) {
+        const v2 = rateWord(words[i + 2] + ' ' + (words[i + 3] || '')), v1 = rateWord(words[i + 2]);
+        if (v2 !== null || v1 !== null) cands.push([1.5, v2 !== null ? v2 : v1]);
+      }
       for (let d = 1; d <= 7 && i + d < words.length; d++) {
         if (words[i + d] === '|' || words[i + d] === '||') break;
         const one = words[i + d], two = words[i + d] + ' ' + (words[i + d + 1] || ''), three = two + ' ' + (words[i + d + 2] || '');
@@ -308,7 +324,7 @@ function parseTranscript(text, initialState) {
           if (v !== null) { cands.push([/^(?:was|is|were|looked|seemed|felt)$/.test(words[i + d - 1] || '') ? d - 0.75 : d, v]); break; }
         }
         if (cands.length) break;
-        if (!/^(?:was|is|were|are|looked|seemed|very|really|pretty|super|quite|fairly|so|kind|of|their|the|its|at|not|overall|honestly|just|and|it|they|but|kinda|also|got|felt|did|honest|tbh|bot|robot|too|up|rating|rated|eff|effectiveness|grade|wise|from|in|teleop|tele|auto|floor|ground|depot|outpost|chute|station|human|player|zone|neutral|carpet|bin|all|match|whole|game|pretty|much|i|would|say|think)$/.test(words[i + d])) break;
+        if (!/^(?:was|is|were|are|looked|seemed|very|really|pretty|super|quite|fairly|so|kind|of|their|the|its|at|not|overall|honestly|just|and|it|they|but|kinda|also|got|felt|did|honest|tbh|bot|robot|too|up|rating|rated|eff|effectiveness|grade|wise|from|in|teleop|tele|auto|fuel|balls|floor|ground|depot|outpost|chute|station|human|player|zone|neutral|carpet|bin|all|match|whole|game|pretty|much|i|would|say|think)$/.test(words[i + d])) break;
       }
       // A full sentence that comes back to it: "They tried to play defense for a bit, but
       // honestly it was terrible."
@@ -340,7 +356,7 @@ function parseTranscript(text, initialState) {
 
   // How a team scored: stationary, driving, or both.
   const HOW_DRIVING = /\b(?:ran\s+and\s+gunned|run(?:ning)?\s+and\s+gun\w*|rolling|never\s+stopped(?:\s+moving)?|barely\s+(?:ever\s+)?stopped|rarely\s+stopped|kept\s+(?:rolling|moving|driving)|while\s+(?:rolling|strafing|cruising)|firing\s+the\s+whole\s+time\s+they\s+drove|moving\s+and\s+shooting|shooting\s+and\s+moving|on\s+the\s+go|on\s+move|strafing|drive[\s-]+by|running\s+shots?|shot\s+(?:it\s+)?on\s+the\s+run)\b|\(\s*moving\s*\)|\bmoving\b(?=\s*[).;|,]|\s*$)|\b(?:while\s+(?:driving|moving|on the move|in motion|going)|on the move|on the run|on the fly|in motion|shooting\s+and\s+driving|driving\s+and\s+shooting|moving\s+shots?|shot\s+while\s+moving|(?:shoot(?:s|ing)?|shot)\s+(?:while\s+)?moving|while\s+drive|drive\s+by|mobile|on\s+the\s+way|kept\s+moving|running\s+and\s+gunning|driving\s+shots?)\b/i;
-  const HOW_STATIONARY = /\b(?:stopped\s+(?:right\s+)?(?:at|on|by|in\s+front\s+of)\b|always\s+stopped|came?\s+to\s+a\s+(?:full\s+)?stop|full\s+stop|hit\s+the\s+brakes|sat\s+(?:in\s+front\s+of|at|by|near|in)\s+[^.?!]{0,20}?\s+(?:and\s+)?sho\w*|sat\s+in\s+one\s+spot|in\s+one\s+spot|camped\s+(?:at|by|in\s+front\s+of)\s+the\s+hub|like\s+a\s+turret|stood\s+(?:and\s+shot|still)|without\s+moving|never\s+moved\s+(?:while|when)\s+shooting|did\s*n'?t\s+move\s+(?:while|when)\s+(?:shooting|they\s+shot)|sit\s+(?:by|at|near)\s+the\s+hub|sat\s+(?:by|at|near)\s+the\s+hub|camp(?:ed|ing)?\s+(?:and\s+)?sho\w*|while\s+(?:stationary|stopped|still|parked|standing still|sitting still)|from\s+a\s+(?:stop|standstill)|a\s+standstill|sitting\s+still|standing\s+still|stood\s+still|sat\s+still|sat\s+and\s+shot|stationary|parked(?:\s+and\s+shot|\s+shots?|\s+to\s+shoot)?|stopped\s+to\s+shoot|stopped\s+and\s+shot|stop\s+and\s+shoot|parks?\s+and\s+shoot|parked\s+before\s+shooting|stationary\s+shoot\w*|stopped\s+shots?|from\s+one\s+spot|from\s+the\s+same\s+spot|planted|stayed\s+still|sometimes\s+(?:they\s+)?stopped|stopped)\b/i;
+  const HOW_STATIONARY = /\b(?:stops?\s+to\s+shoot|stopped\s+(?:right\s+)?(?:at|on|by|in\s+front\s+of)\b|always\s+stopped|came?\s+to\s+a\s+(?:full\s+)?stop|full\s+stop|hit\s+the\s+brakes|sat\s+(?:in\s+front\s+of|at|by|near|in)\s+[^.?!]{0,20}?\s+(?:and\s+)?sho\w*|sat\s+in\s+one\s+spot|in\s+one\s+spot|camped\s+(?:at|by|in\s+front\s+of)\s+the\s+hub|like\s+a\s+turret|stood\s+(?:and\s+shot|still)|without\s+moving|never\s+moved\s+(?:while|when)\s+shooting|did\s*n'?t\s+move\s+(?:while|when)\s+(?:shooting|they\s+shot)|sit\s+(?:by|at|near)\s+the\s+hub|sat\s+(?:by|at|near)\s+the\s+hub|camp(?:ed|ing)?\s+(?:and\s+)?sho\w*|while\s+(?:stationary|stopped|still|parked|standing still|sitting still)|from\s+a\s+(?:stop|standstill)|a\s+standstill|sitting\s+still|standing\s+still|stood\s+still|sat\s+still|sat\s+and\s+shot|stationary|parked(?:\s+and\s+shot|\s+shots?|\s+to\s+shoot)?|stopped\s+to\s+shoot|stopped\s+and\s+shot|stop\s+and\s+shoot|parks?\s+and\s+shoot|parked\s+before\s+shooting|stationary\s+shoot\w*|stopped\s+shots?|from\s+one\s+spot|from\s+the\s+same\s+spot|planted|stayed\s+still|sometimes\s+(?:they\s+)?stopped|stopped)\b/i;
   // "never stopped to shoot", "didn't stop" is the opposite of stationary
   const NOT_STATIONARY = /\b(?:never|didn'?t|did\s+not|without|no|wouldn'?t|barely|rarely|hardly)\s+(?:even\s+|ever\s+)?(?:stop(?:ped|ping)?|park(?:ed|ing)?|stand(?:ing)?\s+still)\b(?!\s+(?:while|when)\s+shooting)(?:\s+moving)?/gi;
   const how = (ctx) => {
@@ -364,7 +380,8 @@ function parseTranscript(text, initialState) {
     const ws = String(s || '').split(/[\s,.;:|/]+/).filter(Boolean);
     const out = [];
     for (const w of ws) {
-      if (NOT_NAME.test(w) || /\d/.test(w) || !/^[a-z][a-z'-]*$/i.test(w)) break;
+      if (out.length === 1 && /^[a-z]$/i.test(w)) { out.push(w); break; }   // "Jordan K"
+      if (NOT_NAME.test(w) || /\d/.test(w) || !/^[a-z][a-z'-]*$/i.test(w) || w.length < 2) break;
       out.push(w);
       if (out.length === 2) break;
     }
@@ -373,6 +390,8 @@ function parseTranscript(text, initialState) {
   const scoutPatterns = [
     /\b(?:scouter|scout)\b\s*(?:name\s*)?(?:is|:|=|-)?\s*([a-z][a-z\s'-]{1,30})/i,
     /\b(?:hi|hey|hello)\s*,?\s*(?:it'?s|its|it\s+is|this\s+is|i'?m|im|i\s+am)\s+([a-z][a-z'-]{1,20})/i,
+    /\b(?:it'?s|its)\s+([a-z][a-z'-]{1,20}(?:\s+[a-z]\b)?)\s*(?=$|[,.;!?]|\s+(?:here|scouting|and|then|also|again)\b)/i,
+    /(?:^|[;|.,]\s*)-\s*([a-z][a-z'-]{1,20})\s*(?=[;|.,]|$)/i,
     /\bmy\s+name\s+is\s+([a-z][a-z\s'-]{1,30})/i,
     /^[\s\-–]*([a-z][a-z'-]{1,20})\s*[|;]/i,
     /\b(?:this\s+is|it'?s|its)\s+([a-z][a-z'-]{1,20})\s+(?:here|scouting|speaking)\b/i,
@@ -382,7 +401,7 @@ function parseTranscript(text, initialState) {
     /\b([a-z][a-z'-]{1,20})\s+(?:here\b|scouting\b(?!\s+(?:team|robot|\d)))/i
   ];
   for (const p of scoutPatterns) {
-    const m = original.match(p);
+    const m = original.replace(/\b(?:um+|uh+|uhm|er+m?|ah+|yeah|like|i\s+mean|you\s+know|basically|honestly)\b[,]?\s*/gi, '').match(p);
     const name = m ? nameFrom(m[1]) : '';
     if (name) { set('scoutName', name); break; }
   }
@@ -403,7 +422,10 @@ function parseTranscript(text, initialState) {
     ? null : takeNumber(/(\d{1,3})\s*(?:%|percent|per\s+cent)/);
   if (!pct) {
     const frac = t.match(/\b(?:made|hit|sank|scored|landed)\s+(?:about\s+|around\s+|like\s+|roughly\s+|maybe\s+)?(half|a\s+third|a\s+quarter|three\s+quarters|most|all)\s+(?:of\s+)?(?:their|there|its|the)\s+shots\b/);
-    const outOf = t.match(/\b(\d{1,2})\s+(?:out\s+of|of|for)\s+(\d{1,2})\s+(?:going\s+in|went\s+in|shots?|made|in)\b/);
+    const outOf = t.match(/\b(\d{1,2})\s+(?:out\s+of|of|for)\s+(\d{1,2})\s+(?:going\s+in|went\s+in|shots?|made|in)\b/) ||
+      t.match(/\b(?:made|hit|sank|landed)\s+(?:about\s+|like\s+)?(\d{1,2})\s+out\s+of\s+(\d{1,2})\b/) ||
+      t.match(/\b(\d)\s*\/\s*(\d)\s+(?:shots?|went\s+in|made|in)\b/);
+    if (!outOf && /\bhalf\s+(?:of\s+)?(?:their\s+|the\s+|its\s+)?shots\b/.test(t)) set('scoringEffe', 50, 'medium');
     if (outOf && +outOf[2] > 0 && +outOf[1] <= +outOf[2]) set('scoringEffe', Math.round(100 * outOf[1] / outOf[2]), 'medium');
     const F = { half: 50, 'a third': 33, 'a quarter': 25, 'three quarters': 75, all: 100 };
     if (frac && F[frac[1].replace(/\s+/g, ' ')] !== undefined) set('scoringEffe', F[frac[1].replace(/\s+/g, ' ')], 'medium');
@@ -414,14 +436,14 @@ function parseTranscript(text, initialState) {
   }
 
   // ---- Match number ----
-  const mn = takeNumber(/\b(?:match|qual(?:ification|ifier)?s?|qm|sf|qf|practice|playoffs?|finals?|semifinals?|semis?|elims?|elimination|quarterfinals?)\s*(?:match\s*|round\s*)?(?:number\s*|#\s*|no\.?\s*)?(\d{1,3})\b(?!\s*(?:-|to)\s*\d)/);
+  const mn = takeNumber(/\b(?:match|qual(?:ification|ifier)?s?|qm|sf|qf|practice|playoffs?|finals?|semifinals?|semi\s+finals?|semis?|elims?|elimination|quarterfinals?)\s*(?:match\s*|round\s*)?(?:number\s*|#\s*|no\.?\s*)?(\d{1,3})\b(?!\s*(?:-|to)\s*\d)/);
   if (mn) {
     const n = parseInt(mn[1], 10);
     if (n > 0 && n <= 200) set('matchNumber', n);
   }
 
   // ---- Match type ----
-  if (/\b(playoffs?|elims?|elimination|finals|final\s+match|sf|qf|semifinals?|semis|bracket|quarterfinals?)\b/i.test(t)) set('matchType', 'sf');
+  if (/\b(playoffs?|elims?|elimination|finals|final\s+match|semi\s+finals?|sf|qf|semifinals?|semis|bracket|quarterfinals?)\b/i.test(t)) set('matchType', 'sf');
   else if (/\bpractice\s+(?:match|round|\d)/i.test(t) || /\bpm\s*\d/i.test(t)) set('matchType', 'pm');
   else if (/\b(qualification|qual|quals|qm)\b/i.test(t)) set('matchType', 'qm', 'medium');
 
@@ -431,7 +453,7 @@ function parseTranscript(text, initialState) {
     takeNumber(/\b(?:start(?:ing)?|sp)\s*(?:spot\s*|pos\s*)?(?:is\s*)?([1-6])\b(?!\s*(?:%|percent|in\b|fuel|balls?))/);
   if (posDirect) slot = posDirect[1];
   else {
-    const side = takeNumber(/\b(?:red|blue)\s*(?:side\s*)?(?:alliance\s*)?(?:drivers?\s*)?(?:stations?\s*|side\s*)?(?:number\s*)?([1-3])\b(?!\s*(?:%|percent|robots?|of\b))/);
+    const side = takeNumber(/\b(?:red|blue)\s*(?:side\s*)?(?:alliance\s*)?(?:drivers?\s*)?(?:stations?\s*|stn\s*|st\s*|side\s*)?(?:number\s*)?([1-3])\b(?!\s*(?:%|percent|robots?|of\b))/);
     if (side) {
       const isBlue = /^blue/.test(side[0]);
       slot = String(parseInt(side[1], 10) + (isBlue ? 3 : 0));
@@ -464,6 +486,7 @@ function parseTranscript(text, initialState) {
     takeNumber(/(?:^|[\s;|,(])#\s?(\d{2,5})\b/) ||
     takeNumber(/\b(\d{1,5})\s+(?:is|was)\s+(?:my|the|our)\s+(?:robot|team|bot)\b/) ||
     takeNumber(/\bmy\s+(?:robot|team|bot)\s*(?:,|is|was|:)?\s*(?:team\s+)?(\d{1,5})\b/) ||
+    takeNumber(/^\W*(?:it'?s|its)\s+(\d{1,5})\b(?!\s*(?:%|percent|in\b|fuel|balls?))/) ||
     takeNumber(/\bno\s*show\s*(?:[:=-]\s*)?(?:team\s+)?(\d{1,5})\b/) ||
     takeNumber(/\b(\d{1,5})\s+(?:on\s+|is\s+)?(?:the\s+)?(?:red|blue)\b/) ||
     takeNumber(/^\W*(\d{1,5})\b(?!\s*(?:in\s+(?:the\s+)?(?:auto|teleop)\b|fuel\b|balls?\b|shots?\b|percent\b|%|robots?\b|to\s+\d|-\s*\d))/);
@@ -546,7 +569,7 @@ function parseTranscript(text, initialState) {
           start = head.length - prep[0].length;
           // "they scooped from the outpost during auto, then ..." names the phase at the END of
           // its clause: the clause before it is auto, and what follows is not.
-          const headTag = /^\s*(?:[,(]\s*)?(?:they|it|the\s+robot|robot|he|she|we|:|was\b|were\b|=|-?\s*\d|(?:scored|shot|made|picked|grabbed|intook|collected|pickup|pick|climbed|they|sank|launched|landed|hit|went|drove|did|had|got|ran|stayed|sat)\b)/.test(after);
+          const headTag = /^\s*(?:[,(]\s*)?(?:they|it|the\s+robot|robot|he|she|we|:|was\b|were\b|=|-?\s*\d|(?:scored|shot|made|picked|grabbed|intook|collected|pickup|pick|climbed|they|sank|launched|landed|hit|went|drove|did|had|got|ran|stayed|sat|out|over|under|through|straight|path|bump|trench|basically|it|was|shoots?|shooting|climb|stationary|moving)\b)/.test(after);
           const before0 = t.slice(lastEnd, start).trim();
           const wholeTag = /\b(?:whole|entire|all|throughout|rest\s+of)\s+(?:the\s+)?$/.test(head);
           const tailTag = (wholeTag || !headTag) && before0.split(/\s+/).filter(Boolean).length >= 2;
@@ -698,7 +721,7 @@ function parseTranscript(text, initialState) {
     const found = [];
     let any = false;
     if (!ctx) return { found, any };
-    ctx = ctx.replace(/[:=]/g, ' ');
+    ctx = ctx.replace(/[:=]/g, ' ').replace(/\//g, ' and ').replace(/\blike\s+(?=the\b|floor|ground|depot)/g, '');
     PICK_VERB.lastIndex = 0;
     let m;
     while ((m = PICK_VERB.exec(ctx)) !== null) {
@@ -806,7 +829,9 @@ function parseTranscript(text, initialState) {
     // a climb inside an auto stretch that started with "in auto ..." (not "4 in auto")
     for (const s of segs) {
       if (s.phase !== 'auto' || s.bound) continue;
-      const seg = t.slice(s.start, s.end);
+      const seg0 = t.slice(s.start, s.end);
+      const cut = seg0.slice(1).search(/\b(?:and\s+then|then|also)\b/);
+      const seg = cut >= 0 ? seg0.slice(0, cut + 1) : seg0;
       const re = /\b(?:climb\w*|hung|hang\w*|got\s+up\s+on|made\s+it\s+up|got\s+on(?:to)?\s+the\s+tower|(?:for\s+)?a\s+level\s*1|level\s*1(?=[^.?!]{0,40}\btower)|tower[^.?!]{0,40}\blevel\s*1)(?:\s+(?:the\s+)?(?:level\s*1|l1|low(?:\s+rung)?|first\s+rung|tower))?/g;
       let m;
       while ((m = re.exec(seg)) !== null) {
@@ -828,7 +853,14 @@ function parseTranscript(text, initialState) {
   }
   if (autoClimbSpans.length) {
     const near = autoClimbSpans.map(([a, b]) => t.slice(Math.max(0, a - 30), Math.min(t.length, b + 90)).split(/[.!?;|]/)[0]).join(' | ');
-    const spans = autoClimbSpans.map(([a, b]) => t.slice(Math.max(0, a - 22), b + 70).split(/[.!?;|]/)[0]).join(' | ');
+    const spans = autoClimbSpans.map(([a, b]) => {
+      const from = Math.max(0, a - 22);
+      const piece = t.slice(from, b + 70);
+      const cuts = piece.split(/[.!?;|]/);
+      let pos = 0;
+      for (const c of cuts) { if (pos + c.length >= a - from) return c; pos += c.length + 1; }
+      return cuts[0];
+    }).join(' | ');
     if (/\b(?:no\s+auto\s+climb|did\s*n'?t\s+(?:try\s+to\s+)?climb|did\s+not\s+(?:try\s+to\s+)?climb|never\s+climbed|no\s+climb|not\s+attempted|n\/a|none|didn'?t\s+attempt|never\s+(?:tried|attempted)|did\s*n'?t\s+(?:even\s+)?(?:try|go\s+for)|did\s+not\s+even\s+try)\b/.test(spans)) set('autoClimbed', 'NA');
     else if (/\b(?:fail\w*|missed|fell|slipped|slid|unsuccessful|could\s*n'?t|could\s+not|did\s*n'?t\s+(?:make|get|work)|tried|attempted)\b/.test(spans)) set('autoClimbed', 'Failed');
     else set('autoClimbed', 'Success');
@@ -870,9 +902,12 @@ function parseTranscript(text, initialState) {
 
   // how many of their alliance climbed
   {
-    const m = t.match(/\b(\d)\s+of\s+(?:the\s+)?3\s+(?:robots?\s+)?(?:climbed|got\s+up)/i) ||
+    const m = t.match(/\b(\d)\s+of\s+(?:the\s+)?3\s+(?:robots?\s+)?(?:\w+\s+)?(?:climbed|got\s+up)/i) ||
+      t.match(/\b(?:alliance|they)\s+(?:had|got)\s+(\d)\s+climbs?\b/i) ||
+      t.match(/\b(\d)\s+climbs?\s+on\s+(?:the\s+|their\s+)?alliance\b/i) ||
       t.match(/\b(\d)\s+out\s+of\s+(?:the\s+)?3\s+(?:climbs?|robots?)?/i) ||
       t.match(/\balliance\s*(?:climb\s*)?[:=]?\s*(\d)\s*\/\s*3\b/i) ||
+      t.match(/\bonly\s+(\d)\s+climbs?\s+(?:on|for)\s+(?:the\s+|their\s+)?alliance\b/i) ||
       t.match(/\bso\s+(\d)\s+total\b|\b(\d)\s+total\s+(?:climbed|climbs?|on\s+the\s+tower|up)\b/i) ||
       t.match(/(?:^|[,;|]\s*)(\d)\s+climbed\b/i) ||
       t.match(/\b(\d)\s+(?:of\s+(?:the|our|their)\s+)?(?:alliance\s+)?(?:robots?|bots?|teams?)\s+(?:on\s+(?:the|their)\s+alliance\s+)?(?:\w+\s+)?(?:climb\w*|up\b|hung|on\s+the\s+tower)/i) ||
@@ -895,9 +930,9 @@ function parseTranscript(text, initialState) {
     if (m) {
       const n = parseInt(m[1] || m[2], 10);
       if (n >= 0 && n <= 3) set('AllianceClimb', n);
-    } else if (/\ball\s+(?:3|three)\b[^.?!]{0,30}\b(?:climbed|got\s+up|hung|were\s+up)\b|\bevery\s+(?:robot|bot|team)\b[^.?!]{0,30}\bclimbed\b|\bfull\s+triple\b|\balliance\s+climb\s+was\s+all\s+(?:3|three)\b|\b(?:all\s+(?:3|three)(?:\s+(?:robots?|bots?|teams?))?|whole\s+alliance|entire\s+alliance|everyone|everybody)\s+(?:on\s+(?:the|their)\s+alliance\s+)?(?:was\s+|were\s+)?(?:climb\w*|got\s+up|hung|hanging|up)\b|\btriple\s+climb\b/i.test(t)) set('AllianceClimb', 3);
+    } else if (/\ball\s+(?:3|three)\b[^.?!]{0,30}\b(?:climbed|got\s+up|hung|were\s+up)\b|\bevery\s+(?:robot|bot|team)\b[^.?!]{0,30}\bclimbed\b|\bfull\s+triple\b|\ball\s+(?:3|three)\s+of\s+us\s+climbed\b|\balliance\s+climb\s+was\s+all\s+(?:3|three)\b|\b(?:all\s+(?:3|three)(?:\s+(?:robots?|bots?|teams?))?|whole\s+alliance|entire\s+alliance|everyone|everybody)\s+(?:on\s+(?:the|their)\s+alliance\s+)?(?:was\s+|were\s+)?(?:climb\w*|got\s+up|hung|hanging|up)\b|\btriple\s+climb\b/i.test(t)) set('AllianceClimb', 3);
     else if (partners !== null) set('AllianceClimb', partners + (selfUp ? 1 : 0));
-    else if (/\b(?:nobody|no\s+one|no\s+robots?|none\s+of\s+(?:the|them|their))\b[^.?!]{0,25}\bclimb/i.test(t)) set('AllianceClimb', 0);
+    else if (/\b(?:nobody|no\s+one|no\s+robots?|none\s+of\s+(?:the|them|their))\b[^.?!]{0,25}\bclimb|\bno\s+climbs\s+(?:on|for)\s+(?:the\s+|their\s+)?alliance\b/i.test(t)) set('AllianceClimb', 0);
     else if (/\bonly\s+(?:them|they)\s+(?:climbed|got\s+up)|\bthey\s+were\s+the\s+only\s+(?:one|robot|bot|team)\b[^.?!]{0,30}\b(?:climb|did)/i.test(t)) set('AllianceClimb', 1);
     else if (/\bwhole\s+alliance\s+(?:up|climbed|got\s+up)/i.test(t)) set('AllianceClimb', 3);
   }
@@ -907,23 +942,23 @@ function parseTranscript(text, initialState) {
   // it names no other period.
   const pathText = (autoText || '') + ' . ' + (hasPhase('tele') ? '' : t);
   const autoish = /\bauto\b|\bpre\s*-?\s*load\b/.test(t);
-  if (/\b(?:shot|scored|shoot|shooting|made|sank|did)\s+(?:their\s+|the\s+|its\s+)?pre\s*-?\s*load\b|\bthe\s+pre\s*-?\s*load\s+and\s+then\b|\bpre\s*-?\s*load\b[^.?!]{0,15}\bonly\b|\bonly\s+(?:shot|scored|shoot|did)\s+(?:the|their|its)?\s*pre\s*-?\s*load\b|\bjust\s+(?:(?:did|shot|scored)\s+)?(?:the|their|its)?\s*pre\s*-?\s*load\b|\bpre\s*-?\s*load\b[^.?!]{0,25}\b(?:and\s+that\s+was\s+it|that'?s\s+it|nothing\s+else)/i.test(t)) addMulti('AutoPath', 'Pre-Load');
+  if (/\bauto\s*[:=-]\s*pre\s*-?\s*load\b|\b(?:shot|scored|shoot|shooting|made|sank|did)\s+(?:their\s+|the\s+|its\s+)?pre\s*-?\s*load\b|\bthe\s+pre\s*-?\s*load\s+and\s+then\b|\bpre\s*-?\s*load\b[^.?!]{0,15}\bonly\b|\bonly\s+(?:shot|scored|shoot|did)\s+(?:the|their|its)?\s*pre\s*-?\s*load\b|\bjust\s+(?:(?:did|shot|scored)\s+)?(?:the|their|its)?\s*pre\s*-?\s*load\b|\bpre\s*-?\s*load\b[^.?!]{0,25}\b(?:and\s+that\s+was\s+it|that'?s\s+it|nothing\s+else)/i.test(t)) addMulti('AutoPath', 'Pre-Load');
   if (/\bstraight\s+to\s+(?:the\s+)?depot\b/i.test(t)) addMulti('AutoPath', 'Depot');
   if (/\bstraight\s+to\s+(?:the\s+)?outpost\b/i.test(t)) addMulti('AutoPath', 'Outpost');
   if ((autoish && /\bclimb\s+only\b/.test(t)) || /\ball\s+they\s+did\s+in\s+auto\s+was\s+(?:go\s+|to\s+)?climb|\bauto\s+(?:path\s+)?(?:was|is)\s+(?:literally\s+|just\s+|only\s+|basically\s+)*(?:a\s+)?climb\b|\bauto\s*(?:path\s*)?(?:[:=-]\s*)?climb\s+only\b/.test(t) ||
       /\bclimb\s+only\b|\bonly\s+climbed\b|\bdid\s+(?:a\s+)?climb\s+only\b|\ball\s+they\s+did\b[^.?!]{0,25}\bclimb|\bjust\s+(?:went\s+to\s+|went\s+and\s+)?climb(?:ed)?\b/i.test(autoText || '')) addMulti('AutoPath', 'Climb');
   if (!(result.AutoPath || []).includes('Pre-Load') && /\b(?:did\s+(?:absolutely\s+|literally\s+)?nothing|did\s*n'?t\s+(?:do\s+anything|move)|did\s+not\s+(?:do\s+anything|move)|never\s+moved|sat\s+(?:still|there)(?!\s+(?:and|to|while)\s+sho)|no\s+auto\b(?!\s+(?:pick|climb|scor|fuel|shot|point))|stayed\s+(?:still|put)|no\s+movement|rolled\s+forward[^.?!]{0,20}stopped)/i.test(autoText || '') ||
-      /\bno\s+auto\b(?!\s+(?:pick|climb|scor|fuel|shot|point))|\b(?:did\s*n'?t|did\s+not|never)\s+move\s+(?:in\s+|during\s+)?auto\b|\b(?:did\s+(?:absolutely\s+|literally\s+)?nothing|sat\s+(?:still|there))\s+(?:in|during)\s+auto\b|\bauto\s*(?:path\s*)?(?:[:=-]\s*|was\s+|is\s+)?(?:basically\s+|just\s+|literally\s+)?(?:nothing|n\/a|none|no\s+movement|dead)\b/.test(t)) addMulti('AutoPath', 'N/A');
+      /\bno\s+auto\b(?!\s+(?:pick|climb|scor|fuel|shot|point))|\b(?:did\s*n'?t|did\s+not|never)\s+move\s+(?:in\s+|during\s+)?auto\b|\b(?:did\s+(?:absolutely\s+|literally\s+)?nothing|sat\s+(?:still|there))\s+(?:in|during)\s+auto\b|\bno\s+(?:\w+\s+)?auto\s+at\s+all\b|\bauto\s*(?:path\s*)?(?:[:=-]\s*|was\s+|is\s+)?(?:basically\s+|just\s+|literally\s+)?(?:nothing|n\/a|none|no\s+movement|dead)\b/.test(t)) addMulti('AutoPath', 'N/A');
   if (/\bauto\s*(?:path\s*)?(?:[:=-]\s*|to\s+|was\s+(?:the\s+)?|is\s+|went\s+(?:straight\s+)?to\s+(?:the\s+)?)outpost\b/.test(t) || (autoish && /\b(?:right|directly|straight)\s+(?:over\s+|for\s+)?(?:to\s+)?(?:the\s+)?outpost\b|\b(?:went|drove|headed|beelined|ran|go|goes)\s+(?:right\s+|straight\s+|directly\s+)?(?:for|to|over\s+to|at)\s+(?:the\s+)?outpost\b/.test(autoText || ''))) addMulti('AutoPath', 'Outpost');
   if (/\bauto\s*(?:path\s*)?(?:[:=-]\s*|to\s+|was\s+(?:the\s+)?|is\s+|went\s+(?:straight\s+)?to\s+(?:the\s+)?)depot\b/.test(t) || (autoish && /\b(?:right|directly|straight)\s+(?:over\s+|for\s+)?(?:to\s+)?(?:the\s+)?depot\b|\b(?:went|drove|headed|beelined|ran|go|goes)\s+(?:right\s+|straight\s+|directly\s+)?(?:for|to|over\s+to|at)\s+(?:the\s+)?depot\b/.test(autoText || ''))) addMulti('AutoPath', 'Depot');
   {
     // which way out and which way back: "bump to trench", "trench/trench", "trench out and bump
     // back", "over the bump ... came back under the trench", "trench both ways"
-    const SAME = 'same\\s*-?\\s*side';
+    const SAME = 'same\\s*-?\\s*(?:\\w+\\s+)?side';
     let found = null;
     for (const [a, b] of [['bump', 'trench'], ['trench', 'bump'], ['bump', 'bump'], ['trench', 'trench']]) {
       const parts = [
-        a + '\\s*(?:to\\s+(?:the\\s+)?|-|/|\\s+(?:then|and\\s+then)\\s+(?:the\\s+)?|\\s+out\\s*(?:,|and)?\\s*(?:then\\s+)?(?:the\\s+)?)' + b + '\\b(?:\\s+back)?',
+        a + '\\s*(?:to\\s+(?:the\\s+)?|-|/|>|\\s+(?:then|and\\s+then)\\s+(?:the\\s+)?|\\s+out\\s*(?:,|and)?\\s*(?:then\\s+)?(?:the\\s+)?)' + b + '\\b(?:\\s+back)?',
         '\\bout\\s+(?:through|over|via|under)?\\s*(?:the\\s+)?' + a + '\\b[^.?!]{0,30}?\\bback\\s+(?:through|over|via|under)?\\s*(?:the\\s+)?' + b + '\\b',
         '\\b(?:went|going|drove|driving|go(?:es)?|got|crossed|over|through|under)\\s+(?:out\\s+)?(?:over\\s+|through\\s+|under\\s+)?(?:the\\s+)?' + a + '\\b[^.?!]{0,60}?\\b(?:came|coming|come|drove|driving|went|going|got)\\s+back\\s+(?:over|through|under|via)?\\s*(?:the\\s+)?(?:other\\s+|same\\s+)?' + b + '\\b',
         '\\b(?:the\\s+)?' + a + '\\s+and\\s+back\\s+(?:over|through|under)?\\s*(?:the\\s+)?(?:other\\s+|same\\s+)?' + b + '\\b',
@@ -972,7 +1007,7 @@ function parseTranscript(text, initialState) {
     // something on the robot broke; "no mechanical issues" and a climb that "fell off" don't count
     const mt = own.replace(/\b(?:their|a|the)\s+partners?\b[^.?!;|]{0,50}/g, ' ').replace(/\bno\s+(?:mech\w*|mechanical)?\s*(?:issues?|problems?)\b|\bnothing\s+broke\b|\bran\s+(?:great|fine|well)\b/g, ' ')
       .replace(/\bfell\s+off\s+(?:the\s+)?(?:tower|rung|bar|climb|level)\b|\b(?:climb\w*|rung|tower)[^.?!]{0,20}\bfell\s+off\b|\bstuck\s+on\s+(?:the\s+)?(?:bump|trench|fuel|ball|robot|wall|another)\b/g, ' ');
-    if (/\b(battery\s+(?:fell|came|popped)\s+out|(?:flywheel|shooter|motor|intake|turret|arm|climber)[^.?!]{0,40}\bquit|limping|wobbl\w*|(?:module|motor|rollers?|wheel|intake|shooter|swerve)\s+(?:went\s+out|died|stopped\s+working|quit)|mechanical|mech\s+issue|broke|broken|breaks|busted|bent|cracked|jam+(?:ed|ing|s)?|fell\s+apart|came\s+(?:off|loose|apart)|popped\s+off|ripped\s+off|hanging\s+off|fell\s+off|snapped|dragging|flopping|twitch\w*|jitter\w*|smok(?:e|ing|ed)|(?:turret|shooter|intake|arm|elevator|climber|drivetrain|wheel|hood|indexer|hopper|module|swerve)\s+(?:stopped|quit)\s+(?:working|turning|spinning|moving)|lost\s+(?:a\s+|its\s+|their\s+|the\s+)?(?:wheel|chain|belt|bumper|intake|arm|shooter)|chain\s+(?:off|popped|came\s+off|snapped|broke)|bumper\s+(?:fell|came)\s+off|stuck\s+(?:intake|shooter|spinning)|(?:intake|shooter|arm|elevator|climber|turret|hopper|indexer)\s+(?:was\s+|got\s+)?stuck|got\s+stuck\s+(?:open|closed))\b/i.test(mt)) {
+    if (/\b(mech\s+(?:problem|issue|failure)|battery\s+(?:fell|came|popped)\s+out|(?:flywheel|shooter|motor|intake|turret|arm|climber)[^.?!]{0,40}\bquit|limping|wobbl\w*|(?:module|motor|rollers?|wheel|intake|shooter|swerve)\s+(?:went\s+out|died|stopped\s+working|quit)|mechanical|mech\s+issue|broke|broken|breaks|busted|bent|cracked|jam+(?:ed|ing|s)?|fell\s+apart|came\s+(?:off|loose|apart)|popped\s+off|ripped\s+off|hanging\s+off|fell\s+off|snapped|dragging|flopping|twitch\w*|jitter\w*|smok(?:e|ing|ed)|(?:turret|shooter|intake|arm|elevator|climber|drivetrain|wheel|hood|indexer|hopper|module|swerve)\s+(?:stopped|quit)\s+(?:working|turning|spinning|moving)|lost\s+(?:a\s+|its\s+|their\s+|the\s+)?(?:wheel|chain|belt|bumper|intake|arm|shooter)|chain\s+(?:off|popped|came\s+off|snapped|broke)|bumper\s+(?:fell|came)\s+off|stuck\s+(?:intake|shooter|spinning)|(?:intake|shooter|arm|elevator|climber|turret|hopper|indexer)\s+(?:was\s+|got\s+)?stuck|got\s+stuck\s+(?:open|closed))\b/i.test(mt)) {
       set('mechIssue', true);
     }
   }

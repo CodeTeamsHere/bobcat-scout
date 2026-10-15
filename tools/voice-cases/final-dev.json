@@ -1,0 +1,6846 @@
+[
+ {
+  "id": "f004",
+  "style": "asr",
+  "text": "robot ten thirty eight also got zero in auto then never picked up any fuel in teleop",
+  "expect": {
+   "teamNumber": 1038,
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "pickupTele": [
+    "NONE"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f005",
+  "style": "chatty",
+  "text": "So yeah, uh team 3392. in teleop it shot twenty while stationary. I had to switch seats halfway. in auto out over the bump and back under the trench all on the same side. my phone is on low battery. my phone is on low battery. match 55, sorry if that was rambly.",
+  "expect": {
+   "teamNumber": 3392,
+   "matchNumber": 55,
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "teleopFuelScored": 20,
+   "scoringMannerismTele": "STATIONARY"
+  },
+  "absent": []
+ },
+ {
+  "id": "f006",
+  "style": "noise",
+  "text": "uh sorry wrong button",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "matchNumber",
+   "noShow"
+  ]
+ },
+ {
+  "id": "f007",
+  "style": "asr",
+  "text": "level one climb in endgame and then made half of their shots and then 55 in tele op also its one eighteen and about twenty five in auto",
+  "expect": {
+   "teamNumber": 118,
+   "autoFuelScored": 25,
+   "AutoScored": true,
+   "teleopFuelScored": 55,
+   "scoringEffe": 50,
+   "climbed": "L1"
+  },
+  "absent": []
+ },
+ {
+  "id": "f008",
+  "style": "noise",
+  "text": "my battery is at twenty percent i need to find an outlet",
+  "expect": {},
+  "absent": [
+   "scoringEffe",
+   "pickupEffe",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "f009",
+  "style": "asr",
+  "text": "robot 7102 so got level two at the end and then also the pickup looked messy and also basically during auto it shot both on the move and standing still and then also on red two and otto path was trench to trench same side so match twenty four",
+  "expect": {
+   "teamNumber": 7102,
+   "matchNumber": 24,
+   "startPos": "2",
+   "alliance": "red",
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "scoringMannerismAuto": "BOTH",
+   "pickupEffe": 2,
+   "climbed": "L2"
+  },
+  "absent": [
+   "TrenchRizz",
+   "climbPos",
+   "crossedZone"
+  ]
+ },
+ {
+  "id": "f010",
+  "style": "chatty",
+  "text": "Here we go. team fifty twelve. in teleop shot 28 fuel. no pickup in teleop. the crowd was so loud I could barely hear myself.",
+  "expect": {
+   "teamNumber": 5012,
+   "teleopFuelScored": 28,
+   "pickupTele": [
+    "NONE"
+   ]
+  },
+  "absent": [
+   "pickupEffe",
+   "fuelPassed",
+   "pickupfrom",
+   "startPos"
+  ]
+ },
+ {
+  "id": "f011",
+  "style": "asr",
+  "text": "its thirteen thirteen sixty and then also match fifteen and its liam",
+  "expect": {
+   "teamNumber": 1360,
+   "matchNumber": 15,
+   "scoutName": "Liam"
+  },
+  "absent": []
+ },
+ {
+  "id": "f012",
+  "style": "asr",
+  "text": "team number two nine one zero then about twenty two in auto and red two then in auto they grabbed fuel from the outpost and the depot and also in teleop they got 71 and no climb at the end um so only one robot on the alliance climbed and then also match number 106",
+  "expect": {
+   "teamNumber": 2910,
+   "matchNumber": 106,
+   "startPos": "2",
+   "alliance": "red",
+   "autoFuelScored": 22,
+   "AutoScored": true,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT",
+    "H_Player"
+   ],
+   "teleopFuelScored": 71,
+   "climbed": "No",
+   "AllianceClimb": 1
+  },
+  "absent": [
+   "crossedZone",
+   "tipped"
+  ]
+ },
+ {
+  "id": "f013",
+  "style": "typed",
+  "text": "2910 -. no pickup in tele. climb: no. teleop 23 stops to shoot",
+  "expect": {
+   "teamNumber": 2910,
+   "teleopFuelScored": 23,
+   "scoringMannerismTele": "STATIONARY",
+   "pickupTele": [
+    "NONE"
+   ],
+   "climbed": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f017",
+  "style": "typed",
+  "text": "557 / match 94 / scout: Riley",
+  "expect": {
+   "teamNumber": 557,
+   "matchNumber": 94,
+   "scoutName": "Riley"
+  },
+  "absent": []
+ },
+ {
+  "id": "f018",
+  "style": "asr",
+  "text": "its 5973 and about seven in auto yeah and uh went over into the other alliances yeah zone so in i mean teleop scored 62 sorry sixty and then also qualification match 74 and never picked up any um fuel in in teleop and in auto out over the bump and back under the trench all on the you know same side and then played defense the whole second half",
+  "expect": {
+   "teamNumber": 5973,
+   "matchNumber": 74,
+   "matchType": "qm",
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "autoFuelScored": 7,
+   "AutoScored": true,
+   "teleopFuelScored": 60,
+   "pickupTele": [
+    "NONE"
+   ],
+   "robotDefended": "Yes",
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f019",
+  "style": "asr",
+  "text": "uh team thirty five thirty eight so in teleop scored 52 sorry 45 and then twenty balls in autonomous like and climbed in auto uh in the middle and drove under the trench so in tele op",
+  "expect": {
+   "teamNumber": 3538,
+   "autoClimbed": "Success",
+   "autoClimbPos": "MD",
+   "autoFuelScored": 20,
+   "AutoScored": true,
+   "teleopFuelScored": 45,
+   "TrenchRizz": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f020",
+  "style": "asr",
+  "text": "robot 6996 so in tele op scored forty while driving and climbed level two and then also auto path was trench to trench same side",
+  "expect": {
+   "teamNumber": 6996,
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "teleopFuelScored": 40,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "climbed": "L2"
+  },
+  "absent": [
+   "TrenchRizz",
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f021",
+  "style": "typed",
+  "text": "team 7758: - auto: outpost - tele pickup: neutral zone",
+  "expect": {
+   "teamNumber": 7758,
+   "AutoPath": [
+    "Outpost"
+   ],
+   "pickupTele": [
+    "MID"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f022",
+  "style": "asr",
+  "text": "robot forty one forty six and auto was straight to the depot and then climbed level 1 and then also passing was poor",
+  "expect": {
+   "teamNumber": 4146,
+   "AutoPath": [
+    "Depot"
+   ],
+   "passingEffe": 2,
+   "climbed": "L1"
+  },
+  "absent": []
+ },
+ {
+  "id": "f023",
+  "style": "chatty",
+  "text": "This is team 1708. also match six. also the crowd was insane right then. also I had to switch seats halfway. also in teleop shot 76 fuel. also someone was standing in front of me the whole time. also blue one.",
+  "expect": {
+   "teamNumber": 1708,
+   "matchNumber": 6,
+   "startPos": "4",
+   "alliance": "blue",
+   "teleopFuelScored": 76
+  },
+  "absent": [
+   "pickupEffe",
+   "autoClimbed",
+   "robotDefended",
+   "scoringEffe"
+  ]
+ },
+ {
+  "id": "f024",
+  "style": "typed",
+  "text": "4055, 2026mabri, red stn 1, auto climb, crossed to opp zone, went under trench, teleop picked up mid",
+  "expect": {
+   "teamNumber": 4055,
+   "eventKey": "2026mabri",
+   "startPos": "1",
+   "alliance": "red",
+   "autoClimbed": "Success",
+   "pickupTele": [
+    "MID"
+   ],
+   "TrenchRizz": true,
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f025",
+  "style": "asr",
+  "text": "this is team forty fifty five and no defense and also red two and no uhh scoring in tele",
+  "expect": {
+   "teamNumber": 4055,
+   "startPos": "2",
+   "alliance": "red",
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "robotDefended": "No"
+  },
+  "absent": [
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "f026",
+  "style": "chatty",
+  "text": "so that match was wild team fifty two seventy two in auto it sat still yeah and shot i had to switch seats halfway lost power and died the crowd was so loud i could barely yeah hear myself",
+  "expect": {
+   "teamNumber": 5272,
+   "died": true,
+   "scoringMannerismAuto": "STATIONARY"
+  },
+  "absent": []
+ },
+ {
+  "id": "f033",
+  "style": "asr",
+  "text": "its 4 so so the climb attempt failed then semifinal eight also event twenty twenty six c t g l a then pickup was yeah good and went over the uhh bump and back over the bump in auto and in tele they grabbed fuel from mid field and then during during auto it shot shot as it drove",
+  "expect": {
+   "teamNumber": 4,
+   "matchNumber": 8,
+   "matchType": "sf",
+   "eventKey": "2026ctgla",
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "pickupTele": [
+    "MID"
+   ],
+   "pickupEffe": 5,
+   "climbed": "F"
+  },
+  "absent": [
+   "startPos",
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "f034",
+  "style": "noise",
+  "text": "uh team twenty seven twelve then match 56 also we are going to miss the bus at four fifteen and then uhh in auto bump to bump and then during yeah auto it basically was a stationary shooter",
+  "expect": {
+   "teamNumber": 2712,
+   "matchNumber": 56,
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "scoringMannerismAuto": "STATIONARY"
+  },
+  "absent": []
+ },
+ {
+  "id": "f035",
+  "style": "noise",
+  "text": "the safety safety glasses are in basically the blue bin by the door and also team team number six six two four and in auto they got 17 and about 78 78 in tele op",
+  "expect": {
+   "teamNumber": 6624,
+   "autoFuelScored": 17,
+   "AutoScored": true,
+   "teleopFuelScored": 78
+  },
+  "absent": [
+   "alliance",
+   "startPos"
+  ]
+ },
+ {
+  "id": "f036",
+  "style": "typed",
+  "text": "team 5012: | scout: nina | b1 | scored 42 in teleop | endgame l1 | auto pickup: outpost",
+  "expect": {
+   "teamNumber": 5012,
+   "scoutName": "Nina",
+   "startPos": "4",
+   "alliance": "blue",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ],
+   "teleopFuelScored": 42,
+   "climbed": "L1"
+  },
+  "absent": [
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f037",
+  "style": "typed",
+  "text": "Team 3794, match 39, crossed to opp zone, tele 45",
+  "expect": {
+   "teamNumber": 3794,
+   "matchNumber": 39,
+   "teleopFuelScored": 45,
+   "crossedZone": true
+  },
+  "absent": [
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "f038",
+  "style": "asr",
+  "text": "team 6166 and so also died in the middle of the honestly match also practice match 3 and also starting position i mean blue blue one and then in auto it put up twenty five",
+  "expect": {
+   "teamNumber": 6166,
+   "matchNumber": 3,
+   "matchType": "pm",
+   "startPos": "4",
+   "alliance": "blue",
+   "died": true,
+   "autoFuelScored": 25,
+   "AutoScored": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f039",
+  "style": "chatty",
+  "text": "alright quick report forty eight twenty nine then scoring effectiveness was 90 percent then my phone is on low battery then it never climbed then the pickup looked messy then didnt score in teleop then someone was standing in front of me the whole time gotta run to the next match",
+  "expect": {
+   "teamNumber": 4829,
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "scoringEffe": 90,
+   "pickupEffe": 2,
+   "climbed": "No"
+  },
+  "absent": [
+   "AllianceClimb"
+  ]
+ },
+ {
+  "id": "f040",
+  "style": "typed",
+  "text": "team 5973: - b1 - no show",
+  "expect": {
+   "teamNumber": 5973,
+   "startPos": "4",
+   "alliance": "blue",
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f041",
+  "style": "chatty",
+  "text": "team number thirty three ten it attempted honestly a climb in auto and didnt honestly make it it it was really hard to see from where i was i mean sitting spent um teleop playing defense it was really hard to see from where i was sitting scored nothing in like tele op thats about it",
+  "expect": {
+   "teamNumber": 3310,
+   "autoClimbed": "Failed",
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "robotDefended": "Yes"
+  },
+  "absent": []
+ },
+ {
+  "id": "f042",
+  "style": "chatty",
+  "text": "the pickup looked messy then got level 3 at the end then scouting eight twelve then the announcer kept yelling then in auto it got the climb then my phone is on um low battery then in auto out over the bump and back under the trench all on the same side then in tele honestly op it picked up from the outpost",
+  "expect": {
+   "teamNumber": 812,
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "autoClimbed": "Success",
+   "pickupTele": [
+    "H_Player"
+   ],
+   "pickupEffe": 2,
+   "climbed": "L3"
+  },
+  "absent": [
+   "TrenchRizz",
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f046",
+  "style": "asr",
+  "text": "robot 2910 and then in auto scored twenty two while driving so auto was trench out bump back then qual 118 so twenty nine fuel in tele also ran i mean cycles under the trench also kenji here i mean then slipped off trying to climb",
+  "expect": {
+   "teamNumber": 2910,
+   "matchNumber": 118,
+   "matchType": "qm",
+   "scoutName": "Kenji",
+   "AutoPath": [
+    "Trench-Bump"
+   ],
+   "autoFuelScored": 22,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 29,
+   "TrenchRizz": true,
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f047",
+  "style": "asr",
+  "text": "uh team four five three three and also basically in teleop it sat still and yeah shot shot and also drove under the trench in tele op and got level three at the end on the i mean left side and then match number 106 and during auto it was a stationary shooter",
+  "expect": {
+   "teamNumber": 4533,
+   "matchNumber": 106,
+   "scoringMannerismAuto": "STATIONARY",
+   "scoringMannerismTele": "STATIONARY",
+   "TrenchRizz": true,
+   "climbed": "L3",
+   "climbPos": "LS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f048",
+  "style": "typed",
+  "text": "Bot 3481, Q94, r3, auto climb mid, tele 80 (moving shots), only 1 climb on alliance, auto trench to trench, auto shoots stationary",
+  "expect": {
+   "teamNumber": 3481,
+   "matchNumber": 94,
+   "matchType": "qm",
+   "startPos": "3",
+   "alliance": "red",
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "autoClimbed": "Success",
+   "autoClimbPos": "MD",
+   "scoringMannerismAuto": "STATIONARY",
+   "teleopFuelScored": 80,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "AllianceClimb": 1
+  },
+  "absent": []
+ },
+ {
+  "id": "f049",
+  "style": "asr",
+  "text": "thirty three ten and then in tele op it picked basically up from depo and the floor uhh also scored scored nothing in auto and then in tele it shot on the move also made two out of three also match number 96 also went went over the bump and back basically over the bump in auto",
+  "expect": {
+   "teamNumber": 3310,
+   "matchNumber": 96,
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "scoringEffe": 67,
+   "pickupTele": [
+    "DEPOT",
+    "FLOOR"
+   ]
+  },
+  "absent": [
+   "pickupfrom",
+   "noShow",
+   "AllianceClimb"
+  ]
+ },
+ {
+  "id": "f050",
+  "style": "typed",
+  "text": "2168 -; attempted defense; auto climb failed; auto grabbed from neutral zone/floor",
+  "expect": {
+   "teamNumber": 2168,
+   "autoClimbed": "Failed",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID",
+    "FLOOR"
+   ],
+   "robotDefended": "Attempted"
+  },
+  "absent": [
+   "defenceEffe",
+   "noShow",
+   "scoringMannerismAuto"
+  ]
+ },
+ {
+  "id": "f051",
+  "style": "asr",
+  "text": "team number thirty three ten and then used the trench a lot in teleop and level two climb in um endgame like left side and during auto it shot as it drove and then started red one and also auto path was bump to bump and i mean then in teleop scored ten sitting still",
+  "expect": {
+   "teamNumber": 3310,
+   "startPos": "1",
+   "alliance": "red",
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 10,
+   "scoringMannerismTele": "STATIONARY",
+   "TrenchRizz": true,
+   "climbed": "L2",
+   "climbPos": "LS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f052",
+  "style": "asr",
+  "text": "robot seventy three eleven and then qm qm 115 and no scoring in auto and scored 20 in tele honestly op",
+  "expect": {
+   "teamNumber": 7311,
+   "matchNumber": 115,
+   "matchType": "qm",
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "teleopFuelScored": 20
+  },
+  "absent": []
+ },
+ {
+  "id": "f053",
+  "style": "chatty",
+  "text": "alright so 7861 then pickup was perfect then about 48 in teleop then the announcer kept yelling then climbed level two no wait level one middle then ninety percent accurate then my phone is on i mean low battery then match 18 then sorry the headset keeps cutting out then i had to switch seats halfway honestly then then on blue two then at twenty twenty six m a w honestly o r then teleop pickup was from the human player then two of the three robots climbed then in auto went out over over the bump and came back under the trench im starving honestly",
+  "expect": {
+   "teamNumber": 7861,
+   "matchNumber": 18,
+   "eventKey": "2026mawor",
+   "startPos": "5",
+   "alliance": "blue",
+   "AutoPath": [
+    "Bump-Trench"
+   ],
+   "teleopFuelScored": 48,
+   "scoringEffe": 90,
+   "pickupTele": [
+    "H_Player"
+   ],
+   "pickupEffe": 5,
+   "climbed": "L1",
+   "climbPos": "MD",
+   "AllianceClimb": 2
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f054",
+  "style": "typed",
+  "text": "1038 - | qm98 | red stn 1 | auto 2 on the move | mech problem w/ shooter | no D",
+  "expect": {
+   "teamNumber": 1038,
+   "matchNumber": 98,
+   "matchType": "qm",
+   "startPos": "1",
+   "alliance": "red",
+   "mechIssue": true,
+   "autoFuelScored": 2,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "robotDefended": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f055",
+  "style": "typed",
+  "text": "T 177, q84, event 2026ctsct, no-show",
+  "expect": {
+   "teamNumber": 177,
+   "matchNumber": 84,
+   "matchType": "qm",
+   "eventKey": "2026ctsct",
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f059",
+  "style": "noise",
+  "text": "testing testing",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "f062",
+  "style": "chatty",
+  "text": "Here we go. six oh four. also in teleop scored 48 while moving. also starting position blue two. also sixty five percent accurate. also the announcer kept yelling. also climbed level one no wait level two in the middle. also the crowd was insane right then. also qm 23. also in auto out over the bump and back under the trench all on the same side. also sorry the headset keeps cutting out. thats about it.",
+  "expect": {
+   "teamNumber": 604,
+   "matchNumber": 23,
+   "matchType": "qm",
+   "startPos": "5",
+   "alliance": "blue",
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "teleopFuelScored": 48,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "scoringEffe": 65,
+   "climbed": "L2",
+   "climbPos": "MD"
+  },
+  "absent": []
+ },
+ {
+  "id": "f063",
+  "style": "asr",
+  "text": "its 7970 also it died you know halfway through teleop and then it attempted uhh a uh climb in auto and so didnt make it then um picking up fuel was perfect and then no climb in the basically endgame also 24 balls in autonomous and match 88 so in teleop scored 58 while driving",
+  "expect": {
+   "teamNumber": 7970,
+   "matchNumber": 88,
+   "died": true,
+   "autoClimbed": "Failed",
+   "autoFuelScored": 24,
+   "AutoScored": true,
+   "teleopFuelScored": 58,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupEffe": 5,
+   "climbed": "No"
+  },
+  "absent": [
+   "fuelPassed",
+   "TrenchRizz",
+   "AutoPath",
+   "AllianceClimb"
+  ]
+ },
+ {
+  "id": "f064",
+  "style": "asr",
+  "text": "this is team 7519 so at twenty twenty six m a b r um i and also ran uh cycles i mean under the trench so in tele op honestly scored 30 sitting still and scoring effectiveness was twenty percent",
+  "expect": {
+   "teamNumber": 7519,
+   "eventKey": "2026mabri",
+   "teleopFuelScored": 30,
+   "scoringMannerismTele": "STATIONARY",
+   "scoringEffe": 20,
+   "TrenchRizz": true
+  },
+  "absent": [
+   "autoClimbed",
+   "mechIssue",
+   "autoFuelScored",
+   "fuelPassed"
+  ]
+ },
+ {
+  "id": "f065",
+  "style": "asr",
+  "text": "its one eighteen and played defense and it was good then it fell over and then also climbed level one no wait level two in the middle",
+  "expect": {
+   "teamNumber": 118,
+   "tipped": true,
+   "robotDefended": "Yes",
+   "defenceEffe": 5,
+   "climbed": "L2",
+   "climbPos": "MD"
+  },
+  "absent": [
+   "TrenchRizz",
+   "crossedZone",
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "f066",
+  "style": "typed",
+  "text": "8112 -. Blue 1. played D, amazing. auto same side trench>bump. teleop fuel ~22",
+  "expect": {
+   "teamNumber": 8112,
+   "startPos": "4",
+   "alliance": "blue",
+   "AutoPath": [
+    "Same Side Bump/Trench"
+   ],
+   "teleopFuelScored": 22,
+   "robotDefended": "Yes",
+   "defenceEffe": 5
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f067",
+  "style": "typed",
+  "text": "team 4276:. no climbs on alliance. teleop 68 stationary. intake broke. went under trench. auto 4. tried auto climb, failed",
+  "expect": {
+   "teamNumber": 4276,
+   "mechIssue": true,
+   "autoClimbed": "Failed",
+   "autoFuelScored": 4,
+   "AutoScored": true,
+   "teleopFuelScored": 68,
+   "scoringMannerismTele": "STATIONARY",
+   "TrenchRizz": true,
+   "AllianceClimb": 0
+  },
+  "absent": [
+   "robotDefended",
+   "scoringMannerismAuto"
+  ]
+ },
+ {
+  "id": "f068",
+  "style": "typed",
+  "text": "team 254 - qm117 - blue stn 2 - scored nothing in auto",
+  "expect": {
+   "teamNumber": 254,
+   "matchNumber": 117,
+   "matchType": "qm",
+   "startPos": "5",
+   "alliance": "blue",
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE"
+  },
+  "absent": [
+   "climbed",
+   "pickupTele",
+   "scoringMannerismTele"
+  ]
+ },
+ {
+  "id": "f070",
+  "style": "asr",
+  "text": "uh team fourteen seventy seven and also tele op pickup was from the out post and then also in tele op it you know was a stationary shooter so qualifier 65 and auto path uhh was honestly bump to bump",
+  "expect": {
+   "teamNumber": 1477,
+   "matchNumber": 65,
+   "matchType": "qm",
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "scoringMannerismTele": "STATIONARY",
+   "pickupTele": [
+    "H_Player"
+   ]
+  },
+  "absent": [
+   "climbed"
+  ]
+ },
+ {
+  "id": "f071",
+  "style": "asr",
+  "text": "uh team sixty four seventeen also played defense and it was solid and under the trench and um back um under the trench in auto so didnt try to climb in auto and then also two out of three shots went in and then about 11 in auto",
+  "expect": {
+   "teamNumber": 6417,
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "autoClimbed": "NA",
+   "autoFuelScored": 11,
+   "AutoScored": true,
+   "scoringEffe": 67,
+   "robotDefended": "Yes",
+   "defenceEffe": 4
+  },
+  "absent": [
+   "TrenchRizz",
+   "climbed"
+  ]
+ },
+ {
+  "id": "f075",
+  "style": "typed",
+  "text": "4146: - event 2026ctsct - died in tele - climb failed - fuel from depot - tele: stationary",
+  "expect": {
+   "teamNumber": 4146,
+   "eventKey": "2026ctsct",
+   "died": true,
+   "scoringMannerismTele": "STATIONARY",
+   "pickupTele": [
+    "DEPOT"
+   ],
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f076",
+  "style": "typed",
+  "text": "team 2230 | semifinal 11 | scout: ben t | blue 2 | auto same side trench>bump",
+  "expect": {
+   "teamNumber": 2230,
+   "matchNumber": 11,
+   "matchType": "sf",
+   "scoutName": "Ben T",
+   "startPos": "5",
+   "alliance": "blue",
+   "AutoPath": [
+    "Same Side Bump/Trench"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f077",
+  "style": "typed",
+  "text": "team 6502: | qual 1 | auto 21 shoots stationary",
+  "expect": {
+   "teamNumber": 6502,
+   "matchNumber": 1,
+   "matchType": "qm",
+   "autoFuelScored": 21,
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY"
+  },
+  "absent": []
+ },
+ {
+  "id": "f078",
+  "style": "asr",
+  "text": "uh team thirty two fifty six and also played defense the whole second half then playoff match four so honestly picking up fuel was good",
+  "expect": {
+   "teamNumber": 3256,
+   "matchNumber": 4,
+   "matchType": "sf",
+   "pickupEffe": 5,
+   "robotDefended": "Yes"
+  },
+  "absent": []
+ },
+ {
+  "id": "f079",
+  "style": "asr",
+  "text": "team twelve forty forty one then the robot honestly didnt come out",
+  "expect": {
+   "teamNumber": 1241,
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f080",
+  "style": "typed",
+  "text": "6238 -, qual 38, 2026ctwat, red stn 3, 3/4 shots went in, tried to climb, failed, tele 87, passing: scattered",
+  "expect": {
+   "teamNumber": 6238,
+   "matchNumber": 38,
+   "matchType": "qm",
+   "eventKey": "2026ctwat",
+   "startPos": "3",
+   "alliance": "red",
+   "teleopFuelScored": 87,
+   "scoringEffe": 75,
+   "fuelPassed": [
+    "Scattered"
+   ],
+   "climbed": "F"
+  },
+  "absent": [
+   "tipped",
+   "pickupEffe"
+  ]
+ },
+ {
+  "id": "f081",
+  "style": "chatty",
+  "text": "so that match was like wild robot 2910 also died with a minute honestly left also 10 fuel in tele also um the climb attempt failed also i had to switch seats halfway also qualifier 43",
+  "expect": {
+   "teamNumber": 2910,
+   "matchNumber": 43,
+   "matchType": "qm",
+   "died": true,
+   "teleopFuelScored": 10,
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f082",
+  "style": "typed",
+  "text": "6502 - | teleop fuel ~80 | auto: trench-bump | 4/5 shots went in | endgame l2 | played defense",
+  "expect": {
+   "teamNumber": 6502,
+   "AutoPath": [
+    "Trench-Bump"
+   ],
+   "teleopFuelScored": 80,
+   "scoringEffe": 80,
+   "robotDefended": "Yes",
+   "climbed": "L2"
+  },
+  "absent": [
+   "TrenchRizz",
+   "defenceEffe",
+   "climbPos",
+   "startPos"
+  ]
+ },
+ {
+  "id": "f083",
+  "style": "typed",
+  "text": "1241:; qual 108; - Luca; tipped + died; auto grabbed from depot; intake/pickup solid; tele 0; auto trench/trench",
+  "expect": {
+   "teamNumber": 1241,
+   "matchNumber": 108,
+   "matchType": "qm",
+   "scoutName": "Luca",
+   "tipped": true,
+   "died": true,
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT"
+   ],
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "pickupEffe": 4
+  },
+  "absent": [
+   "TrenchRizz",
+   "AutoScored"
+  ]
+ },
+ {
+  "id": "f084",
+  "style": "typed",
+  "text": "7102:, blue3, played D, really good, auto 28 (moving shots), double climb in auto mid, 32 in tele, mech problem w/ shooter, auto pickup: HP, half shots went in",
+  "expect": {
+   "teamNumber": 7102,
+   "startPos": "6",
+   "alliance": "blue",
+   "mechIssue": true,
+   "autoClimbed": "Success",
+   "doubleClimb": true,
+   "autoClimbPos": "MD",
+   "autoFuelScored": 28,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ],
+   "teleopFuelScored": 32,
+   "scoringEffe": 50,
+   "robotDefended": "Yes",
+   "defenceEffe": 5
+  },
+  "absent": [
+   "crossedZone",
+   "pickupTele",
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "f088",
+  "style": "asr",
+  "text": "uh team seven nine seven zero also the robot didnt come out and also starting position blue to also zoe here",
+  "expect": {
+   "teamNumber": 7970,
+   "scoutName": "Zoe",
+   "startPos": "5",
+   "alliance": "blue",
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f089",
+  "style": "typed",
+  "text": "Team 6045, scout: Marcus, blue 1, teleop 54 shoots stationary, teleop picked up HP, climbed in auto RS",
+  "expect": {
+   "teamNumber": 6045,
+   "scoutName": "Marcus",
+   "startPos": "4",
+   "alliance": "blue",
+   "autoClimbed": "Success",
+   "autoClimbPos": "RS",
+   "teleopFuelScored": 54,
+   "scoringMannerismTele": "STATIONARY",
+   "pickupTele": [
+    "H_Player"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f091",
+  "style": "asr",
+  "text": "in tele op scored 51 sitting still and also hung on level 3 right i mean side and qual 109 and also in auto scored 23 both on the move and and sitting um still and team number nine ninety nine and at twenty twenty six c t w a t so it can go under the trench",
+  "expect": {
+   "teamNumber": 999,
+   "matchNumber": 109,
+   "matchType": "qm",
+   "eventKey": "2026ctwat",
+   "autoFuelScored": 23,
+   "AutoScored": true,
+   "scoringMannerismAuto": "BOTH",
+   "teleopFuelScored": 51,
+   "scoringMannerismTele": "STATIONARY",
+   "TrenchRizz": true,
+   "climbed": "L3",
+   "climbPos": "RS"
+  },
+  "absent": [
+   "robotDefended"
+  ]
+ },
+ {
+  "id": "f092",
+  "style": "typed",
+  "text": "bot 2468. qm 60. - dev. crossed into opp side. teleop fuel ~60. auto climb ls. no auto scoring. auto same side bump>trench. nobody climbed",
+  "expect": {
+   "teamNumber": 2468,
+   "matchNumber": 60,
+   "matchType": "qm",
+   "scoutName": "Dev",
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "autoClimbed": "Success",
+   "autoClimbPos": "LS",
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "teleopFuelScored": 60,
+   "crossedZone": true,
+   "AllianceClimb": 0
+  },
+  "absent": [
+   "TrenchRizz",
+   "robotDefended"
+  ]
+ },
+ {
+  "id": "f093",
+  "style": "typed",
+  "text": "bot 7519 | auto bump>trench | no climbs on alliance | passing: center + passing: opp zone, passing fine | mech issue",
+  "expect": {
+   "teamNumber": 7519,
+   "mechIssue": true,
+   "AutoPath": [
+    "Bump-Trench"
+   ],
+   "fuelPassed": [
+    "Center",
+    "Opp_Zone"
+   ],
+   "passingEffe": 3,
+   "AllianceClimb": 0
+  },
+  "absent": []
+ },
+ {
+  "id": "f094",
+  "style": "typed",
+  "text": "2056 - | qm71 | 2026mawor | climb failed",
+  "expect": {
+   "teamNumber": 2056,
+   "matchNumber": 71,
+   "matchType": "qm",
+   "eventKey": "2026mawor",
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f095",
+  "style": "asr",
+  "text": "team 3668 and then qualification match 74 then their pickup was horrible then no climb at the end so um shot twenty five fuel during auto and also it died halfway through tele op",
+  "expect": {
+   "teamNumber": 3668,
+   "matchNumber": 74,
+   "matchType": "qm",
+   "died": true,
+   "autoFuelScored": 25,
+   "AutoScored": true,
+   "pickupEffe": 1,
+   "climbed": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f096",
+  "style": "chatty",
+  "text": "Hey its me again, this is team two fifty four. then in teleop scored 11 both on the move and sitting still. then I might be forgetting something. then my phone is on low battery. then climbed level 1 in the endgame left side. then it was really hard to see from where I was sitting. then auto path was bump to bump.",
+  "expect": {
+   "teamNumber": 254,
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "teleopFuelScored": 11,
+   "scoringMannerismTele": "BOTH",
+   "climbed": "L1",
+   "climbPos": "LS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f097",
+  "style": "typed",
+  "text": "7970 -, qm58, liam scouting, auto climb only, played d, awesome, tele pickup: floor",
+  "expect": {
+   "teamNumber": 7970,
+   "matchNumber": 58,
+   "matchType": "qm",
+   "scoutName": "Liam",
+   "AutoPath": [
+    "Climb"
+   ],
+   "pickupTele": [
+    "FLOOR"
+   ],
+   "robotDefended": "Yes",
+   "defenceEffe": 5
+  },
+  "absent": [
+   "climbed",
+   "pickupEffe",
+   "tipped",
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "f100",
+  "style": "asr",
+  "text": "team seventy five nineteen also passing was nice and then also in tele op it shot 28 from a standstill",
+  "expect": {
+   "teamNumber": 7519,
+   "teleopFuelScored": 28,
+   "scoringMannerismTele": "STATIONARY",
+   "passingEffe": 4
+  },
+  "absent": []
+ },
+ {
+  "id": "f101",
+  "style": "chatty",
+  "text": "Team number seventy three eleven. Aiden here. didnt score in teleop. it was really hard to see from where I was sitting. auto was straight to the depot. got level one at the end right side, the crowd was so loud I could barely hear myself.",
+  "expect": {
+   "teamNumber": 7311,
+   "scoutName": "Aiden",
+   "AutoPath": [
+    "Depot"
+   ],
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "climbed": "L1",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f105",
+  "style": "chatty",
+  "text": "6996 in tele honestly it shot both on the move and standing still all three robots climbed something broke on the shooter under the trench and back under the trench in auto it was really hard to see honestly from where i was sitting im starving honestly",
+  "expect": {
+   "teamNumber": 6996,
+   "mechIssue": true,
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "scoringMannerismTele": "BOTH",
+   "AllianceClimb": 3
+  },
+  "absent": [
+   "TrenchRizz",
+   "pickupEffe"
+  ]
+ },
+ {
+  "id": "f106",
+  "style": "asr",
+  "text": "robot twenty eight thirty four and auto was trench out bump back then a robot robot on the other i mean alliance fell over and was on defense most of the honestly match so qual 46 also ivy scouting and then in auto it shot fourteen while stationary",
+  "expect": {
+   "teamNumber": 2834,
+   "matchNumber": 46,
+   "matchType": "qm",
+   "scoutName": "Ivy",
+   "AutoPath": [
+    "Trench-Bump"
+   ],
+   "autoFuelScored": 14,
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY",
+   "robotDefended": "Yes"
+  },
+  "absent": [
+   "TrenchRizz",
+   "defenceEffe",
+   "tipped",
+   "AutoPickup",
+   "noShow"
+  ]
+ },
+ {
+  "id": "f107",
+  "style": "asr",
+  "text": "its eighty thirty three and its caleb and then also 43 in tele op and then also like started blue three and then also in auto they grabbed so fuel from the floor and then also tipped over also climbed yeah level 3 in you know the endgame",
+  "expect": {
+   "teamNumber": 8033,
+   "scoutName": "Caleb",
+   "startPos": "6",
+   "alliance": "blue",
+   "tipped": true,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "FLOOR"
+   ],
+   "teleopFuelScored": 43,
+   "climbed": "L3"
+  },
+  "absent": [
+   "climbPos",
+   "passingEffe"
+  ]
+ },
+ {
+  "id": "f108",
+  "style": "asr",
+  "text": "its one forty eight and also died in the middle of the match and also event twenty twenty six c t w a yeah t and the you know pickup so looked poor and then you know also uh it collected fuel i mean from the floor and the human player chute and depot",
+  "expect": {
+   "teamNumber": 148,
+   "eventKey": "2026ctwat",
+   "died": true,
+   "pickupTele": [
+    "DEPOT",
+    "H_Player",
+    "FLOOR"
+   ],
+   "pickupEffe": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f109",
+  "style": "asr",
+  "text": "its one forty eight and it climbed uh in auto and on red one then in teleop it shot 78 both i mean on the move and sitting still also also no climb in the endgame then scouter uh liam also made two out of three and then scored twenty five uh no wait twenty three in otto",
+  "expect": {
+   "teamNumber": 148,
+   "scoutName": "Liam",
+   "startPos": "1",
+   "alliance": "red",
+   "autoClimbed": "Success",
+   "autoFuelScored": 23,
+   "AutoScored": true,
+   "teleopFuelScored": 78,
+   "scoringMannerismTele": "BOTH",
+   "scoringEffe": 67,
+   "climbed": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f110",
+  "style": "typed",
+  "text": "Bot 5687 - no tele scoring - climb failed - auto trench>bump - auto 25ish",
+  "expect": {
+   "teamNumber": 5687,
+   "AutoPath": [
+    "Trench-Bump"
+   ],
+   "autoFuelScored": 25,
+   "AutoScored": true,
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f111",
+  "style": "noise",
+  "text": "its 7519 and the safety glasses are in the blue bin by the door and qm 75 and then also auto went trench to trench and in teleop shot 38 fuel fuel",
+  "expect": {
+   "teamNumber": 7519,
+   "matchNumber": 75,
+   "matchType": "qm",
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "teleopFuelScored": 38
+  },
+  "absent": [
+   "alliance",
+   "startPos",
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f112",
+  "style": "noise",
+  "text": "i climbed up like twenty rows of bleachers to find a seat",
+  "expect": {},
+  "absent": [
+   "climbed",
+   "climbPos",
+   "teamNumber",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "f113",
+  "style": "asr",
+  "text": "twenty six oh one and um then i mean in tele op they got 32 and then also got defended on the whole match so blue to and died with a minute left also its noor and passed fuel into the center and passed intentionally to their partners and their passing was great",
+  "expect": {
+   "teamNumber": 2601,
+   "scoutName": "Noor",
+   "startPos": "5",
+   "alliance": "blue",
+   "died": true,
+   "teleopFuelScored": 32,
+   "fuelPassed": [
+    "Center",
+    "Intentional"
+   ],
+   "passingEffe": 5
+  },
+  "absent": []
+ },
+ {
+  "id": "f114",
+  "style": "typed",
+  "text": "bot 5272, qm108, endgame l2, intake broke, teleop 56 moving shots, goes under trench in tele",
+  "expect": {
+   "teamNumber": 5272,
+   "matchNumber": 108,
+   "matchType": "qm",
+   "mechIssue": true,
+   "teleopFuelScored": 56,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "TrenchRizz": true,
+   "climbed": "L2"
+  },
+  "absent": [
+   "climbPos",
+   "scoringMannerismAuto",
+   "defenceEffe",
+   "passingEffe",
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "f118",
+  "style": "asr",
+  "text": "team 3070 and played defense you know and the defense was pretty good and then also qualifier 63 also noor scouting and auto was climb only",
+  "expect": {
+   "teamNumber": 3070,
+   "matchNumber": 63,
+   "matchType": "qm",
+   "scoutName": "Noor",
+   "AutoPath": [
+    "Climb"
+   ],
+   "robotDefended": "Yes",
+   "defenceEffe": 4
+  },
+  "absent": []
+ },
+ {
+  "id": "f119",
+  "style": "asr",
+  "text": "in auto trench to trench and in teleop you know they got 42 and scouting fifty two fifty four and no pickup you know in teleop",
+  "expect": {
+   "teamNumber": 5254,
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "teleopFuelScored": 42,
+   "pickupTele": [
+    "NONE"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f121",
+  "style": "asr",
+  "text": "uh team forty eight twenty nine and also no one on the the alliance climbed and then also match 84 sorry 81 also scored 22 in auto and passed intentionally to their partners and like passing was fine",
+  "expect": {
+   "teamNumber": 4829,
+   "matchNumber": 81,
+   "autoFuelScored": 22,
+   "AutoScored": true,
+   "fuelPassed": [
+    "Intentional"
+   ],
+   "passingEffe": 3,
+   "AllianceClimb": 0
+  },
+  "absent": []
+ },
+ {
+  "id": "f122",
+  "style": "asr",
+  "text": "it can go under the trench then uh team 6624 also during tele op op it sat still and honestly shot then qualification match 91 and then also climbed level three on uhh the right side",
+  "expect": {
+   "teamNumber": 6624,
+   "matchNumber": 91,
+   "matchType": "qm",
+   "scoringMannerismTele": "STATIONARY",
+   "TrenchRizz": true,
+   "climbed": "L3",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f123",
+  "style": "asr",
+  "text": "twenty three thirty seven and the partner next to them climbed level two then in auto it picked up from the neutral zone and honestly the depot then two out of three shots went in and then about fifteen in otto and also in teleop it picked up from i mean the human player and the floor",
+  "expect": {
+   "teamNumber": 2337,
+   "autoFuelScored": 15,
+   "AutoScored": true,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT",
+    "MID"
+   ],
+   "scoringEffe": 67,
+   "pickupTele": [
+    "H_Player",
+    "FLOOR"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f124",
+  "style": "chatty",
+  "text": "eighty thirty three auto path was bump to bump same side no climb at basically the end i had to switch seats honestly halfway went through the trench a bunch in tele qm 100 it was really hard to see from where i was sitting passing was excellent excellent hope that helps the strategy people",
+  "expect": {
+   "teamNumber": 8033,
+   "matchNumber": 100,
+   "matchType": "qm",
+   "AutoPath": [
+    "Same Side Bump"
+   ],
+   "passingEffe": 5,
+   "TrenchRizz": true,
+   "climbed": "No"
+  },
+  "absent": [
+   "AutoScored",
+   "autoFuelScored",
+   "noShow",
+   "tipped"
+  ]
+ },
+ {
+  "id": "f125",
+  "style": "typed",
+  "text": "Team 4936:. tele: shoots while driving. tried D - ok. scored nothing in auto. no auto climb. pickup ok",
+  "expect": {
+   "teamNumber": 4936,
+   "autoClimbed": "NA",
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupEffe": 3,
+   "robotDefended": "Attempted",
+   "defenceEffe": 3
+  },
+  "absent": [
+   "teleopFuelScored",
+   "crossedZone",
+   "died",
+   "noShow"
+  ]
+ },
+ {
+  "id": "f126",
+  "style": "asr",
+  "text": "uh team 4388 and also slipped off trying to climb",
+  "expect": {
+   "teamNumber": 4388,
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f127",
+  "style": "asr",
+  "text": "team number nine seventy three and the pickup looked bad and in tele they uhh grabbed fuel from i mean the yeah depot",
+  "expect": {
+   "teamNumber": 973,
+   "pickupTele": [
+    "DEPOT"
+   ],
+   "pickupEffe": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f130",
+  "style": "asr",
+  "text": "team 5254 also on blue one then at twenty twenty twenty six c t like w a t and then also no show",
+  "expect": {
+   "teamNumber": 5254,
+   "eventKey": "2026ctwat",
+   "startPos": "4",
+   "alliance": "blue",
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f134",
+  "style": "asr",
+  "text": "qualifier 66 and then also uh team four zero five five also no show",
+  "expect": {
+   "teamNumber": 4055,
+   "matchNumber": 66,
+   "matchType": "qm",
+   "noShow": true
+  },
+  "absent": [
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "f135",
+  "style": "asr",
+  "text": "its 5940 and then also tipped over on the basically bump also no like auto at all",
+  "expect": {
+   "teamNumber": 5940,
+   "tipped": true,
+   "AutoPath": [
+    "N/A"
+   ]
+  },
+  "absent": [
+   "passingEffe",
+   "scoringMannerismTele",
+   "crossedZone"
+  ]
+ },
+ {
+  "id": "f136",
+  "style": "typed",
+  "text": "bot 6624, red1, went under trench, teleop 12, auto: preload, pickup: fine, tele pickup: depot, outpost, partner got l3",
+  "expect": {
+   "teamNumber": 6624,
+   "startPos": "1",
+   "alliance": "red",
+   "AutoPath": [
+    "Pre-Load"
+   ],
+   "teleopFuelScored": 12,
+   "pickupTele": [
+    "DEPOT",
+    "H_Player"
+   ],
+   "pickupEffe": 3,
+   "TrenchRizz": true
+  },
+  "absent": [
+   "climbed",
+   "climbPos",
+   "passingEffe",
+   "tipped",
+   "robotDefended"
+  ]
+ },
+ {
+  "id": "f137",
+  "style": "asr",
+  "text": "uh team sixty three twenty nine and blue one no sorry red one and then also auto i mean pickup was from midfield then auto was trench out bump back same side also qualification match 56 also in teleop scored eight sitting still",
+  "expect": {
+   "teamNumber": 6329,
+   "matchNumber": 56,
+   "matchType": "qm",
+   "startPos": "1",
+   "alliance": "red",
+   "AutoPath": [
+    "Same Side Bump/Trench"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID"
+   ],
+   "teleopFuelScored": 8,
+   "scoringMannerismTele": "STATIONARY"
+  },
+  "absent": []
+ },
+ {
+  "id": "f138",
+  "style": "asr",
+  "text": "robot forty five thirty three then blue three and also in you know tele op it shot 44 while moving and then in auto it so shot while driving and tried to play defense and it was i mean really good and also picking up fuel was poor also a belt snapped you know on the basically intake uhh then level 2 climb in endgame",
+  "expect": {
+   "teamNumber": 4533,
+   "startPos": "6",
+   "alliance": "blue",
+   "mechIssue": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 44,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupEffe": 2,
+   "robotDefended": "Attempted",
+   "defenceEffe": 5,
+   "climbed": "L2"
+  },
+  "absent": []
+ },
+ {
+  "id": "f139",
+  "style": "chatty",
+  "text": "scouting thirty seventy also i mean no defense also on red one also the crowd was insane right then also yeah auto was bump out trench back also it climbed in auto left side also honestly endgame was level two also basically otto pickup was um from depot thats about it",
+  "expect": {
+   "teamNumber": 3070,
+   "startPos": "1",
+   "alliance": "red",
+   "AutoPath": [
+    "Bump-Trench"
+   ],
+   "autoClimbed": "Success",
+   "autoClimbPos": "LS",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT"
+   ],
+   "robotDefended": "No",
+   "climbed": "L2"
+  },
+  "absent": [
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f140",
+  "style": "asr",
+  "text": "in auto trench both ways on the same side also thirty seven ninety four and it fell over and pickup was strong strong and then also about 58 in tele op",
+  "expect": {
+   "teamNumber": 3794,
+   "tipped": true,
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "teleopFuelScored": 58,
+   "pickupEffe": 4
+  },
+  "absent": []
+ },
+ {
+  "id": "f141",
+  "style": "asr",
+  "text": "its forty two seventy six and basically then in auto they got two and then also in auto trench both ways on the same side",
+  "expect": {
+   "teamNumber": 4276,
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "autoFuelScored": 2,
+   "AutoScored": true
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f142",
+  "style": "asr",
+  "text": "five fifty seven and then also kenji here then ran cycles basically under the trench also match number eighteen and auto path was trench to trench same side and uh then level three climb in endgame right side",
+  "expect": {
+   "teamNumber": 557,
+   "matchNumber": 18,
+   "scoutName": "Kenji",
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "TrenchRizz": true,
+   "climbed": "L3",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f143",
+  "style": "asr",
+  "text": "match number 60 and 23 in tele op and then also um climbed level 3 in the endgame right side and then also in auto it shot seven on um the move and then also scouting forty six fifty one and in tele they grabbed fuel from mid field",
+  "expect": {
+   "teamNumber": 4651,
+   "matchNumber": 60,
+   "autoFuelScored": 7,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 23,
+   "pickupTele": [
+    "MID"
+   ],
+   "climbed": "L3",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f147",
+  "style": "asr",
+  "text": "uh honestly team five zero one two and also didnt play any defense and then also climbed level 1 in the endgame on the right i mean side so match twenty also went uh over into the other alliances zone",
+  "expect": {
+   "teamNumber": 5012,
+   "matchNumber": 20,
+   "robotDefended": "No",
+   "crossedZone": true,
+   "climbed": "L1",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f148",
+  "style": "asr",
+  "text": "uh team sixty four seventeen and in auto bump out and you know bump back on the same so side and then something broke on the shooter and then lost power honestly and died",
+  "expect": {
+   "teamNumber": 6417,
+   "mechIssue": true,
+   "died": true,
+   "AutoPath": [
+    "Same Side Bump"
+   ]
+  },
+  "absent": [
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "f149",
+  "style": "asr",
+  "text": "its thirty three ten and just died died so in auto it picked up from midfield and qm 65 and passing was amazing also scored some in auto and tried to to climb but failed and on blue one and then also in tele op it shot 74 while moving also the pickup like looked great",
+  "expect": {
+   "teamNumber": 3310,
+   "matchNumber": 65,
+   "matchType": "qm",
+   "startPos": "4",
+   "alliance": "blue",
+   "died": true,
+   "AutoScored": true,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID"
+   ],
+   "teleopFuelScored": 74,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupEffe": 5,
+   "passingEffe": 5,
+   "climbed": "F"
+  },
+  "absent": [
+   "autoFuelScored",
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f150",
+  "style": "typed",
+  "text": "Team 5012:, playoff match 13, b1, auto 12 on the move, intake/pickup consistent, no auto climb",
+  "expect": {
+   "teamNumber": 5012,
+   "matchNumber": 13,
+   "matchType": "sf",
+   "startPos": "4",
+   "alliance": "blue",
+   "autoClimbed": "NA",
+   "autoFuelScored": 12,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "pickupEffe": 4
+  },
+  "absent": []
+ },
+ {
+  "id": "f151",
+  "style": "noise",
+  "text": "My mom is picking me up at six so i need to leave before the last match.",
+  "expect": {},
+  "absent": [
+   "matchNumber",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "f152",
+  "style": "chatty",
+  "text": "Uh team thirty one oh three. in auto it did a double climb with its partner middle. match 87. did intentional passing. I had to switch seats halfway. scored nothing in teleop. went through the trench a bunch in tele. hope that helps the strategy people.",
+  "expect": {
+   "teamNumber": 3103,
+   "matchNumber": 87,
+   "autoClimbed": "Success",
+   "doubleClimb": true,
+   "autoClimbPos": "MD",
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "fuelPassed": [
+    "Intentional"
+   ],
+   "TrenchRizz": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f153",
+  "style": "asr",
+  "text": "team 1114 and then also so no scoring in auto and drove under the trench in teleop and slipped off trying to climb and also a belt snapped on the i mean intake so four in tele like op and also two of the three robots so climbed and basically then red one",
+  "expect": {
+   "teamNumber": 1114,
+   "startPos": "1",
+   "alliance": "red",
+   "mechIssue": true,
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "teleopFuelScored": 4,
+   "TrenchRizz": true,
+   "climbed": "F",
+   "AllianceClimb": 2
+  },
+  "absent": [
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f154",
+  "style": "chatty",
+  "text": "Alright quick report. its one seventy seven. then went over into the other alliances zone.",
+  "expect": {
+   "teamNumber": 177,
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f155",
+  "style": "chatty",
+  "text": "Um so, this is team 2056. then scoring effectiveness was twenty percent. then it collected fuel from depot. then I had to switch seats halfway. then 51 in tele op. then semi final two.",
+  "expect": {
+   "teamNumber": 2056,
+   "matchNumber": 2,
+   "matchType": "sf",
+   "teleopFuelScored": 51,
+   "scoringEffe": 20,
+   "pickupTele": [
+    "DEPOT"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f156",
+  "style": "asr",
+  "text": "event twenty twenty six c t g l a and also uh they never passed then on blue three and uh then this is team 1318",
+  "expect": {
+   "teamNumber": 1318,
+   "eventKey": "2026ctgla",
+   "startPos": "6",
+   "alliance": "blue",
+   "fuelPassed": [
+    "No_Passing"
+   ]
+  },
+  "absent": [
+   "pickupEffe",
+   "AllianceClimb",
+   "died",
+   "scoringMannerismTele"
+  ]
+ },
+ {
+  "id": "f163",
+  "style": "asr",
+  "text": "played defence also uh i mean team four forty nine and also their pickup honestly was really good so climbed level one in the endgame then you know in auto out over you know the bump and and back under the trench um all on the same side",
+  "expect": {
+   "teamNumber": 449,
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "pickupEffe": 5,
+   "robotDefended": "Yes",
+   "climbed": "L1"
+  },
+  "absent": [
+   "TrenchRizz",
+   "defenceEffe",
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f164",
+  "style": "typed",
+  "text": "team 8112: - q73 - red3 - teleop 12 stationary - auto picked up outpost and depot",
+  "expect": {
+   "teamNumber": 8112,
+   "matchNumber": 73,
+   "matchType": "qm",
+   "startPos": "3",
+   "alliance": "red",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT",
+    "H_Player"
+   ],
+   "teleopFuelScored": 12,
+   "scoringMannerismTele": "STATIONARY"
+  },
+  "absent": [
+   "mechIssue"
+  ]
+ },
+ {
+  "id": "f165",
+  "style": "chatty",
+  "text": "Here we go, scouting 557. also in auto went out under the trench and back over the bump. also sorry the headset keeps cutting out. also in auto it picked up from the neutral zone. also the crowd was insane right then. also in teleop they got 90. also slipped off trying to climb.",
+  "expect": {
+   "teamNumber": 557,
+   "AutoPath": [
+    "Trench-Bump"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID"
+   ],
+   "teleopFuelScored": 90,
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f166",
+  "style": "asr",
+  "text": "scouting 2230 and also it can go under the trench and then 18 fuel in auto and it crossed into the opposing alliances zone then um played defense um and it was messy also in tele it shot on the uhh move um and got level 2 at the end and then had a mechanical issue with the intake and then also semis match 4",
+  "expect": {
+   "teamNumber": 2230,
+   "matchNumber": 4,
+   "matchType": "sf",
+   "mechIssue": true,
+   "autoFuelScored": 18,
+   "AutoScored": true,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "TrenchRizz": true,
+   "robotDefended": "Yes",
+   "defenceEffe": 2,
+   "crossedZone": true,
+   "climbed": "L2"
+  },
+  "absent": [
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f167",
+  "style": "typed",
+  "text": "195, red1, pickup horrible, teleop 29",
+  "expect": {
+   "teamNumber": 195,
+   "startPos": "1",
+   "alliance": "red",
+   "teleopFuelScored": 29,
+   "pickupEffe": 1
+  },
+  "absent": []
+ },
+ {
+  "id": "f168",
+  "style": "typed",
+  "text": "Bot 3392 - Q1 - Blue 2 - no show",
+  "expect": {
+   "teamNumber": 3392,
+   "matchNumber": 1,
+   "matchType": "qm",
+   "startPos": "5",
+   "alliance": "blue",
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f169",
+  "style": "asr",
+  "text": "fifty six eighty seven and got level one at the end and then red alliance station two and then also auto was bump out trench um back and also i mean during tele op it sat still and shot and in auto it picked up from the human player and also it crossed into the opposing alliances zone",
+  "expect": {
+   "teamNumber": 5687,
+   "startPos": "2",
+   "alliance": "red",
+   "AutoPath": [
+    "Bump-Trench"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ],
+   "scoringMannerismTele": "STATIONARY",
+   "crossedZone": true,
+   "climbed": "L1"
+  },
+  "absent": [
+   "TrenchRizz",
+   "climbPos",
+   "teleopFuelScored",
+   "autoFuelScored",
+   "autoClimbPos"
+  ]
+ },
+ {
+  "id": "f170",
+  "style": "chatty",
+  "text": "team 2791 also blue three also sorry the headset keeps cutting out also yeah playoff match seven also they didnt show up gotta run to the next match",
+  "expect": {
+   "teamNumber": 2791,
+   "matchNumber": 7,
+   "matchType": "sf",
+   "startPos": "6",
+   "alliance": "blue",
+   "noShow": true
+  },
+  "absent": [
+   "robotDefended",
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "f171",
+  "style": "noise",
+  "text": "team 5712 and i mean this is omar and also in teleop it picked up from the human player yeah chute and played defense and the defense you know was decent so i hit my head on honestly the bump over the door",
+  "expect": {
+   "teamNumber": 5712,
+   "scoutName": "Omar",
+   "pickupTele": [
+    "H_Player"
+   ],
+   "robotDefended": "Yes",
+   "defenceEffe": 3
+  },
+  "absent": [
+   "tipped"
+  ]
+ },
+ {
+  "id": "f172",
+  "style": "typed",
+  "text": "5973 - match 5 - red stn 2 - 3/3 climbed - tele pickup: floor",
+  "expect": {
+   "teamNumber": 5973,
+   "matchNumber": 5,
+   "startPos": "2",
+   "alliance": "red",
+   "pickupTele": [
+    "FLOOR"
+   ],
+   "AllianceClimb": 3
+  },
+  "absent": []
+ },
+ {
+  "id": "f176",
+  "style": "asr",
+  "text": "no climb at the end and robot 3103 and in teleop it shot 50 sitting still and then red one and pickup was weak",
+  "expect": {
+   "teamNumber": 3103,
+   "startPos": "1",
+   "alliance": "red",
+   "teleopFuelScored": 50,
+   "scoringMannerismTele": "STATIONARY",
+   "pickupEffe": 2,
+   "climbed": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f177",
+  "style": "typed",
+  "text": "6889:, practice 3, scouter Caleb, intentional passing",
+  "expect": {
+   "teamNumber": 6889,
+   "matchNumber": 3,
+   "matchType": "pm",
+   "scoutName": "Caleb",
+   "fuelPassed": [
+    "Intentional"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f178",
+  "style": "noise",
+  "text": "lol the mascot just fell over",
+  "expect": {},
+  "absent": [
+   "tipped",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "f179",
+  "style": "asr",
+  "text": "robot fifty six oh four and also scored 41 in teleop and scouter riley",
+  "expect": {
+   "teamNumber": 5604,
+   "scoutName": "Riley",
+   "teleopFuelScored": 41
+  },
+  "absent": []
+ },
+ {
+  "id": "f180",
+  "style": "asr",
+  "text": "8 and then drove under the trench basically in tele op and in auto it picked up from the human player and midfield and also climbed level 2 in the middle also went over the bump and back over the bump in auto and then scouter uh nina",
+  "expect": {
+   "teamNumber": 8,
+   "scoutName": "Nina",
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID",
+    "H_Player"
+   ],
+   "TrenchRizz": true,
+   "climbed": "L2",
+   "climbPos": "MD"
+  },
+  "absent": []
+ },
+ {
+  "id": "f181",
+  "style": "chatty",
+  "text": "Alright so, seven three one one. didnt pass any fuel. sorry the headset keeps cutting out. sorry the headset keeps cutting out. in teleop scored like 53. a belt snapped on the intake. qm 3.",
+  "expect": {
+   "teamNumber": 7311,
+   "matchNumber": 3,
+   "matchType": "qm",
+   "mechIssue": true,
+   "teleopFuelScored": 53,
+   "fuelPassed": [
+    "No_Passing"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f182",
+  "style": "typed",
+  "text": "7407:. q48. no climb. no auto scoring. tele 15 (moving shots)",
+  "expect": {
+   "teamNumber": 7407,
+   "matchNumber": 48,
+   "matchType": "qm",
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "teleopFuelScored": 15,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "climbed": "No"
+  },
+  "absent": [
+   "died",
+   "noShow"
+  ]
+ },
+ {
+  "id": "f183",
+  "style": "asr",
+  "text": "this is honestly team one seventy seven and then passed to the center of the field and like then also scouter um priya then endgame was level two middle and also drove under the trench in tele op and also no scoring in tele",
+  "expect": {
+   "teamNumber": 177,
+   "scoutName": "Priya",
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "fuelPassed": [
+    "Center"
+   ],
+   "TrenchRizz": true,
+   "climbed": "L2",
+   "climbPos": "MD"
+  },
+  "absent": []
+ },
+ {
+  "id": "f184",
+  "style": "asr",
+  "text": "robot thirty seven ninety four and then also passed fuel into the uh opposing i mean zone and also its jordan k and scored twenty five in tele op and during auto it shot while driving and then red two and and then also ran cycles under the trench",
+  "expect": {
+   "teamNumber": 3794,
+   "scoutName": "Jordan K",
+   "startPos": "2",
+   "alliance": "red",
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 25,
+   "fuelPassed": [
+    "Opp_Zone"
+   ],
+   "TrenchRizz": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f185",
+  "style": "asr",
+  "text": "climbed level 3 in the endgame in the middle and scoring effectiveness was 75 percent and team number 6745",
+  "expect": {
+   "teamNumber": 6745,
+   "scoringEffe": 75,
+   "climbed": "L3",
+   "climbPos": "MD"
+  },
+  "absent": []
+ },
+ {
+  "id": "f189",
+  "style": "asr",
+  "text": "its four nine three six and it scored in auto and in teleop they got eight and crossed into the opposing zone then qualifier 16",
+  "expect": {
+   "teamNumber": 4936,
+   "matchNumber": 16,
+   "matchType": "qm",
+   "AutoScored": true,
+   "teleopFuelScored": 8,
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f192",
+  "style": "asr",
+  "text": "seventy seven fifty eight also their pickup was uh consistent also hit like 90 percent of their shots",
+  "expect": {
+   "teamNumber": 7758,
+   "scoringEffe": 90,
+   "pickupEffe": 4
+  },
+  "absent": [
+   "doubleClimb",
+   "alliance",
+   "robotDefended"
+  ]
+ },
+ {
+  "id": "f193",
+  "style": "chatty",
+  "text": "So that match was wild. hit like 60 percent of their shots. in teleop they got 62. auto path was bump to bump same side. qualification match 45. it can go under the trench. uh team thirty seventy. in auto it put up 23. no defense. thats about it.",
+  "expect": {
+   "teamNumber": 3070,
+   "matchNumber": 45,
+   "matchType": "qm",
+   "AutoPath": [
+    "Same Side Bump"
+   ],
+   "autoFuelScored": 23,
+   "AutoScored": true,
+   "teleopFuelScored": 62,
+   "scoringEffe": 60,
+   "TrenchRizz": true,
+   "robotDefended": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f194",
+  "style": "typed",
+  "text": "1114, scouter Tess, B3, no show",
+  "expect": {
+   "teamNumber": 1114,
+   "scoutName": "Tess",
+   "startPos": "6",
+   "alliance": "blue",
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f195",
+  "style": "typed",
+  "text": "5407: | played D, nice | alliance climbs 2 | climbed in auto | no pickup in tele | crossed into the other zone",
+  "expect": {
+   "teamNumber": 5407,
+   "autoClimbed": "Success",
+   "pickupTele": [
+    "NONE"
+   ],
+   "robotDefended": "Yes",
+   "defenceEffe": 4,
+   "crossedZone": true,
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f196",
+  "style": "chatty",
+  "text": "so that match was wild robot one ninety five also climbed level 1 in the the endgame also someone was yeah standing in front of me the whole time also match twenty six also i um had to switch seats halfway also their passing was like great also 31 in tele op yeah also the announcer kept yelling also auto path was trench to trench same side i think thats everything",
+  "expect": {
+   "teamNumber": 195,
+   "matchNumber": 26,
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "teleopFuelScored": 31,
+   "passingEffe": 5,
+   "climbed": "L1"
+  },
+  "absent": [
+   "climbPos",
+   "scoringMannerismTele"
+  ]
+ },
+ {
+  "id": "f197",
+  "style": "asr",
+  "text": "team number fifty five eighteen and also tried defense and then also endgame was was level 2 middle then in tele op they got 63 and then also like blue two and then also in auto it put up 17 also 95 percent accurate",
+  "expect": {
+   "teamNumber": 5518,
+   "startPos": "5",
+   "alliance": "blue",
+   "autoFuelScored": 17,
+   "AutoScored": true,
+   "teleopFuelScored": 63,
+   "scoringEffe": 95,
+   "robotDefended": "Attempted",
+   "climbed": "L2",
+   "climbPos": "MD"
+  },
+  "absent": [
+   "AutoPickup",
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "f198",
+  "style": "typed",
+  "text": "Team 1318:; qm42; auto: outpost; level 1 mid; teleop picked up outpost",
+  "expect": {
+   "teamNumber": 1318,
+   "matchNumber": 42,
+   "matchType": "qm",
+   "AutoPath": [
+    "Outpost"
+   ],
+   "pickupTele": [
+    "H_Player"
+   ],
+   "climbed": "L1",
+   "climbPos": "MD"
+  },
+  "absent": [
+   "crossedZone",
+   "passingEffe",
+   "teleopFuelScored",
+   "mechIssue"
+  ]
+ },
+ {
+  "id": "f200",
+  "style": "chatty",
+  "text": "hey its me again uh team six eighty seven about 67 in tele op auto was bump out trench back same side the announcer uh kept yelling this i mean is nina the uhh pickup looked awesome someone was standing in front of me the whole time climbed in auto on basically the right side the announcer kept yelling you know the opponents played defense defense on them all match during auto it was a stationary shooter",
+  "expect": {
+   "teamNumber": 687,
+   "scoutName": "Nina",
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "autoClimbed": "Success",
+   "autoClimbPos": "RS",
+   "scoringMannerismAuto": "STATIONARY",
+   "teleopFuelScored": 67,
+   "pickupEffe": 5
+  },
+  "absent": [
+   "TrenchRizz",
+   "robotDefended",
+   "defenceEffe",
+   "crossedZone"
+  ]
+ },
+ {
+  "id": "f201",
+  "style": "asr",
+  "text": "team number fifteen twenty three then auto was bump out trench back and about 74 in tele op then in auto basically it got the climb right side so died with a minute left and like also in auto they grabbed fuel from the yeah outpost so match 57 and in auto it shot sixteen both while moving and while stationary",
+  "expect": {
+   "teamNumber": 1523,
+   "matchNumber": 57,
+   "died": true,
+   "AutoPath": [
+    "Bump-Trench"
+   ],
+   "autoClimbed": "Success",
+   "autoClimbPos": "RS",
+   "autoFuelScored": 16,
+   "AutoScored": true,
+   "scoringMannerismAuto": "BOTH",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ],
+   "teleopFuelScored": 74
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f202",
+  "style": "typed",
+  "text": "Team 3015:; auto picked up floor; auto climb LS; no endgame climb",
+  "expect": {
+   "teamNumber": 3015,
+   "autoClimbed": "Success",
+   "autoClimbPos": "LS",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "FLOOR"
+   ],
+   "climbed": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f206",
+  "style": "typed",
+  "text": "bot 9084, QM 72, Tess scouting, L3 MD, scored nothing in auto, auto buddy climb, auto bump out trench back same side, passing pretty good",
+  "expect": {
+   "teamNumber": 9084,
+   "matchNumber": 72,
+   "matchType": "qm",
+   "scoutName": "Tess",
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "autoClimbed": "Success",
+   "doubleClimb": true,
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "passingEffe": 4,
+   "climbed": "L3",
+   "climbPos": "MD"
+  },
+  "absent": [
+   "TrenchRizz",
+   "alliance",
+   "scoringEffe",
+   "mechIssue",
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "f207",
+  "style": "asr",
+  "text": "this is team thirteen eighteen and also they scored in auto then went through the trench a bunch in tele and also otto was was bump out trench back same uh side and then also in tele op shot twenty fuel and also match number 32",
+  "expect": {
+   "teamNumber": 1318,
+   "matchNumber": 32,
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "AutoScored": true,
+   "teleopFuelScored": 20,
+   "TrenchRizz": true
+  },
+  "absent": [
+   "autoFuelScored",
+   "mechIssue",
+   "pickupTele",
+   "startPos"
+  ]
+ },
+ {
+  "id": "f208",
+  "style": "asr",
+  "text": "uh uh team 2168 so got defended on the whole match and honestly then in auto they grabbed fuel from depo and in auto scored four from a standstill and also red one and honestly also it lost a uhh chain and then also in teleop uh scored 89 sorry 86 so it attempted a climb climb in auto and didnt make it and then also uh semis match three",
+  "expect": {
+   "teamNumber": 2168,
+   "matchNumber": 3,
+   "matchType": "sf",
+   "startPos": "1",
+   "alliance": "red",
+   "mechIssue": true,
+   "autoClimbed": "Failed",
+   "autoFuelScored": 4,
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT"
+   ],
+   "teleopFuelScored": 86
+  },
+  "absent": [
+   "robotDefended",
+   "defenceEffe",
+   "tipped",
+   "AllianceClimb",
+   "scoringMannerismTele",
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "f209",
+  "style": "asr",
+  "text": "robot 2601 2601 and had a mechanical issue with the intake and then also in auto they got 26 and then the climb attempt failed and then also two of the three robots climbed",
+  "expect": {
+   "teamNumber": 2601,
+   "mechIssue": true,
+   "autoFuelScored": 26,
+   "AutoScored": true,
+   "climbed": "F",
+   "AllianceClimb": 2
+  },
+  "absent": [
+   "autoClimbPos",
+   "fuelPassed",
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "f210",
+  "style": "chatty",
+  "text": "here we go auto path was trench to trench same side uh team 973 it scored in auto qualification match 74 sorry the headset keeps cutting out no pickup in teleop it was really hard to see from where i was sitting a belt snapped on the intake and then died with a minute left",
+  "expect": {
+   "teamNumber": 973,
+   "matchNumber": 74,
+   "matchType": "qm",
+   "mechIssue": true,
+   "died": true,
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "AutoScored": true,
+   "pickupTele": [
+    "NONE"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f211",
+  "style": "typed",
+  "text": "1678, Q106, Blue 1, auto pickup: floor, auto: stops to shoot, 2 climbs on alliance",
+  "expect": {
+   "teamNumber": 1678,
+   "matchNumber": 106,
+   "matchType": "qm",
+   "startPos": "4",
+   "alliance": "blue",
+   "scoringMannerismAuto": "STATIONARY",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "FLOOR"
+   ],
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f212",
+  "style": "typed",
+  "text": "Team 2601: / goes under trench in tele / teleop 82 stationary / scored nothing in auto / L1 right",
+  "expect": {
+   "teamNumber": 2601,
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "teleopFuelScored": 82,
+   "scoringMannerismTele": "STATIONARY",
+   "TrenchRizz": true,
+   "climbed": "L1",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f213",
+  "style": "asr",
+  "text": "its noor and then started blue three and in tele they grabbed fuel from the human player chute also team team 1477 also crossed over into i mean the opponents zone also in tele op scored 60 both on the move and sitting still",
+  "expect": {
+   "teamNumber": 1477,
+   "scoutName": "Noor",
+   "startPos": "6",
+   "alliance": "blue",
+   "teleopFuelScored": 60,
+   "scoringMannerismTele": "BOTH",
+   "pickupTele": [
+    "H_Player"
+   ],
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f214",
+  "style": "asr",
+  "text": "two fifty four and then no climb at uh the i mean end and starting position blue two and then also played defense and the defense was solid so about 61 in teleop",
+  "expect": {
+   "teamNumber": 254,
+   "startPos": "5",
+   "alliance": "blue",
+   "teleopFuelScored": 61,
+   "robotDefended": "Yes",
+   "defenceEffe": 4,
+   "climbed": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f215",
+  "style": "noise",
+  "text": "the vendor ran out of fries again",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "f219",
+  "style": "asr",
+  "text": "team number six eighty seven then scoring uh effectiveness was 30 percent and went over into the other alliances zone and also in otto otto went out over the bump and so came back under the trench and in auto it shot six both i mean on the yeah move and sitting still",
+  "expect": {
+   "teamNumber": 687,
+   "AutoPath": [
+    "Bump-Trench"
+   ],
+   "autoFuelScored": 6,
+   "AutoScored": true,
+   "scoringMannerismAuto": "BOTH",
+   "scoringEffe": 30,
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f222",
+  "style": "typed",
+  "text": "9084:, q60, auto grabbed from mid, floor, teleop 47 moving shots, tele pickup: depot, auto trench>bump",
+  "expect": {
+   "teamNumber": 9084,
+   "matchNumber": 60,
+   "matchType": "qm",
+   "AutoPath": [
+    "Trench-Bump"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID",
+    "FLOOR"
+   ],
+   "teleopFuelScored": 47,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupTele": [
+    "DEPOT"
+   ]
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f223",
+  "style": "noise",
+  "text": "she died laughing at that joke",
+  "expect": {},
+  "absent": [
+   "died",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "f224",
+  "style": "chatty",
+  "text": "hey its me again 5822 picked up uhh from midfield you know the announcer kept yelling tried to climb but failed qualification match 67 i yeah might be forgetting forgetting something was on defense most of the match thats about it",
+  "expect": {
+   "teamNumber": 5822,
+   "matchNumber": 67,
+   "matchType": "qm",
+   "pickupTele": [
+    "MID"
+   ],
+   "robotDefended": "Yes",
+   "climbed": "F"
+  },
+  "absent": [
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "f225",
+  "style": "asr",
+  "text": "scouting twenty nine ten and then also the uh alliance had two climbs uhh and in auto scored like ten so the climb attempt failed you know and um also qual 62 and then tipped over on the bump",
+  "expect": {
+   "teamNumber": 2910,
+   "matchNumber": 62,
+   "matchType": "qm",
+   "tipped": true,
+   "autoFuelScored": 10,
+   "AutoScored": true,
+   "climbed": "F",
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f226",
+  "style": "typed",
+  "text": "3310 -, red2, opponent died in auto, tele 0, auto climb failed, uses the trench, climbed l1",
+  "expect": {
+   "teamNumber": 3310,
+   "startPos": "2",
+   "alliance": "red",
+   "autoClimbed": "Failed",
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "TrenchRizz": true,
+   "climbed": "L1"
+  },
+  "absent": [
+   "climbPos",
+   "died"
+  ]
+ },
+ {
+  "id": "f227",
+  "style": "chatty",
+  "text": "this is team 1991 also i mean in tele i mean op scored like thirty also had a mechanical issue uhh with the intake and then just died also also qm 118 also in auto basically it picked up from the depot also sorry the headset keeps cutting out also started blue three i think thats everything",
+  "expect": {
+   "teamNumber": 1991,
+   "matchNumber": 118,
+   "matchType": "qm",
+   "startPos": "6",
+   "alliance": "blue",
+   "mechIssue": true,
+   "died": true,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT"
+   ],
+   "teleopFuelScored": 30
+  },
+  "absent": []
+ },
+ {
+  "id": "f228",
+  "style": "asr",
+  "text": "7407 so in tele they grabbed fuel like from the floor you know and then also about about 35 in tele you know op and also playoff match 4",
+  "expect": {
+   "teamNumber": 7407,
+   "matchNumber": 4,
+   "matchType": "sf",
+   "teleopFuelScored": 35,
+   "pickupTele": [
+    "FLOOR"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f230",
+  "style": "chatty",
+  "text": "alright alright quick report its nineteen ninety one then in tele it shot as it drove then sorry the headset keeps cutting out then passed to the center of the field and passing was amazing then sorry the headset keeps cutting out then red one no sorry i mean blue one then sorry so the headset keeps cutting out then in auto went out over the bump yeah and came back i mean under the trench uhh then used the trench a lot in teleop so then event twenty twenty six c t you know w a t",
+  "expect": {
+   "teamNumber": 1991,
+   "eventKey": "2026ctwat",
+   "startPos": "4",
+   "alliance": "blue",
+   "AutoPath": [
+    "Bump-Trench"
+   ],
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "fuelPassed": [
+    "Center"
+   ],
+   "passingEffe": 5,
+   "TrenchRizz": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f231",
+  "style": "typed",
+  "text": "254:, blue1, teleop fuel ~43, died w/ a minute left, auto: depot",
+  "expect": {
+   "teamNumber": 254,
+   "startPos": "4",
+   "alliance": "blue",
+   "died": true,
+   "AutoPath": [
+    "Depot"
+   ],
+   "teleopFuelScored": 43
+  },
+  "absent": []
+ },
+ {
+  "id": "f235",
+  "style": "chatty",
+  "text": "Alright quick report. match 117, and uh team forty six fifty one, and in tele they grabbed fuel from the human player and the depot, and in teleop scored 33 while moving, and couldnt pick up fuel at all, and my phone is on low battery, and went straight to the depot in auto.",
+  "expect": {
+   "teamNumber": 4651,
+   "matchNumber": 117,
+   "AutoPath": [
+    "Depot"
+   ],
+   "teleopFuelScored": 33,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupTele": [
+    "DEPOT",
+    "H_Player"
+   ],
+   "pickupEffe": 1
+  },
+  "absent": []
+ },
+ {
+  "id": "f236",
+  "style": "asr",
+  "text": "uh team four one four six also 80 fuel in tele and all three of us climbed and then at twenty twenty six m a b r i and level 1 climb in basically endgame in the middle and then also during auto it collected from the human player and the like floor",
+  "expect": {
+   "teamNumber": 4146,
+   "eventKey": "2026mabri",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player",
+    "FLOOR"
+   ],
+   "teleopFuelScored": 80,
+   "climbed": "L1",
+   "climbPos": "MD",
+   "AllianceClimb": 3
+  },
+  "absent": [
+   "noShow",
+   "doubleClimb",
+   "mechIssue",
+   "scoringEffe"
+  ]
+ },
+ {
+  "id": "f237",
+  "style": "asr",
+  "text": "scouting two three three seven then in auto they grabbed fuel from basically depot and then also about 24 in teleop also it never climbed",
+  "expect": {
+   "teamNumber": 2337,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT"
+   ],
+   "teleopFuelScored": 24,
+   "climbed": "No"
+  },
+  "absent": [
+   "mechIssue"
+  ]
+ },
+ {
+  "id": "f238",
+  "style": "asr",
+  "text": "seventy seven fifty eight also it climbed in auto in the middle so in tele op scored 64 while driving and then in auto they grabbed fuel from the out post floor and depot also in auto it shot 16 while moving so match 52 and played defense",
+  "expect": {
+   "teamNumber": 7758,
+   "matchNumber": 52,
+   "autoClimbed": "Success",
+   "autoClimbPos": "MD",
+   "autoFuelScored": 16,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT",
+    "H_Player",
+    "FLOOR"
+   ],
+   "teleopFuelScored": 64,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "robotDefended": "Yes"
+  },
+  "absent": [
+   "defenceEffe",
+   "doubleClimb",
+   "scoutName",
+   "mechIssue",
+   "tipped"
+  ]
+ },
+ {
+  "id": "f239",
+  "style": "noise",
+  "text": "oh my gosh the pit is so so basically hot in here and also robot 7519 and ivy here so buddy climb in auto left side and then also in teleop scored like 75",
+  "expect": {
+   "teamNumber": 7519,
+   "scoutName": "Ivy",
+   "autoClimbed": "Success",
+   "doubleClimb": true,
+   "autoClimbPos": "LS",
+   "teleopFuelScored": 75
+  },
+  "absent": [
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "f240",
+  "style": "typed",
+  "text": "7407:, qual 93, died, auto trench to trench",
+  "expect": {
+   "teamNumber": 7407,
+   "matchNumber": 93,
+   "matchType": "qm",
+   "died": true,
+   "AutoPath": [
+    "Trench/Trench"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f241",
+  "style": "chatty",
+  "text": "Robot seventy three eleven. also about eight in auto. also didnt climb. also sorry the headset keeps cutting out. also during teleop it shot as it drove. also qual 52. also died in the middle of the match. also the pickup looked rough. also sorry the headset keeps cutting out. also used the trench a lot in teleop. sorry if that was rambly.",
+  "expect": {
+   "teamNumber": 7311,
+   "matchNumber": 52,
+   "matchType": "qm",
+   "died": true,
+   "autoFuelScored": 8,
+   "AutoScored": true,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupEffe": 2,
+   "TrenchRizz": true,
+   "climbed": "No"
+  },
+  "absent": [
+   "pickupfrom",
+   "scoringEffe",
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "f242",
+  "style": "typed",
+  "text": "177 -. Caleb scouting. auto climb success. scored nothing in auto. failed endgame climb. died w/ a minute left",
+  "expect": {
+   "teamNumber": 177,
+   "scoutName": "Caleb",
+   "died": true,
+   "autoClimbed": "Success",
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "climbed": "F"
+  },
+  "absent": [
+   "climbPos",
+   "robotDefended",
+   "startPos",
+   "alliance"
+  ]
+ },
+ {
+  "id": "f243",
+  "style": "asr",
+  "text": "team number eight twelve so they didnt show up",
+  "expect": {
+   "teamNumber": 812,
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f244",
+  "style": "typed",
+  "text": "Team 1318:. no auto climb. tele 52 (on the move). 2/3 climbed. auto same side bump",
+  "expect": {
+   "teamNumber": 1318,
+   "AutoPath": [
+    "Same Side Bump"
+   ],
+   "autoClimbed": "NA",
+   "teleopFuelScored": 52,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f248",
+  "style": "asr",
+  "text": "team number forty five thirty three and their honestly passes were were scattered and did intentional passing and so also in auto it picked up from the out post and scored some in otto",
+  "expect": {
+   "teamNumber": 4533,
+   "AutoScored": true,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ],
+   "fuelPassed": [
+    "Scattered",
+    "Intentional"
+   ]
+  },
+  "absent": [
+   "autoFuelScored",
+   "TrenchRizz",
+   "noShow",
+   "pickupEffe",
+   "AllianceClimb"
+  ]
+ },
+ {
+  "id": "f249",
+  "style": "asr",
+  "text": "6745 and then maya scouting also went over into yeah the other alliances zone also blue three",
+  "expect": {
+   "teamNumber": 6745,
+   "scoutName": "Maya",
+   "startPos": "6",
+   "alliance": "blue",
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f251",
+  "style": "asr",
+  "text": "robot sixty eight oh zero also their basically pickup pickup was average and event twenty twenty six c t i mean w a t i mean and about 62 in teleop",
+  "expect": {
+   "teamNumber": 6800,
+   "eventKey": "2026ctwat",
+   "teleopFuelScored": 62,
+   "pickupEffe": 3
+  },
+  "absent": [
+   "climbPos",
+   "autoClimbPos",
+   "robotDefended"
+  ]
+ },
+ {
+  "id": "f252",
+  "style": "asr",
+  "text": "robot sixty nine ninety six and its caleb and tipped over on the bump and then it died halfway through teleop so it like scored honestly in auto also in in tele op basically scored like 61 then all three of us climbed",
+  "expect": {
+   "teamNumber": 6996,
+   "scoutName": "Caleb",
+   "tipped": true,
+   "died": true,
+   "AutoScored": true,
+   "teleopFuelScored": 61,
+   "AllianceClimb": 3
+  },
+  "absent": [
+   "autoFuelScored",
+   "noShow",
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "f253",
+  "style": "chatty",
+  "text": "this is team one seventy seven in tele op it sat i mean still and shot someone was standing in front of me the whole time so i might you know be basically forgetting something went over into the other alliances zone triple climb for the alliance qual 46 anyway thats thats all i got",
+  "expect": {
+   "teamNumber": 177,
+   "matchNumber": 46,
+   "matchType": "qm",
+   "scoringMannerismTele": "STATIONARY",
+   "crossedZone": true,
+   "AllianceClimb": 3
+  },
+  "absent": [
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "f254",
+  "style": "asr",
+  "text": "team number forty five ninety and scored 66 in teleop then did intentional passing and passing uhh was strong and then also drove uhh under the trench in tele op also red alliance station three and also got level three at the end and during auto it shot as it drove",
+  "expect": {
+   "teamNumber": 4590,
+   "startPos": "3",
+   "alliance": "red",
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 66,
+   "fuelPassed": [
+    "Intentional"
+   ],
+   "passingEffe": 4,
+   "TrenchRizz": true,
+   "climbed": "L3"
+  },
+  "absent": []
+ },
+ {
+  "id": "f255",
+  "style": "chatty",
+  "text": "Team forty one forty six, and tried to play defense and it was nice, and qual fifty five, and it crossed into the opposing alliances zone, and hung on level one right side, and two of the three robots climbed.",
+  "expect": {
+   "teamNumber": 4146,
+   "matchNumber": 55,
+   "matchType": "qm",
+   "robotDefended": "Attempted",
+   "defenceEffe": 4,
+   "crossedZone": true,
+   "climbed": "L1",
+   "climbPos": "RS",
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f256",
+  "style": "asr",
+  "text": "scouting seventy six thirty two so lost power so and died and match 35 sorry 33 and then also in auto scored fifteen on the move then about 84 in tele op and in auto out over the bump and uh back under the trench all on the same side",
+  "expect": {
+   "teamNumber": 7632,
+   "matchNumber": 33,
+   "died": true,
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "autoFuelScored": 15,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 84
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f257",
+  "style": "asr",
+  "text": "team number forty one forty six and then in auto it shot while driving so and in you know teleop it shot 44 while stationery",
+  "expect": {
+   "teamNumber": 4146,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 44,
+   "scoringMannerismTele": "STATIONARY"
+  },
+  "absent": []
+ },
+ {
+  "id": "f260",
+  "style": "chatty",
+  "text": "Team number seventy four oh seven, and Hana here, and their passes were scattered and their passing was consistent, and in teleop they got 34, and climbed level 1 in the endgame in the middle. I think thats everything.",
+  "expect": {
+   "teamNumber": 7407,
+   "scoutName": "Hana",
+   "teleopFuelScored": 34,
+   "fuelPassed": [
+    "Scattered"
+   ],
+   "passingEffe": 4,
+   "climbed": "L1",
+   "climbPos": "MD"
+  },
+  "absent": []
+ },
+ {
+  "id": "f264",
+  "style": "asr",
+  "text": "uh team fifty nine forty and level level 2 climb in endgame and picking up fuel was elite then scouter zoe and qual 67 and red two so in tele op scored twenty five both both on the move and sitting still",
+  "expect": {
+   "teamNumber": 5940,
+   "matchNumber": 67,
+   "matchType": "qm",
+   "scoutName": "Zoe",
+   "startPos": "2",
+   "alliance": "red",
+   "teleopFuelScored": 25,
+   "scoringMannerismTele": "BOTH",
+   "pickupEffe": 5,
+   "climbed": "L2"
+  },
+  "absent": [
+   "climbPos",
+   "robotDefended"
+  ]
+ },
+ {
+  "id": "f265",
+  "style": "noise",
+  "text": "did you see that red lobster commercial lol",
+  "expect": {},
+  "absent": [
+   "startPos",
+   "alliance",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "f266",
+  "style": "asr",
+  "text": "seventy one oh two and picking up uhh fuel was nice honestly and then climbed level 3 in the endgame left yeah side side and then in teleop it picked up from depot and in auto they got 14 also also played defense and the the defense was okay",
+  "expect": {
+   "teamNumber": 7102,
+   "autoFuelScored": 14,
+   "AutoScored": true,
+   "pickupTele": [
+    "DEPOT"
+   ],
+   "pickupEffe": 4,
+   "robotDefended": "Yes",
+   "defenceEffe": 3,
+   "climbed": "L3",
+   "climbPos": "LS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f267",
+  "style": "typed",
+  "text": "T 6166 / match 81 / r1 / auto bump out trench back same side / pickup decent",
+  "expect": {
+   "teamNumber": 6166,
+   "matchNumber": 81,
+   "startPos": "1",
+   "alliance": "red",
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "pickupEffe": 3
+  },
+  "absent": []
+ },
+ {
+  "id": "f268",
+  "style": "noise",
+  "text": "this is team five two seven two and the vendor ran out of fries again and it fell over and also auto path was like bump to bump same side",
+  "expect": {
+   "teamNumber": 5272,
+   "tipped": true,
+   "AutoPath": [
+    "Same Side Bump"
+   ]
+  },
+  "absent": [
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "f269",
+  "style": "asr",
+  "text": "team thirty two two fifty six and then played defense the whole second half and also starting position red two and uhh only shot the pre load in auto",
+  "expect": {
+   "teamNumber": 3256,
+   "startPos": "2",
+   "alliance": "red",
+   "AutoPath": [
+    "Pre-Load"
+   ],
+   "robotDefended": "Yes"
+  },
+  "absent": [
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "f270",
+  "style": "asr",
+  "text": "this is team 7519 and in auto it shot sixteen while stationary also in uh tele honestly they grabbed fuel from mid field and had a mechanical problem and on red two",
+  "expect": {
+   "teamNumber": 7519,
+   "startPos": "2",
+   "alliance": "red",
+   "mechIssue": true,
+   "autoFuelScored": 16,
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY",
+   "pickupTele": [
+    "MID"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f271",
+  "style": "asr",
+  "text": "team twenty eight thirty four and it can go under the trench also starting position red two and um in tele you know op scored 52 while stationary and then also level two climb in endgame",
+  "expect": {
+   "teamNumber": 2834,
+   "startPos": "2",
+   "alliance": "red",
+   "teleopFuelScored": 52,
+   "scoringMannerismTele": "STATIONARY",
+   "TrenchRizz": true,
+   "climbed": "L2"
+  },
+  "absent": [
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f272",
+  "style": "typed",
+  "text": "5254. auto climb failed. 42 in tele. scored 3 auto",
+  "expect": {
+   "teamNumber": 5254,
+   "autoClimbed": "Failed",
+   "autoFuelScored": 3,
+   "AutoScored": true,
+   "teleopFuelScored": 42
+  },
+  "absent": []
+ },
+ {
+  "id": "f273",
+  "style": "chatty",
+  "text": "Teleop pickup was from the human player chute and the floor. then slipped off trying to climb. then team forty one forty six. then got defended on the whole match. then only one robot on the alliance climbed. then the crowd was insane right then. then had a mechanical problem and then it died halfway through teleop.",
+  "expect": {
+   "teamNumber": 4146,
+   "mechIssue": true,
+   "died": true,
+   "pickupTele": [
+    "H_Player",
+    "FLOOR"
+   ],
+   "climbed": "F",
+   "AllianceClimb": 1
+  },
+  "absent": [
+   "robotDefended",
+   "defenceEffe",
+   "autoClimbed"
+  ]
+ },
+ {
+  "id": "f277",
+  "style": "noise",
+  "text": "robot 9084 so event twenty twenty six c t g l a and auto path was bump to bump so same side and testing testing and it scored scored in auto",
+  "expect": {
+   "teamNumber": 9084,
+   "eventKey": "2026ctgla",
+   "AutoPath": [
+    "Same Side Bump"
+   ],
+   "AutoScored": true
+  },
+  "absent": [
+   "matchNumber",
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "f278",
+  "style": "chatty",
+  "text": "so basically yeah at twenty twenty six c t g l you know a then on red three then in auto out under the trench and back over the bump all on the same side then i might be forgetting something then scouter hana then sorry the basically headset keeps cutting out out then scouting 4146 then two out of three shots went in then passed fuel yeah into the you know center and their passing was awesome thats about it",
+  "expect": {
+   "teamNumber": 4146,
+   "scoutName": "Hana",
+   "eventKey": "2026ctgla",
+   "startPos": "3",
+   "alliance": "red",
+   "AutoPath": [
+    "Same Side Bump/Trench"
+   ],
+   "scoringEffe": 67,
+   "fuelPassed": [
+    "Center"
+   ],
+   "passingEffe": 5
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f279",
+  "style": "chatty",
+  "text": "alright so team number thirty fifteen and scored 65 in teleop and didnt climb like and in auto went out under the trench and back over the bump and red uh alliance station two two and pickup was great and tele op pickup was from the outpost and the announcer kept yelling and 24 24 fuel in auto and my phone is on low battery and just died im starving honestly",
+  "expect": {
+   "teamNumber": 3015,
+   "startPos": "2",
+   "alliance": "red",
+   "died": true,
+   "AutoPath": [
+    "Trench-Bump"
+   ],
+   "autoFuelScored": 24,
+   "AutoScored": true,
+   "teleopFuelScored": 65,
+   "pickupTele": [
+    "H_Player"
+   ],
+   "pickupEffe": 5,
+   "climbed": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f280",
+  "style": "asr",
+  "text": "uh team four forty nine also started red two then event twenty twenty six c t s c t so their pickup was average then in tele op shot 35 fuel yeah then 6 fuel in auto and under the trench and back you know under the trench in um auto",
+  "expect": {
+   "teamNumber": 449,
+   "eventKey": "2026ctsct",
+   "startPos": "2",
+   "alliance": "red",
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "autoFuelScored": 6,
+   "AutoScored": true,
+   "teleopFuelScored": 35,
+   "pickupEffe": 3
+  },
+  "absent": []
+ },
+ {
+  "id": "f281",
+  "style": "typed",
+  "text": "T 9084: | qm117 | r1 | level 1 rs",
+  "expect": {
+   "teamNumber": 9084,
+   "matchNumber": 117,
+   "matchType": "qm",
+   "startPos": "1",
+   "alliance": "red",
+   "climbed": "L1",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f282",
+  "style": "asr",
+  "text": "uh team 1991 also about 68 in tele op like and also diego scouting scouting then only one robot on the alliance climbed",
+  "expect": {
+   "teamNumber": 1991,
+   "scoutName": "Diego",
+   "teleopFuelScored": 68,
+   "AllianceClimb": 1
+  },
+  "absent": []
+ },
+ {
+  "id": "f283",
+  "style": "chatty",
+  "text": "hey its me again uh team fifty nine forty and in tele op scored like 61 and played you know defence and the defense um was uhh nice and two alliance climbs and no auto at all and endgame was level three anyway thats all i got got",
+  "expect": {
+   "teamNumber": 5940,
+   "AutoPath": [
+    "N/A"
+   ],
+   "teleopFuelScored": 61,
+   "robotDefended": "Yes",
+   "defenceEffe": 4,
+   "climbed": "L3",
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f284",
+  "style": "asr",
+  "text": "this is team 4533 and crossed over into the opponents zone also in teleop scored 33 from a standstill",
+  "expect": {
+   "teamNumber": 4533,
+   "teleopFuelScored": 33,
+   "scoringMannerismTele": "STATIONARY",
+   "crossedZone": true
+  },
+  "absent": [
+   "mechIssue",
+   "climbPos",
+   "autoClimbPos",
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "f285",
+  "style": "asr",
+  "text": "uh um team 1318 also um about 23 in teleop and then in auto it stopped and shot also didnt climb and yeah no one on the alliance climbed and also in auto it picked up from the human player and also tipped over and then also in auto bump to bump",
+  "expect": {
+   "teamNumber": 1318,
+   "tipped": true,
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "scoringMannerismAuto": "STATIONARY",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ],
+   "teleopFuelScored": 23,
+   "climbed": "No",
+   "AllianceClimb": 0
+  },
+  "absent": []
+ },
+ {
+  "id": "f286",
+  "style": "typed",
+  "text": "5687 -. qm66. no climb. only 1 climb on alliance. died mid match",
+  "expect": {
+   "teamNumber": 5687,
+   "matchNumber": 66,
+   "matchType": "qm",
+   "died": true,
+   "climbed": "No",
+   "AllianceClimb": 1
+  },
+  "absent": []
+ },
+ {
+  "id": "f293",
+  "style": "typed",
+  "text": "9084, - Diego, scattered passes, no auto climb",
+  "expect": {
+   "teamNumber": 9084,
+   "scoutName": "Diego",
+   "autoClimbed": "NA",
+   "fuelPassed": [
+    "Scattered"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f294",
+  "style": "chatty",
+  "text": "this is you know team 7407 then the pickup looked strong then auto path basically was trench to trench same side then sorry the um headset keeps cutting out then auto pickup was from the human player chute honestly then so they scored in auto then i had to switch you know seats halfway then teleop pickup was from the neutral zone and the depot anyway basically thats all um i got",
+  "expect": {
+   "teamNumber": 7407,
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "AutoScored": true,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ],
+   "pickupTele": [
+    "DEPOT",
+    "MID"
+   ],
+   "pickupEffe": 4
+  },
+  "absent": [
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "f295",
+  "style": "chatty",
+  "text": "Alright quick report. uh team thirty six sixty eight. then tipped over. then the alliance had two climbs. then match 66. then I had to switch seats halfway. then blue alliance station three. then I had to switch seats halfway. then in auto went out under the trench and back over the bump. anyway thats all I got.",
+  "expect": {
+   "teamNumber": 3668,
+   "matchNumber": 66,
+   "startPos": "6",
+   "alliance": "blue",
+   "tipped": true,
+   "AutoPath": [
+    "Trench-Bump"
+   ],
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f296",
+  "style": "typed",
+  "text": "team 4777, L2 RS, 3/3 climbed, passes intentional, passing pretty good",
+  "expect": {
+   "teamNumber": 4777,
+   "fuelPassed": [
+    "Intentional"
+   ],
+   "passingEffe": 4,
+   "climbed": "L2",
+   "climbPos": "RS",
+   "AllianceClimb": 3
+  },
+  "absent": [
+   "TrenchRizz",
+   "pickupfrom",
+   "defenceEffe",
+   "doubleClimb"
+  ]
+ },
+ {
+  "id": "f297",
+  "style": "asr",
+  "text": "its thirty one oh three then starting position blue one and also in auto it yeah put up twenty five then 58 in tele op so got level one at uh the end in the middle",
+  "expect": {
+   "teamNumber": 3103,
+   "startPos": "4",
+   "alliance": "blue",
+   "autoFuelScored": 25,
+   "AutoScored": true,
+   "teleopFuelScored": 58,
+   "climbed": "L1",
+   "climbPos": "MD"
+  },
+  "absent": []
+ },
+ {
+  "id": "f298",
+  "style": "chatty",
+  "text": "Alright so, robot forty one forty six. then in auto they grabbed fuel from the outpost the depot and the floor. then it was really hard to see from where I was sitting. then did intentional passing and their passing was messy. then scored nothing in auto. then their pickup was awful.",
+  "expect": {
+   "teamNumber": 4146,
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT",
+    "H_Player",
+    "FLOOR"
+   ],
+   "pickupEffe": 1,
+   "fuelPassed": [
+    "Intentional"
+   ],
+   "passingEffe": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f299",
+  "style": "asr",
+  "text": "uh team seven sixteen and then also in uhh auto it shot while driving then started red two and also did not attempt a uh climb in auto so no scoring in tele and also in tele they grabbed fuel from the human player chute",
+  "expect": {
+   "teamNumber": 716,
+   "startPos": "2",
+   "alliance": "red",
+   "autoClimbed": "NA",
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "pickupTele": [
+    "H_Player"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f300",
+  "style": "asr",
+  "text": "team number sixty six twenty four also in tele op scored 50 sorry 43 and their passing like was weak and level 2 climb in endgame",
+  "expect": {
+   "teamNumber": 6624,
+   "teleopFuelScored": 43,
+   "passingEffe": 2,
+   "climbed": "L2"
+  },
+  "absent": [
+   "climbPos",
+   "scoringEffe",
+   "scoringMannerismAuto"
+  ]
+ },
+ {
+  "id": "f301",
+  "style": "noise",
+  "text": "the pizza guy is at the blue gate",
+  "expect": {},
+  "absent": [
+   "startPos",
+   "alliance",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "f302",
+  "style": "asr",
+  "text": "this is team 6238 and then scored 13 in tele op so a belt snapped on yeah the intake",
+  "expect": {
+   "teamNumber": 6238,
+   "mechIssue": true,
+   "teleopFuelScored": 13
+  },
+  "absent": [
+   "pickupTele",
+   "pickupfrom",
+   "robotDefended",
+   "scoutName"
+  ]
+ },
+ {
+  "id": "f303",
+  "style": "noise",
+  "text": "eleven twenty four and then blue two and auto was straight to the depot and bro this arena is so uhh loud i cant i mean even think and then also also 87 fuel in tele",
+  "expect": {
+   "teamNumber": 1124,
+   "startPos": "5",
+   "alliance": "blue",
+   "AutoPath": [
+    "Depot"
+   ],
+   "teleopFuelScored": 87
+  },
+  "absent": [
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "f307",
+  "style": "noise",
+  "text": "we need to go to home depot for zip ties after this",
+  "expect": {},
+  "absent": [
+   "pickupTele",
+   "pickupfrom",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "f308",
+  "style": "typed",
+  "text": "team 8, at 2026mawor, red 1, teleop 88 stationary, auto 0, went under trench",
+  "expect": {
+   "teamNumber": 8,
+   "eventKey": "2026mawor",
+   "startPos": "1",
+   "alliance": "red",
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "teleopFuelScored": 88,
+   "scoringMannerismTele": "STATIONARY",
+   "TrenchRizz": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f309",
+  "style": "asr",
+  "text": "1318 and also i mean qual 9 so got level three at the end also they grabbed fuel from floor and the depot and then also passed fuel into the center and all three of us climbed",
+  "expect": {
+   "teamNumber": 1318,
+   "matchNumber": 9,
+   "matchType": "qm",
+   "pickupTele": [
+    "DEPOT",
+    "FLOOR"
+   ],
+   "fuelPassed": [
+    "Center"
+   ],
+   "climbed": "L3",
+   "AllianceClimb": 3
+  },
+  "absent": []
+ },
+ {
+  "id": "f310",
+  "style": "chatty",
+  "text": "robot nine seventy three used the trench a uh lot in teleop it was really hard to see from where i was sitting had a mechanical issue with the intake i think thats everything",
+  "expect": {
+   "teamNumber": 973,
+   "mechIssue": true,
+   "TrenchRizz": true
+  },
+  "absent": [
+   "robotDefended",
+   "autoClimbed",
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "f311",
+  "style": "asr",
+  "text": "in auto it basically got the climb and then twenty three balls honestly in autonomous and auto went trench to trench and also event twenty twenty six c t t g g l a and then team eight twelve",
+  "expect": {
+   "teamNumber": 812,
+   "eventKey": "2026ctgla",
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "autoClimbed": "Success",
+   "autoFuelScored": 23,
+   "AutoScored": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f312",
+  "style": "chatty",
+  "text": "scouting 3310 it collected fuel from the human player their honestly pickup was decent sorry the headset keeps cutting out sorry if that was rambly",
+  "expect": {
+   "teamNumber": 3310,
+   "pickupTele": [
+    "H_Player"
+   ],
+   "pickupEffe": 3
+  },
+  "absent": []
+ },
+ {
+  "id": "f313",
+  "style": "asr",
+  "text": "team seventy four oh seven also they never played defence and also auto path was trench to trench same side then auto auto pickup was from the human player chute the depot and the neutral zone and two balls in so autonomous and then about fourteen in tele op",
+  "expect": {
+   "teamNumber": 7407,
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "autoFuelScored": 2,
+   "AutoScored": true,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT",
+    "MID",
+    "H_Player"
+   ],
+   "teleopFuelScored": 14,
+   "robotDefended": "No"
+  },
+  "absent": [
+   "TrenchRizz",
+   "defenceEffe",
+   "alliance",
+   "pickupEffe"
+  ]
+ },
+ {
+  "id": "f314",
+  "style": "noise",
+  "text": "my battery is at twenty percent i need to find an outlet and uh team sixty eight eighty nine and also auto went trench to trench also in auto scored five both while moving and while stationary",
+  "expect": {
+   "teamNumber": 6889,
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "autoFuelScored": 5,
+   "AutoScored": true,
+   "scoringMannerismAuto": "BOTH"
+  },
+  "absent": [
+   "scoringEffe",
+   "pickupEffe",
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f315",
+  "style": "typed",
+  "text": "team 1114:",
+  "expect": {
+   "teamNumber": 1114
+  },
+  "absent": []
+ },
+ {
+  "id": "f316",
+  "style": "asr",
+  "text": "robot 812 and then also in auto yeah it shot 25 both on the move and so sitting still then match number 19 and then also in um auto out over the bump and back under the trench all on the same side and also tipped over on the bump and then in auto they grabbed fuel from floor and also pickup was elite",
+  "expect": {
+   "teamNumber": 812,
+   "matchNumber": 19,
+   "tipped": true,
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "autoFuelScored": 25,
+   "AutoScored": true,
+   "scoringMannerismAuto": "BOTH",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "FLOOR"
+   ],
+   "pickupEffe": 5
+  },
+  "absent": [
+   "TrenchRizz",
+   "robotDefended",
+   "defenceEffe",
+   "climbed",
+   "doubleClimb"
+  ]
+ },
+ {
+  "id": "f323",
+  "style": "chatty",
+  "text": "Here we go, team forty one seventy one. then didnt climb. then played defense and it was average. then in teleop it shot 75 while moving. then in auto out over the bump and back under the trench all on the same side. then in auto it shot 11 while moving.",
+  "expect": {
+   "teamNumber": 4171,
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "autoFuelScored": 11,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 75,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "robotDefended": "Yes",
+   "defenceEffe": 3,
+   "climbed": "No"
+  },
+  "absent": [
+   "TrenchRizz",
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f324",
+  "style": "chatty",
+  "text": "alright quick report team honestly number thirty nine twenty eight and had a you know mechanical issue with the intake uh and the announcer kept yelling and ran cycles under the trench im starving honestly",
+  "expect": {
+   "teamNumber": 3928,
+   "mechIssue": true,
+   "TrenchRizz": true
+  },
+  "absent": [
+   "AutoPath",
+   "robotDefended",
+   "autoClimbed"
+  ]
+ },
+ {
+  "id": "f325",
+  "style": "asr",
+  "text": "uh team 177 then yeah picking up fuel was weak and then starting position blue two also during auto it collected from midfield and the out post and in teleop scored 69 sorry 64",
+  "expect": {
+   "teamNumber": 177,
+   "startPos": "5",
+   "alliance": "blue",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID",
+    "H_Player"
+   ],
+   "teleopFuelScored": 64,
+   "pickupEffe": 2
+  },
+  "absent": [
+   "scoringMannerismTele",
+   "climbed"
+  ]
+ },
+ {
+  "id": "f326",
+  "style": "typed",
+  "text": "687. blue 2. only 1 climb on alliance",
+  "expect": {
+   "teamNumber": 687,
+   "startPos": "5",
+   "alliance": "blue",
+   "AllianceClimb": 1
+  },
+  "absent": []
+ },
+ {
+  "id": "f327",
+  "style": "chatty",
+  "text": "Alright quick report, its sixty seven forty five, and it fell over coming off the bump and then it died halfway through teleop, and semi final 4, and during teleop it sat still and shot, and it was really hard to see from where I was sitting, and in teleop it picked up from floor, and did intentional passing, hope that helps the strategy people.",
+  "expect": {
+   "teamNumber": 6745,
+   "matchNumber": 4,
+   "matchType": "sf",
+   "tipped": true,
+   "died": true,
+   "scoringMannerismTele": "STATIONARY",
+   "pickupTele": [
+    "FLOOR"
+   ],
+   "fuelPassed": [
+    "Intentional"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f328",
+  "style": "asr",
+  "text": "scouting fifty eight twenty two then 15 in tele op then crossed over into the opponents zone and then also played defense and auto path was trench to trench same side also made three out of four also also during auto it collected from the you know human player chute so uhh climbed level three in basically the endgame",
+  "expect": {
+   "teamNumber": 5822,
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ],
+   "teleopFuelScored": 15,
+   "scoringEffe": 75,
+   "robotDefended": "Yes",
+   "crossedZone": true,
+   "climbed": "L3"
+  },
+  "absent": [
+   "defenceEffe",
+   "climbPos",
+   "startPos",
+   "scoringMannerismTele"
+  ]
+ },
+ {
+  "id": "f329",
+  "style": "chatty",
+  "text": "Alright so. scouting thirteen eighteen, and in teleop it shot on the move, and it was really hard to see from where I was sitting, and level one climb in endgame, and this is Omar, and on blue one. im starving honestly.",
+  "expect": {
+   "teamNumber": 1318,
+   "scoutName": "Omar",
+   "startPos": "4",
+   "alliance": "blue",
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "climbed": "L1"
+  },
+  "absent": []
+ },
+ {
+  "id": "f330",
+  "style": "asr",
+  "text": "uh team 716 and then also didnt score in teleop so picked up from the neutral zone also failed the climb",
+  "expect": {
+   "teamNumber": 716,
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "pickupTele": [
+    "MID"
+   ],
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f331",
+  "style": "asr",
+  "text": "uh team seventy six thirty two then they grabbed fuel so from mid field and basically on i mean blue two",
+  "expect": {
+   "teamNumber": 7632,
+   "startPos": "5",
+   "alliance": "blue",
+   "pickupTele": [
+    "MID"
+   ]
+  },
+  "absent": [
+   "pickupfrom",
+   "autoClimbed",
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "f332",
+  "style": "asr",
+  "text": "seventy two twenty eight and then got level 3 at the end on the right side so qualification match 104 then in auto honestly it stopped and shot so pickup was consistent and yeah in auto they grabbed fuel from the neutral zone and like the depot",
+  "expect": {
+   "teamNumber": 7228,
+   "matchNumber": 104,
+   "matchType": "qm",
+   "scoringMannerismAuto": "STATIONARY",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT",
+    "MID"
+   ],
+   "pickupEffe": 4,
+   "climbed": "L3",
+   "climbPos": "RS"
+  },
+  "absent": [
+   "eventKey"
+  ]
+ },
+ {
+  "id": "f336",
+  "style": "typed",
+  "text": "Team 4590:. opps played D on them. auto: 12 fuel. level 3 left",
+  "expect": {
+   "teamNumber": 4590,
+   "autoFuelScored": 12,
+   "AutoScored": true,
+   "climbed": "L3",
+   "climbPos": "LS"
+  },
+  "absent": [
+   "robotDefended",
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "f337",
+  "style": "asr",
+  "text": "4276 and then also had like a mechanical problem and also ninety percent accurate so their passes were scattered and their um passing was awful and then in auto out over the bump and back under the trench all on the um same side and no one on the alliance climbed and then also blue one",
+  "expect": {
+   "teamNumber": 4276,
+   "startPos": "4",
+   "alliance": "blue",
+   "mechIssue": true,
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "scoringEffe": 90,
+   "fuelPassed": [
+    "Scattered"
+   ],
+   "passingEffe": 1,
+   "AllianceClimb": 0
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f338",
+  "style": "asr",
+  "text": "team two fifty four and also in teleop scored 43 sitting still and at twenty twenty six c t w a t and didnt try to climb in auto and auto path was trench to trench same side and two alliance climbs then the partner next to them climbed level two",
+  "expect": {
+   "teamNumber": 254,
+   "eventKey": "2026ctwat",
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "autoClimbed": "NA",
+   "teleopFuelScored": 43,
+   "scoringMannerismTele": "STATIONARY",
+   "AllianceClimb": 2
+  },
+  "absent": [
+   "TrenchRizz",
+   "climbed",
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f339",
+  "style": "asr",
+  "text": "scouting thirty four eighty one and and then honestly climbed level three in the endgame on the left side so in auto scored 2 while moving and went through so the trench a bunch in tele then one of the opponents died and started red three and then did intentional passing like and and their passing was horrible",
+  "expect": {
+   "teamNumber": 3481,
+   "startPos": "3",
+   "alliance": "red",
+   "autoFuelScored": 2,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "fuelPassed": [
+    "Intentional"
+   ],
+   "passingEffe": 1,
+   "TrenchRizz": true,
+   "climbed": "L3",
+   "climbPos": "LS"
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "f340",
+  "style": "chatty",
+  "text": "Hey its me again, its seventy four oh seven, and auto was trench out bump back same side, and I had to switch seats halfway, and it fell over coming off the bump and then died with a minute left, and no climb attempt in auto, and teleop pickup was from mid field, and in teleop it shot 33 while moving, im starving honestly.",
+  "expect": {
+   "teamNumber": 7407,
+   "tipped": true,
+   "died": true,
+   "AutoPath": [
+    "Same Side Bump/Trench"
+   ],
+   "autoClimbed": "NA",
+   "teleopFuelScored": 33,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupTele": [
+    "MID"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f341",
+  "style": "asr",
+  "text": "forty five thirty three then in auto it shot while driving also in auto like bump out and bump back on the same side then did not attempt a climb in auto",
+  "expect": {
+   "teamNumber": 4533,
+   "AutoPath": [
+    "Same Side Bump"
+   ],
+   "autoClimbed": "NA",
+   "scoringMannerismAuto": "WHILE_DRIVE"
+  },
+  "absent": [
+   "scoringEffe",
+   "AllianceClimb",
+   "autoClimbPos"
+  ]
+ },
+ {
+  "id": "f342",
+  "style": "typed",
+  "text": "bot 4829. auto pickup: HP. teleop picked up floor. 11 in tele. auto trench out bump back. auto: scored",
+  "expect": {
+   "teamNumber": 4829,
+   "AutoPath": [
+    "Trench-Bump"
+   ],
+   "AutoScored": true,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ],
+   "teleopFuelScored": 11,
+   "pickupTele": [
+    "FLOOR"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f343",
+  "style": "noise",
+  "text": "I hit my head on the bump over the door.",
+  "expect": {},
+  "absent": [
+   "tipped",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "f344",
+  "style": "asr",
+  "text": "team 4 and then also got level two at i mean the end then they scored in auto and also qual 80 so on red two and in you know teleop scored 57 sorry 54 and then in tele they grabbed fuel you know from mid field",
+  "expect": {
+   "teamNumber": 4,
+   "matchNumber": 80,
+   "matchType": "qm",
+   "startPos": "2",
+   "alliance": "red",
+   "AutoScored": true,
+   "teleopFuelScored": 54,
+   "pickupTele": [
+    "MID"
+   ],
+   "climbed": "L2"
+  },
+  "absent": []
+ },
+ {
+  "id": "f345",
+  "style": "asr",
+  "text": "this is team fifty one ninety nine so match number twelve and yeah triple climb for the alliance and tried to play defense and it was elite also at twenty twenty six c t w a t so red one and then also climbed level three and seven balls honestly in i mean autonomous",
+  "expect": {
+   "teamNumber": 5199,
+   "matchNumber": 12,
+   "eventKey": "2026ctwat",
+   "startPos": "1",
+   "alliance": "red",
+   "autoFuelScored": 7,
+   "AutoScored": true,
+   "robotDefended": "Attempted",
+   "defenceEffe": 5,
+   "climbed": "L3",
+   "AllianceClimb": 3
+  },
+  "absent": []
+ },
+ {
+  "id": "f349",
+  "style": "typed",
+  "text": "6238:",
+  "expect": {
+   "teamNumber": 6238
+  },
+  "absent": [
+   "autoFuelScored",
+   "pickupTele",
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "f352",
+  "style": "noise",
+  "text": "oh my gosh the pit is so hot in here",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "f353",
+  "style": "asr",
+  "text": "uh team 3668 also blue one and also qualifier seven and also climbed level one in the endgame and and then also picking up fuel was pretty good and at twenty twenty six n h d u r",
+  "expect": {
+   "teamNumber": 3668,
+   "matchNumber": 7,
+   "matchType": "qm",
+   "eventKey": "2026nhdur",
+   "startPos": "4",
+   "alliance": "blue",
+   "pickupEffe": 4,
+   "climbed": "L1"
+  },
+  "absent": []
+ },
+ {
+  "id": "f354",
+  "style": "chatty",
+  "text": "Alright so. team eight. also shot 1 fuel during auto. also sorry the headset keeps cutting out. also my phone is on low battery. also on red two. also in teleop it shot seventy sitting still. also Sofia here. also qualification match twenty five. also my phone is on low battery. also auto path was trench to trench same side. the crowd was so loud I could barely hear myself.",
+  "expect": {
+   "teamNumber": 8,
+   "matchNumber": 25,
+   "matchType": "qm",
+   "scoutName": "Sofia",
+   "startPos": "2",
+   "alliance": "red",
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "autoFuelScored": 1,
+   "AutoScored": true,
+   "teleopFuelScored": 70,
+   "scoringMannerismTele": "STATIONARY"
+  },
+  "absent": [
+   "TrenchRizz",
+   "autoClimbPos"
+  ]
+ },
+ {
+  "id": "f355",
+  "style": "chatty",
+  "text": "um so uh team forty five thirty three qm fifty five the climb attempt failed the crowd was so loud i basically could barely hear myself",
+  "expect": {
+   "teamNumber": 4533,
+   "matchNumber": 55,
+   "matchType": "qm",
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f356",
+  "style": "asr",
+  "text": "its sixty four seventeen and this is tess then the alliance had two climbs and during auto it collected from midfield like and climbed level 1 right side and and also red alliance station one",
+  "expect": {
+   "teamNumber": 6417,
+   "scoutName": "Tess",
+   "startPos": "1",
+   "alliance": "red",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID"
+   ],
+   "climbed": "L1",
+   "climbPos": "RS",
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f357",
+  "style": "asr",
+  "text": "one seventy seven then in teleop it shot five while stationary also it can go under the uhh trench and then also this is aiden like so qual 39 and five fuel in auto",
+  "expect": {
+   "teamNumber": 177,
+   "matchNumber": 39,
+   "matchType": "qm",
+   "scoutName": "Aiden",
+   "autoFuelScored": 5,
+   "AutoScored": true,
+   "teleopFuelScored": 5,
+   "scoringMannerismTele": "STATIONARY",
+   "TrenchRizz": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f358",
+  "style": "chatty",
+  "text": "So that match was wild. scouting fifty six eighty seven. also in tele it shot as it drove. also during auto it was a stationary shooter. also I had to switch seats halfway. also I had to switch seats halfway. also in tele they grabbed fuel from floor. anyway thats all I got.",
+  "expect": {
+   "teamNumber": 5687,
+   "scoringMannerismAuto": "STATIONARY",
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupTele": [
+    "FLOOR"
+   ]
+  },
+  "absent": [
+   "scoringEffe"
+  ]
+ },
+ {
+  "id": "f360",
+  "style": "chatty",
+  "text": "Hey its me again, scouting forty nine thirty six. climbed level 2. I had to switch seats halfway. match 77. its Ben T. the announcer kept yelling. eighteen fuel in auto. it was really hard to see from where I was sitting. about 51 in teleop, I think thats everything.",
+  "expect": {
+   "teamNumber": 4936,
+   "matchNumber": 77,
+   "scoutName": "Ben T",
+   "autoFuelScored": 18,
+   "AutoScored": true,
+   "teleopFuelScored": 51,
+   "climbed": "L2"
+  },
+  "absent": [
+   "climbPos",
+   "noShow",
+   "scoringMannerismTele"
+  ]
+ },
+ {
+  "id": "f361",
+  "style": "typed",
+  "text": "3538. red stn 2. tele 80 (shoots stationary)",
+  "expect": {
+   "teamNumber": 3538,
+   "startPos": "2",
+   "alliance": "red",
+   "teleopFuelScored": 80,
+   "scoringMannerismTele": "STATIONARY"
+  },
+  "absent": []
+ },
+ {
+  "id": "f365",
+  "style": "asr",
+  "text": "robot fifty eight twenty twenty two and they were a no show and then qual 43",
+  "expect": {
+   "teamNumber": 5822,
+   "matchNumber": 43,
+   "matchType": "qm",
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f366",
+  "style": "typed",
+  "text": "6745: | qm 31 | teleop on the move | intake broke | no climb | defense: no",
+  "expect": {
+   "teamNumber": 6745,
+   "matchNumber": 31,
+   "matchType": "qm",
+   "mechIssue": true,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "robotDefended": "No",
+   "climbed": "No"
+  },
+  "absent": [
+   "autoClimbPos",
+   "autoClimbed"
+  ]
+ },
+ {
+  "id": "f367",
+  "style": "typed",
+  "text": "bot 6045. Zoe scouting. alliance climbs 2. played D. teleop stat + moving. auto trench to trench",
+  "expect": {
+   "teamNumber": 6045,
+   "scoutName": "Zoe",
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "scoringMannerismTele": "BOTH",
+   "robotDefended": "Yes",
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f368",
+  "style": "asr",
+  "text": "didnt score in teleop so blue two no sorry red two and in auto trench both ways on the same side then team number twenty one sixty eight so during auto it collected from the outpost honestly and floor",
+  "expect": {
+   "teamNumber": 2168,
+   "startPos": "2",
+   "alliance": "red",
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player",
+    "FLOOR"
+   ],
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE"
+  },
+  "absent": [
+   "TrenchRizz",
+   "passingEffe",
+   "robotDefended",
+   "doubleClimb",
+   "pickupEffe"
+  ]
+ },
+ {
+  "id": "f369",
+  "style": "chatty",
+  "text": "So yeah, 2073. also tipped over on the bump. also sorry the headset keeps cutting out. also it was really hard to see from where I was sitting. also their partner got level three. also the announcer kept yelling. also two alliance climbs. also sorry the headset keeps cutting out. also crossed into the opposing zone. also match 101. also on blue two. also passed to the center of the field and passed over to the opponent zone. also it scored in auto, im starving honestly.",
+  "expect": {
+   "teamNumber": 2073,
+   "matchNumber": 101,
+   "startPos": "5",
+   "alliance": "blue",
+   "tipped": true,
+   "AutoScored": true,
+   "fuelPassed": [
+    "Center",
+    "Opp_Zone"
+   ],
+   "crossedZone": true,
+   "AllianceClimb": 2
+  },
+  "absent": [
+   "autoFuelScored",
+   "climbed",
+   "climbPos",
+   "AutoPath"
+  ]
+ },
+ {
+  "id": "f370",
+  "style": "typed",
+  "text": "4171:; QM 49; intake/pickup fine",
+  "expect": {
+   "teamNumber": 4171,
+   "matchNumber": 49,
+   "matchType": "qm",
+   "pickupEffe": 3
+  },
+  "absent": []
+ },
+ {
+  "id": "f371",
+  "style": "asr",
+  "text": "scouting twenty seventy three and red alliance station three so in teleop shot 12 fuel then climbed level three in the endgame on the left side and two alliance climbs climbs and it climbed in auto middle",
+  "expect": {
+   "teamNumber": 2073,
+   "startPos": "3",
+   "alliance": "red",
+   "autoClimbed": "Success",
+   "autoClimbPos": "MD",
+   "teleopFuelScored": 12,
+   "climbed": "L3",
+   "climbPos": "LS",
+   "AllianceClimb": 2
+  },
+  "absent": [
+   "pickupfrom",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "f372",
+  "style": "chatty",
+  "text": "so that match was wild robot eleven fourteen qual 106 im so starving honestly",
+  "expect": {
+   "teamNumber": 1114,
+   "matchNumber": 106,
+   "matchType": "qm"
+  },
+  "absent": [
+   "autoFuelScored"
+  ]
+ },
+ {
+  "id": "f373",
+  "style": "noise",
+  "text": "Ok who is on defense for the snack run lol.",
+  "expect": {},
+  "absent": [
+   "robotDefended",
+   "defenceEffe",
+   "teamNumber"
+  ]
+ },
+ {
+  "id": "f374",
+  "style": "chatty",
+  "text": "Um so, team number seven two two eight, and level 1 climb in endgame right side, and someone was standing in front of me the whole time, and crossed into the opposing zone, and tried to climb in auto but failed, and red alliance station to, im starving honestly.",
+  "expect": {
+   "teamNumber": 7228,
+   "startPos": "2",
+   "alliance": "red",
+   "autoClimbed": "Failed",
+   "crossedZone": true,
+   "climbed": "L1",
+   "climbPos": "RS"
+  },
+  "absent": [
+   "died"
+  ]
+ },
+ {
+  "id": "f378",
+  "style": "typed",
+  "text": "Team 2601 | Q32 | event 2026nhdur | accuracy 4/5 | bump to bump auto",
+  "expect": {
+   "teamNumber": 2601,
+   "matchNumber": 32,
+   "matchType": "qm",
+   "eventKey": "2026nhdur",
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "scoringEffe": 80
+  },
+  "absent": []
+ },
+ {
+  "id": "f379",
+  "style": "typed",
+  "text": "7758, B2, no climb, auto trench out bump back, auto: 28 fuel",
+  "expect": {
+   "teamNumber": 7758,
+   "startPos": "5",
+   "alliance": "blue",
+   "AutoPath": [
+    "Trench-Bump"
+   ],
+   "autoFuelScored": 28,
+   "AutoScored": true,
+   "climbed": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f381",
+  "style": "typed",
+  "text": "3928. Q40. blue stn 1. auto 14 (stops to shoot). tele 15 (on the move). lvl 3 mid. teleop picked up mid, depot, floor",
+  "expect": {
+   "teamNumber": 3928,
+   "matchNumber": 40,
+   "matchType": "qm",
+   "startPos": "4",
+   "alliance": "blue",
+   "autoFuelScored": 14,
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY",
+   "teleopFuelScored": 15,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupTele": [
+    "DEPOT",
+    "MID",
+    "FLOOR"
+   ],
+   "climbed": "L3",
+   "climbPos": "MD"
+  },
+  "absent": [
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "f382",
+  "style": "chatty",
+  "text": "so yeah nobody on the alliance climbed also robot 903 903 also i might be forgetting something like also someone was standing in front of me the whole time so also scouter sam um w also so used the basically trench a lot in teleop also scoring effectiveness was 65 percent also the crowd was insane you know right then also started red one anyway thats all i so got",
+  "expect": {
+   "teamNumber": 903,
+   "scoutName": "Sam W",
+   "startPos": "1",
+   "alliance": "red",
+   "scoringEffe": 65,
+   "TrenchRizz": true,
+   "AllianceClimb": 0
+  },
+  "absent": []
+ },
+ {
+  "id": "f383",
+  "style": "typed",
+  "text": "6329 / q2 / tried to climb, failed",
+  "expect": {
+   "teamNumber": 6329,
+   "matchNumber": 2,
+   "matchType": "qm",
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f384",
+  "style": "typed",
+  "text": "Team 148:, qual 42, auto picked up depot, no defense, scored 61 in teleop, auto same side trench>bump",
+  "expect": {
+   "teamNumber": 148,
+   "matchNumber": 42,
+   "matchType": "qm",
+   "AutoPath": [
+    "Same Side Bump/Trench"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT"
+   ],
+   "teleopFuelScored": 61,
+   "robotDefended": "No"
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f385",
+  "style": "chatty",
+  "text": "alright so its 177 and blue one and at twenty twenty six m a w o r and the announcer kept yelling and in auto it put i mean up 17 and someone was standing in front of me the whole time um and tipped over over and in auto out under the trench and back over the bump all on the same side i think thats everything",
+  "expect": {
+   "teamNumber": 177,
+   "eventKey": "2026mawor",
+   "startPos": "4",
+   "alliance": "blue",
+   "tipped": true,
+   "AutoPath": [
+    "Same Side Bump/Trench"
+   ],
+   "autoFuelScored": 17,
+   "AutoScored": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f386",
+  "style": "asr",
+  "text": "team number number sixty five oh two so blue three no sorry red three and in auto it put up six and then also in auto they grabbed fuel from midfield and the human player so match 15 and level 1 climb in endgame and their you know passing was awful and uh then also its ben t and in auto trench uh both ways on the same side",
+  "expect": {
+   "teamNumber": 6502,
+   "matchNumber": 15,
+   "scoutName": "Ben T",
+   "startPos": "3",
+   "alliance": "red",
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "autoFuelScored": 6,
+   "AutoScored": true,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "MID",
+    "H_Player"
+   ],
+   "passingEffe": 1,
+   "climbed": "L1"
+  },
+  "absent": []
+ },
+ {
+  "id": "f387",
+  "style": "asr",
+  "text": "team number forty seven seventy seven and just died and teleop pickup was from the the depot",
+  "expect": {
+   "teamNumber": 4777,
+   "died": true,
+   "pickupTele": [
+    "DEPOT"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f390",
+  "style": "chatty",
+  "text": "Um so. team five nine four zero. this is Noor. never picked up any fuel in teleop. semifinal nine. sorry the headset keeps cutting out. during auto it sat still and shot. in teleop it shot 47 on the move. got level 2 at the end right side. blue three. hope that helps the strategy people.",
+  "expect": {
+   "teamNumber": 5940,
+   "matchNumber": 9,
+   "matchType": "sf",
+   "scoutName": "Noor",
+   "startPos": "6",
+   "alliance": "blue",
+   "scoringMannerismAuto": "STATIONARY",
+   "teleopFuelScored": 47,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupTele": [
+    "NONE"
+   ],
+   "climbed": "L2",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f394",
+  "style": "asr",
+  "text": "its fifty four oh seven seven also failed the endgame climb and auto was basically bump out trench i mean back and in auto it shot ten from a standstill and then tried to climb in otto but failed and qualifier 74 also a belt uhh snapped on the uhh intake",
+  "expect": {
+   "teamNumber": 5407,
+   "matchNumber": 74,
+   "matchType": "qm",
+   "mechIssue": true,
+   "AutoPath": [
+    "Bump-Trench"
+   ],
+   "autoClimbed": "Failed",
+   "autoFuelScored": 10,
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY",
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f395",
+  "style": "asr",
+  "text": "forty five thirty three and nina here and also in auto trench to trench so climbed level 3 in the endgame",
+  "expect": {
+   "teamNumber": 4533,
+   "scoutName": "Nina",
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "climbed": "L3"
+  },
+  "absent": []
+ },
+ {
+  "id": "f396",
+  "style": "typed",
+  "text": "bot 1912 / 2026nhdur",
+  "expect": {
+   "teamNumber": 1912,
+   "eventKey": "2026nhdur"
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f397",
+  "style": "chatty",
+  "text": "Alright so, uh team 5272. also went over into the other alliances zone. also red one. also the announcer kept yelling. also during auto it shot on the move. also in teleop scored 56 both while moving and while stationary, thats about it.",
+  "expect": {
+   "teamNumber": 5272,
+   "startPos": "1",
+   "alliance": "red",
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 56,
+   "scoringMannerismTele": "BOTH",
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f398",
+  "style": "asr",
+  "text": "its eight twelve and hung on level 2 right side and then on blue three three",
+  "expect": {
+   "teamNumber": 812,
+   "startPos": "6",
+   "alliance": "blue",
+   "climbed": "L2",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f399",
+  "style": "typed",
+  "text": "2468 / match 77 / red 3 / no D / level 2 / picks up depot/midfield",
+  "expect": {
+   "teamNumber": 2468,
+   "matchNumber": 77,
+   "startPos": "3",
+   "alliance": "red",
+   "pickupTele": [
+    "DEPOT",
+    "MID"
+   ],
+   "robotDefended": "No",
+   "climbed": "L2"
+  },
+  "absent": []
+ },
+ {
+  "id": "f400",
+  "style": "typed",
+  "text": "5199; event 2026ctsct; b2; teleop 16 shoots while driving; auto 11 stops to shoot",
+  "expect": {
+   "teamNumber": 5199,
+   "eventKey": "2026ctsct",
+   "startPos": "5",
+   "alliance": "blue",
+   "autoFuelScored": 11,
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY",
+   "teleopFuelScored": 16,
+   "scoringMannerismTele": "WHILE_DRIVE"
+  },
+  "absent": []
+ },
+ {
+  "id": "f401",
+  "style": "chatty",
+  "text": "This is team fifty four oh seven, and they grabbed fuel from the floor. im starving honestly.",
+  "expect": {
+   "teamNumber": 5407,
+   "pickupTele": [
+    "FLOOR"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f402",
+  "style": "typed",
+  "text": "6238 - / red 3 / opp tipped over / no climb / mech issue with climber + died w/ a minute left",
+  "expect": {
+   "teamNumber": 6238,
+   "startPos": "3",
+   "alliance": "red",
+   "mechIssue": true,
+   "died": true,
+   "climbed": "No"
+  },
+  "absent": [
+   "tipped",
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "f403",
+  "style": "asr",
+  "text": "team number 6329 and also went through the trench a bunch in tele",
+  "expect": {
+   "teamNumber": 6329,
+   "TrenchRizz": true
+  },
+  "absent": [
+   "AutoPickup",
+   "tipped",
+   "mechIssue",
+   "teleopFuelScored"
+  ]
+ },
+ {
+  "id": "f404",
+  "style": "chatty",
+  "text": "robot one seventy seven luca scouting the crowd was insane right then in teleop scored 86 from a standstill endgame was level one qualifier 118 their passes were scattered the crowd uhh was insane right then tipped over",
+  "expect": {
+   "teamNumber": 177,
+   "matchNumber": 118,
+   "matchType": "qm",
+   "scoutName": "Luca",
+   "tipped": true,
+   "teleopFuelScored": 86,
+   "scoringMannerismTele": "STATIONARY",
+   "fuelPassed": [
+    "Scattered"
+   ],
+   "climbed": "L1"
+  },
+  "absent": []
+ },
+ {
+  "id": "f408",
+  "style": "noise",
+  "text": "robot fifty six eighty seven and qual 87 also my battery is at twenty percent i need to find an outlet so in auto it shot 13 sitting still so didnt score in teleop",
+  "expect": {
+   "teamNumber": 5687,
+   "matchNumber": 87,
+   "matchType": "qm",
+   "autoFuelScored": 13,
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY",
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE"
+  },
+  "absent": [
+   "scoringEffe",
+   "pickupEffe"
+  ]
+ },
+ {
+  "id": "f409",
+  "style": "typed",
+  "text": "bot 3392 | scout: diego | event 2026mawor | b1 | l2 ls | auto on the move | intake broke | scored 55 in teleop",
+  "expect": {
+   "teamNumber": 3392,
+   "scoutName": "Diego",
+   "eventKey": "2026mawor",
+   "startPos": "4",
+   "alliance": "blue",
+   "mechIssue": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 55,
+   "climbed": "L2",
+   "climbPos": "LS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f411",
+  "style": "typed",
+  "text": "8033 - - - amara - mech issue + died mid match",
+  "expect": {
+   "teamNumber": 8033,
+   "scoutName": "Amara",
+   "mechIssue": true,
+   "died": true
+  },
+  "absent": [
+   "crossedZone",
+   "defenceEffe",
+   "TrenchRizz",
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "f412",
+  "style": "chatty",
+  "text": "so that match was wild team 5254 then endgame you know was level two then in auto scored yeah like 16 then auto was you know trench out bump back anyway thats all i got",
+  "expect": {
+   "teamNumber": 5254,
+   "AutoPath": [
+    "Trench-Bump"
+   ],
+   "autoFuelScored": 16,
+   "AutoScored": true,
+   "climbed": "L2"
+  },
+  "absent": [
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f413",
+  "style": "chatty",
+  "text": "Team sixty nine ninety six, and Lena here, and auto pickup was from depot, and it climbed in auto on the right side, and never picked up any fuel in teleop, and in auto went out over the bump and came back under the trench, anyway thats all I got.",
+  "expect": {
+   "teamNumber": 6996,
+   "scoutName": "Lena",
+   "AutoPath": [
+    "Bump-Trench"
+   ],
+   "autoClimbed": "Success",
+   "autoClimbPos": "RS",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT"
+   ],
+   "pickupTele": [
+    "NONE"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f414",
+  "style": "asr",
+  "text": "endgame was honestly level 1 and did nothing in auto and also team eight then in tele op scored twelve both on the move and sitting still and also its sofia",
+  "expect": {
+   "teamNumber": 8,
+   "scoutName": "Sofia",
+   "AutoPath": [
+    "N/A"
+   ],
+   "teleopFuelScored": 12,
+   "scoringMannerismTele": "BOTH",
+   "climbed": "L1"
+  },
+  "absent": [
+   "climbPos",
+   "matchNumber",
+   "startPos",
+   "pickupTele",
+   "crossedZone"
+  ]
+ },
+ {
+  "id": "f415",
+  "style": "asr",
+  "text": "robot twelve forty one and also qual thirty five and then played defense the whole whole second half and then in auto like it got the climb",
+  "expect": {
+   "teamNumber": 1241,
+   "matchNumber": 35,
+   "matchType": "qm",
+   "autoClimbed": "Success",
+   "robotDefended": "Yes"
+  },
+  "absent": [
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "f416",
+  "style": "asr",
+  "text": "team number sixty eight oh zero and also auto pickup was from the out post and the depot and floor then didnt play any defense and then 42 in tele op and their passing was average",
+  "expect": {
+   "teamNumber": 6800,
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT",
+    "H_Player",
+    "FLOOR"
+   ],
+   "teleopFuelScored": 42,
+   "passingEffe": 3,
+   "robotDefended": "No"
+  },
+  "absent": [
+   "noShow"
+  ]
+ },
+ {
+  "id": "f417",
+  "style": "chatty",
+  "text": "Here we go. scouting eight, and no show, and the announcer kept yelling, and my phone is on low battery, and qm 52.",
+  "expect": {
+   "teamNumber": 8,
+   "matchNumber": 52,
+   "matchType": "qm",
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f420",
+  "style": "asr",
+  "text": "uh team fifty seven twelve and then in so auto auto it shot on the move also also starting position red three and the alliance had two climbs and hung on level 2",
+  "expect": {
+   "teamNumber": 5712,
+   "startPos": "3",
+   "alliance": "red",
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "climbed": "L2",
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f424",
+  "style": "typed",
+  "text": "Bot 5973; qm83; crossed into opp side; tele pickup: depot, neutral zone; 90 in tele; auto bump out trench back same side; auto: shoots while driving; lvl 1; 2/3 climbed",
+  "expect": {
+   "teamNumber": 5973,
+   "matchNumber": 83,
+   "matchType": "qm",
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 90,
+   "pickupTele": [
+    "DEPOT",
+    "MID"
+   ],
+   "crossedZone": true,
+   "climbed": "L1",
+   "AllianceClimb": 2
+  },
+  "absent": [
+   "climbPos",
+   "passingEffe",
+   "tipped"
+  ]
+ },
+ {
+  "id": "f425",
+  "style": "asr",
+  "text": "team fifty six oh four then semifinal eight and in auto honestly they got 6 so red alliance station one",
+  "expect": {
+   "teamNumber": 5604,
+   "matchNumber": 8,
+   "matchType": "sf",
+   "startPos": "1",
+   "alliance": "red",
+   "autoFuelScored": 6,
+   "AutoScored": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f426",
+  "style": "typed",
+  "text": "3538 - / q77 / red 3 / teleop fuel ~9 / went under trench / auto fuel ~11 / tried to climb, failed / auto bump bump",
+  "expect": {
+   "teamNumber": 3538,
+   "matchNumber": 77,
+   "matchType": "qm",
+   "startPos": "3",
+   "alliance": "red",
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "autoFuelScored": 11,
+   "AutoScored": true,
+   "teleopFuelScored": 9,
+   "TrenchRizz": true,
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f427",
+  "style": "asr",
+  "text": "its fifty seven twelve",
+  "expect": {
+   "teamNumber": 5712
+  },
+  "absent": []
+ },
+ {
+  "id": "f428",
+  "style": "asr",
+  "text": "this is team seventy seven fifty eight and scored nine in teleop",
+  "expect": {
+   "teamNumber": 7758,
+   "teleopFuelScored": 9
+  },
+  "absent": [
+   "scoutName"
+  ]
+ },
+ {
+  "id": "f429",
+  "style": "chatty",
+  "text": "So yeah, team fifty five eighteen. no pickup in teleop. no one on the alliance climbed. the announcer kept yelling. red three. scored thirty five in teleop, anyway thats all I got.",
+  "expect": {
+   "teamNumber": 5518,
+   "startPos": "3",
+   "alliance": "red",
+   "teleopFuelScored": 35,
+   "pickupTele": [
+    "NONE"
+   ],
+   "AllianceClimb": 0
+  },
+  "absent": [
+   "doubleClimb"
+  ]
+ },
+ {
+  "id": "f430",
+  "style": "typed",
+  "text": "Team 4146:. B1. auto 26 (shoots stationary). alliance climbs 1",
+  "expect": {
+   "teamNumber": 4146,
+   "startPos": "4",
+   "alliance": "blue",
+   "autoFuelScored": 26,
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY",
+   "AllianceClimb": 1
+  },
+  "absent": []
+ },
+ {
+  "id": "f431",
+  "style": "asr",
+  "text": "scouting twenty six oh one and also it climbed in auto and tele op pickup was from the neutral zone zone and floor",
+  "expect": {
+   "teamNumber": 2601,
+   "autoClimbed": "Success",
+   "pickupTele": [
+    "MID",
+    "FLOOR"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f432",
+  "style": "chatty",
+  "text": "here we go team eighty one twelve and qualifier 115 and during auto it collected from floor and red three and sorry the headset keeps cutting out and endgame was level 1 and event twenty twenty six c t w a like t basically i think thats everything",
+  "expect": {
+   "teamNumber": 8112,
+   "matchNumber": 115,
+   "matchType": "qm",
+   "eventKey": "2026ctwat",
+   "startPos": "3",
+   "alliance": "red",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "FLOOR"
+   ],
+   "climbed": "L1"
+  },
+  "absent": [
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f433",
+  "style": "asr",
+  "text": "its seventy six thirty two then nobody on the alliance climbed and then um also also blue two no sorry red two so auto was just the pre load",
+  "expect": {
+   "teamNumber": 7632,
+   "startPos": "2",
+   "alliance": "red",
+   "AutoPath": [
+    "Pre-Load"
+   ],
+   "AllianceClimb": 0
+  },
+  "absent": []
+ },
+ {
+  "id": "f437",
+  "style": "chatty",
+  "text": "its 5272 the other alliances like robot died in auto i had to switch seats halfway passed fuel into the center you know and did intentional passing and and passing was amazing in tele uhh op it picked up from the floor and the neutral zone i basically might um be be forgetting something shot twenty one fuel during auto my phone is on low battery three out of four shots went in it was really hard to see from like where i was sitting went over the bump and back over the bump in auto scored 42 in teleop sorry if that was rambly",
+  "expect": {
+   "teamNumber": 5272,
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "autoFuelScored": 21,
+   "AutoScored": true,
+   "teleopFuelScored": 42,
+   "scoringEffe": 75,
+   "pickupTele": [
+    "MID",
+    "FLOOR"
+   ],
+   "fuelPassed": [
+    "Center",
+    "Intentional"
+   ],
+   "passingEffe": 5
+  },
+  "absent": [
+   "died",
+   "defenceEffe",
+   "startPos"
+  ]
+ },
+ {
+  "id": "f438",
+  "style": "asr",
+  "text": "one seventy seven and also teleop pickup you know was from basically depot and the human player and went over into the other alliances zone and pickup was excellent",
+  "expect": {
+   "teamNumber": 177,
+   "pickupTele": [
+    "DEPOT",
+    "H_Player"
+   ],
+   "pickupEffe": 5,
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f439",
+  "style": "asr",
+  "text": "team number sixty forty five also starting position blue three so they never played defense um and used the trench a lot honestly in teleop and then qualification match twenty six and in tele op yeah it picked up from the neutral zone the human player chute and honestly depot",
+  "expect": {
+   "teamNumber": 6045,
+   "matchNumber": 26,
+   "matchType": "qm",
+   "startPos": "6",
+   "alliance": "blue",
+   "pickupTele": [
+    "DEPOT",
+    "MID",
+    "H_Player"
+   ],
+   "TrenchRizz": true,
+   "robotDefended": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f440",
+  "style": "chatty",
+  "text": "hey basically its me again honestly team seventy four oh seven then in tele it sat still and shot then it was really hard to see from where i was sitting then qualification match 82 sorry if that was rambly",
+  "expect": {
+   "teamNumber": 7407,
+   "matchNumber": 82,
+   "matchType": "qm",
+   "scoringMannerismTele": "STATIONARY"
+  },
+  "absent": [
+   "alliance"
+  ]
+ },
+ {
+  "id": "f441",
+  "style": "asr",
+  "text": "2834 and also 20 percent percent accurate and then also uh auto was trench out bump back same side and then also it can go under the trench and in auto they grabbed fuel from the depot and then crossed over into the opponents zone and in tele it stopped and shot and blue uhh alliance station three",
+  "expect": {
+   "teamNumber": 2834,
+   "startPos": "6",
+   "alliance": "blue",
+   "AutoPath": [
+    "Same Side Bump/Trench"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "DEPOT"
+   ],
+   "scoringMannerismTele": "STATIONARY",
+   "scoringEffe": 20,
+   "TrenchRizz": true,
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f442",
+  "style": "typed",
+  "text": "T 3538 - match 69 - Red 2 - auto 0 - teleop picked up floor - tipped",
+  "expect": {
+   "teamNumber": 3538,
+   "matchNumber": 69,
+   "startPos": "2",
+   "alliance": "red",
+   "tipped": true,
+   "autoFuelScored": 0,
+   "scoringMannerismAuto": "NONE",
+   "pickupTele": [
+    "FLOOR"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f443",
+  "style": "asr",
+  "text": "its 1523 also about four in tele op then auto path was trench to trench same side and in auto scored 5 while driving",
+  "expect": {
+   "teamNumber": 1523,
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "autoFuelScored": 5,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 4
+  },
+  "absent": []
+ },
+ {
+  "id": "f444",
+  "style": "chatty",
+  "text": "Um so. 5254. also on blue three. also I had to switch seats halfway. also the announcer kept yelling. also auto was trench out bump back same side.",
+  "expect": {
+   "teamNumber": 5254,
+   "startPos": "6",
+   "alliance": "blue",
+   "AutoPath": [
+    "Same Side Bump/Trench"
+   ]
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f445",
+  "style": "chatty",
+  "text": "in tele it shot both on the move and standing still qualifier 96 climbed level three in the endgame scouting forty five ninety it uh attempted a climb in auto and didnt make it im starving honestly",
+  "expect": {
+   "teamNumber": 4590,
+   "matchNumber": 96,
+   "matchType": "qm",
+   "autoClimbed": "Failed",
+   "scoringMannerismTele": "BOTH",
+   "climbed": "L3"
+  },
+  "absent": [
+   "climbPos",
+   "noShow",
+   "scoringEffe",
+   "tipped"
+  ]
+ },
+ {
+  "id": "f446",
+  "style": "chatty",
+  "text": "Alright so. this is team forty five thirty three. climbed level three right side. it was really hard to see from where I was sitting. picking up fuel was really good. in teleop it picked up from depot. scored some in auto. I might be forgetting something. scored nothing in teleop. thats about it.",
+  "expect": {
+   "teamNumber": 4533,
+   "AutoScored": true,
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "pickupTele": [
+    "DEPOT"
+   ],
+   "pickupEffe": 5,
+   "climbed": "L3",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f453",
+  "style": "chatty",
+  "text": "Um so, scouting 5687. then spent teleop playing defense. then in auto trench both ways on the same side. then failed the climb. then sorry the headset keeps cutting out.",
+  "expect": {
+   "teamNumber": 5687,
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "robotDefended": "Yes",
+   "climbed": "F"
+  },
+  "absent": [
+   "TrenchRizz",
+   "defenceEffe",
+   "fuelPassed",
+   "teleopFuelScored",
+   "tipped",
+   "scoringMannerismAuto"
+  ]
+ },
+ {
+  "id": "f454",
+  "style": "asr",
+  "text": "team number 2834 and also they didnt show up and red one",
+  "expect": {
+   "teamNumber": 2834,
+   "startPos": "1",
+   "alliance": "red",
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f455",
+  "style": "asr",
+  "text": "this is team 2910 so starting position so blue three and then also they they and a partner both climbed in auto on the left side and match number four",
+  "expect": {
+   "teamNumber": 2910,
+   "matchNumber": 4,
+   "startPos": "6",
+   "alliance": "blue",
+   "autoClimbed": "Success",
+   "doubleClimb": true,
+   "autoClimbPos": "LS"
+  },
+  "absent": [
+   "scoringEffe",
+   "crossedZone",
+   "mechIssue"
+  ]
+ },
+ {
+  "id": "f456",
+  "style": "asr",
+  "text": "one three one eight and also they never played defense",
+  "expect": {
+   "teamNumber": 1318,
+   "robotDefended": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f457",
+  "style": "asr",
+  "text": "uh team thirty nine twenty eight also i mean endgame was level three right side then in tele op scored thirty sorry twenty eight",
+  "expect": {
+   "teamNumber": 3928,
+   "teleopFuelScored": 28,
+   "climbed": "L3",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f458",
+  "style": "chatty",
+  "text": "here we go scouting eighteen oh five then in auto it shot as you know it drove then went through the trench trench a bunch in tele then 36 in tele op then got level 3 at the end in the middle then someone was standing in front of me the whole time then qualification honestly match 107 then blue two then tele op pickup was from floor anyway thats all i got",
+  "expect": {
+   "teamNumber": 1805,
+   "matchNumber": 107,
+   "matchType": "qm",
+   "startPos": "5",
+   "alliance": "blue",
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 36,
+   "pickupTele": [
+    "FLOOR"
+   ],
+   "TrenchRizz": true,
+   "climbed": "L3",
+   "climbPos": "MD"
+  },
+  "absent": [
+   "tipped",
+   "pickupEffe"
+  ]
+ },
+ {
+  "id": "f459",
+  "style": "asr",
+  "text": "this like is team thirty nine twenty eight so blue three and also in auto it shot sixteen on the move and then also in auto they grabbed uh fuel from the outpost",
+  "expect": {
+   "teamNumber": 3928,
+   "startPos": "6",
+   "alliance": "blue",
+   "autoFuelScored": 16,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ]
+  },
+  "absent": [
+   "eventKey",
+   "teleopFuelScored",
+   "robotDefended",
+   "passingEffe"
+  ]
+ },
+ {
+  "id": "f460",
+  "style": "chatty",
+  "text": "so yeah one seventy seven then crossed over into the opponents zone then the crowd basically was insane right then then pickup was horrible anyway thats all i got",
+  "expect": {
+   "teamNumber": 177,
+   "pickupEffe": 1,
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f461",
+  "style": "typed",
+  "text": "5712: - alliance climbs 3 - accuracy 3/4",
+  "expect": {
+   "teamNumber": 5712,
+   "scoringEffe": 75,
+   "AllianceClimb": 3
+  },
+  "absent": []
+ },
+ {
+  "id": "f462",
+  "style": "chatty",
+  "text": "team number 557 then auto was bump out trench back then sorry the headset keeps cutting out then during tele op it shot like both on the move and standing uhh still sorry if um that was rambly",
+  "expect": {
+   "teamNumber": 557,
+   "AutoPath": [
+    "Bump-Trench"
+   ],
+   "scoringMannerismTele": "BOTH"
+  },
+  "absent": [
+   "TrenchRizz",
+   "autoClimbPos",
+   "AutoScored"
+  ]
+ },
+ {
+  "id": "f466",
+  "style": "asr",
+  "text": "robot 4533 and then i mean in teleop scored like seventy",
+  "expect": {
+   "teamNumber": 4533,
+   "teleopFuelScored": 70
+  },
+  "absent": []
+ },
+ {
+  "id": "f467",
+  "style": "asr",
+  "text": "red one then qm 28 and its one eighteen so didnt score in teleop then teleop yeah pickup was from depot and then auto was trench out bump back same side you know and tried to play defense and it was decent",
+  "expect": {
+   "teamNumber": 118,
+   "matchNumber": 28,
+   "matchType": "qm",
+   "startPos": "1",
+   "alliance": "red",
+   "AutoPath": [
+    "Same Side Bump/Trench"
+   ],
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "pickupTele": [
+    "DEPOT"
+   ],
+   "robotDefended": "Attempted",
+   "defenceEffe": 3
+  },
+  "absent": [
+   "TrenchRizz",
+   "pickupEffe",
+   "AllianceClimb",
+   "doubleClimb"
+  ]
+ },
+ {
+  "id": "f468",
+  "style": "chatty",
+  "text": "Here we go. this is team forty two seventy six, and ran cycles under the trench, and sorry the headset keeps cutting out, and crossed over into the opponents zone, and all three of us climbed, and 22 in tele op, and someone was standing in front of me the whole time, and just died. thats about it.",
+  "expect": {
+   "teamNumber": 4276,
+   "died": true,
+   "teleopFuelScored": 22,
+   "TrenchRizz": true,
+   "crossedZone": true,
+   "AllianceClimb": 3
+  },
+  "absent": []
+ },
+ {
+  "id": "f469",
+  "style": "asr",
+  "text": "team number forty eight twenty nine then uh no pickup in auto and also in teleop scored like 53",
+  "expect": {
+   "teamNumber": 4829,
+   "pickupfrom": [
+    "NONE"
+   ],
+   "teleopFuelScored": 53
+  },
+  "absent": [
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "f470",
+  "style": "asr",
+  "text": "team number forty nine thirty six then tess here so in teleop shot seventy fuel",
+  "expect": {
+   "teamNumber": 4936,
+   "scoutName": "Tess",
+   "teleopFuelScored": 70
+  },
+  "absent": [
+   "autoFuelScored",
+   "tipped",
+   "autoClimbPos"
+  ]
+ },
+ {
+  "id": "f471",
+  "style": "typed",
+  "text": "321:, scouter Ethan R, red stn 1, no auto",
+  "expect": {
+   "teamNumber": 321,
+   "scoutName": "Ethan R",
+   "startPos": "1",
+   "alliance": "red",
+   "AutoPath": [
+    "N/A"
+   ]
+  },
+  "absent": [
+   "scoringEffe"
+  ]
+ },
+ {
+  "id": "f472",
+  "style": "chatty",
+  "text": "uh team 5973 and played defense and it was perfect and and scored nothing you know in teleop i think yeah thats everything",
+  "expect": {
+   "teamNumber": 5973,
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "robotDefended": "Yes",
+   "defenceEffe": 5
+  },
+  "absent": [
+   "mechIssue"
+  ]
+ },
+ {
+  "id": "f473",
+  "style": "chatty",
+  "text": "Forty six fifty one, and sorry the headset keeps cutting out, and Ivy scouting, and auto was straight to the depot, and in teleop it picked up from the human player and the depot, and red three, and nobody on the alliance climbed. anyway thats all I got.",
+  "expect": {
+   "teamNumber": 4651,
+   "scoutName": "Ivy",
+   "startPos": "3",
+   "alliance": "red",
+   "AutoPath": [
+    "Depot"
+   ],
+   "pickupTele": [
+    "DEPOT",
+    "H_Player"
+   ],
+   "AllianceClimb": 0
+  },
+  "absent": []
+ },
+ {
+  "id": "f474",
+  "style": "asr",
+  "text": "robot eight and 28 fuel in auto",
+  "expect": {
+   "teamNumber": 8,
+   "autoFuelScored": 28,
+   "AutoScored": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f475",
+  "style": "typed",
+  "text": "177 / practice match 2 / blue stn 1 / goes under trench in tele / mech issue / auto: depot / tele 16",
+  "expect": {
+   "teamNumber": 177,
+   "matchNumber": 2,
+   "matchType": "pm",
+   "startPos": "4",
+   "alliance": "blue",
+   "mechIssue": true,
+   "AutoPath": [
+    "Depot"
+   ],
+   "teleopFuelScored": 16,
+   "TrenchRizz": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f479",
+  "style": "chatty",
+  "text": "They scored in auto. tipped over. sorry the headset keeps cutting out. team number nineteen twelve. played defense. climbed level 3 in the endgame left side. the crowd was insane right then. picking up fuel was average.",
+  "expect": {
+   "teamNumber": 1912,
+   "tipped": true,
+   "AutoScored": true,
+   "pickupEffe": 3,
+   "robotDefended": "Yes",
+   "climbed": "L3",
+   "climbPos": "LS"
+  },
+  "absent": [
+   "autoFuelScored",
+   "defenceEffe",
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "f482",
+  "style": "asr",
+  "text": "its forty four fifteen and also it um fell over coming off the bump and in tele op scored like 81 and then also its riley and then semis match 3",
+  "expect": {
+   "teamNumber": 4415,
+   "matchNumber": 3,
+   "matchType": "sf",
+   "scoutName": "Riley",
+   "tipped": true,
+   "teleopFuelScored": 81
+  },
+  "absent": [
+   "defenceEffe",
+   "AutoScored",
+   "pickupfrom"
+  ]
+ },
+ {
+  "id": "f483",
+  "style": "asr",
+  "text": "team eighty thirty three and then it crossed i mean into you know the opposing alliances zone honestly and this is marcus then honestly pickup was from the depo and also red alliance station three",
+  "expect": {
+   "teamNumber": 8033,
+   "scoutName": "Marcus",
+   "startPos": "3",
+   "alliance": "red",
+   "pickupTele": [
+    "DEPOT"
+   ],
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f484",
+  "style": "asr",
+  "text": "robot one seventy seven and then 20 fuel you know in tele so during auto it shot both on the move so and yeah standing still so at twenty twenty six six c t w a i mean t so in auto trench to trench",
+  "expect": {
+   "teamNumber": 177,
+   "eventKey": "2026ctwat",
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "scoringMannerismAuto": "BOTH",
+   "teleopFuelScored": 20
+  },
+  "absent": []
+ },
+ {
+  "id": "f485",
+  "style": "asr",
+  "text": "six five zero two then in auto it shot ten on the move and qm 66 then tele op pickup was um from the floor and the outpost",
+  "expect": {
+   "teamNumber": 6502,
+   "matchNumber": 66,
+   "matchType": "qm",
+   "autoFuelScored": 10,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "pickupTele": [
+    "H_Player",
+    "FLOOR"
+   ]
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f486",
+  "style": "typed",
+  "text": "3481: - q111 - - Riley - no tele scoring - tele pickup: neutral zone and depot - alliance climbs 1 - auto 23 (shoots while driving)",
+  "expect": {
+   "teamNumber": 3481,
+   "matchNumber": 111,
+   "matchType": "qm",
+   "scoutName": "Riley",
+   "autoFuelScored": 23,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "pickupTele": [
+    "DEPOT",
+    "MID"
+   ],
+   "AllianceClimb": 1
+  },
+  "absent": []
+ },
+ {
+  "id": "f487",
+  "style": "chatty",
+  "text": "alright so team twenty seventy three during teleop it um shot as it drove it was really hard to see from i mean where i was sitting qm 73 pickup was from the floor",
+  "expect": {
+   "teamNumber": 2073,
+   "matchNumber": 73,
+   "matchType": "qm",
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupTele": [
+    "FLOOR"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f488",
+  "style": "asr",
+  "text": "blue alliance station three and honestly also in tele op scored like 59 and match number nine also in auto they got twenty four so went over into the other alliances zone also team one eighteen",
+  "expect": {
+   "teamNumber": 118,
+   "matchNumber": 9,
+   "startPos": "6",
+   "alliance": "blue",
+   "autoFuelScored": 24,
+   "AutoScored": true,
+   "teleopFuelScored": 59,
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f490",
+  "style": "typed",
+  "text": "6417 -. q67. auto same side trench. teleop 9",
+  "expect": {
+   "teamNumber": 6417,
+   "matchNumber": 67,
+   "matchType": "qm",
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "teleopFuelScored": 9
+  },
+  "absent": [
+   "TrenchRizz",
+   "doubleClimb"
+  ]
+ },
+ {
+  "id": "f491",
+  "style": "asr",
+  "text": "team 687 and in auto scored eighteen both on the move and honestly sitting still so no one on the alliance climbed",
+  "expect": {
+   "teamNumber": 687,
+   "autoFuelScored": 18,
+   "AutoScored": true,
+   "scoringMannerismAuto": "BOTH",
+   "AllianceClimb": 0
+  },
+  "absent": []
+ },
+ {
+  "id": "f495",
+  "style": "asr",
+  "text": "red alliance station two and in auto it picked up from the floor and then also in teleop scored 61 while moving and then its fifty two fifty four",
+  "expect": {
+   "teamNumber": 5254,
+   "startPos": "2",
+   "alliance": "red",
+   "AutoPickup": true,
+   "pickupfrom": [
+    "FLOOR"
+   ],
+   "teleopFuelScored": 61,
+   "scoringMannerismTele": "WHILE_DRIVE"
+  },
+  "absent": [
+   "robotDefended",
+   "scoringEffe"
+  ]
+ },
+ {
+  "id": "f496",
+  "style": "asr",
+  "text": "team nine ninety nine and also shot 22 fuel during otto and at twenty twenty six c t w a t and blue one and also passed intentionally to their partners and also had a mechanical problem and in tele it you know sat still uh and shot",
+  "expect": {
+   "teamNumber": 999,
+   "eventKey": "2026ctwat",
+   "startPos": "4",
+   "alliance": "blue",
+   "mechIssue": true,
+   "autoFuelScored": 22,
+   "AutoScored": true,
+   "scoringMannerismTele": "STATIONARY",
+   "fuelPassed": [
+    "Intentional"
+   ]
+  },
+  "absent": [
+   "teleopFuelScored",
+   "autoClimbPos",
+   "tipped",
+   "passingEffe"
+  ]
+ },
+ {
+  "id": "f497",
+  "style": "chatty",
+  "text": "team ninety eighty four drove under the trench in tele op red one thats about it it",
+  "expect": {
+   "teamNumber": 9084,
+   "startPos": "1",
+   "alliance": "red",
+   "TrenchRizz": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f498",
+  "style": "chatty",
+  "text": "Um so. this is team twenty seventy three. was on defense most of the match. in auto it got the climb.",
+  "expect": {
+   "teamNumber": 2073,
+   "autoClimbed": "Success",
+   "robotDefended": "Yes"
+  },
+  "absent": []
+ },
+ {
+  "id": "f499",
+  "style": "asr",
+  "text": "team eight one two also in um teleop it you know picked up from floor and then you know also in auto they got nine",
+  "expect": {
+   "teamNumber": 812,
+   "autoFuelScored": 9,
+   "AutoScored": true,
+   "pickupTele": [
+    "FLOOR"
+   ]
+  },
+  "absent": [
+   "tipped",
+   "startPos",
+   "scoringEffe"
+  ]
+ },
+ {
+  "id": "f500",
+  "style": "typed",
+  "text": "Team 999:, Red 2, 22 in auto, tele 80, L2",
+  "expect": {
+   "teamNumber": 999,
+   "startPos": "2",
+   "alliance": "red",
+   "autoFuelScored": 22,
+   "AutoScored": true,
+   "teleopFuelScored": 80,
+   "climbed": "L2"
+  },
+  "absent": [
+   "climbPos",
+   "noShow",
+   "pickupEffe",
+   "AutoPickup"
+  ]
+ },
+ {
+  "id": "f501",
+  "style": "typed",
+  "text": "6745:; tele pickup: hp, floor, mid; tele 29 (on the move); auto 12 (shoots stationary); trench: yes",
+  "expect": {
+   "teamNumber": 6745,
+   "autoFuelScored": 12,
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY",
+   "teleopFuelScored": 29,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "pickupTele": [
+    "MID",
+    "H_Player",
+    "FLOOR"
+   ],
+   "TrenchRizz": true
+  },
+  "absent": [
+   "AutoPickup",
+   "pickupfrom",
+   "doubleClimb"
+  ]
+ },
+ {
+  "id": "f502",
+  "style": "noise",
+  "text": "my teacher said we have to turn in the forms by friday",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "f503",
+  "style": "asr",
+  "text": "this is team sixty eight eighty nine so you know in teleop scored like seventeen then red two also match 113 sorry 112 and uh then also ran um cycles under the trench then hung on level 1",
+  "expect": {
+   "teamNumber": 6889,
+   "matchNumber": 112,
+   "startPos": "2",
+   "alliance": "red",
+   "teleopFuelScored": 17,
+   "TrenchRizz": true,
+   "climbed": "L1"
+  },
+  "absent": []
+ },
+ {
+  "id": "f504",
+  "style": "noise",
+  "text": "somebody brought a whole tower of cupcakes to the stands",
+  "expect": {},
+  "absent": [
+   "climbed",
+   "teamNumber",
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f505",
+  "style": "asr",
+  "text": "robot seven sixteen also qm 45 and then in tele op scored 61 61 sitting still and then yeah pickup was from mid field and blue two no sorry red two and then played defense and it was fine",
+  "expect": {
+   "teamNumber": 716,
+   "matchNumber": 45,
+   "matchType": "qm",
+   "startPos": "2",
+   "alliance": "red",
+   "teleopFuelScored": 61,
+   "scoringMannerismTele": "STATIONARY",
+   "pickupTele": [
+    "MID"
+   ],
+   "robotDefended": "Yes",
+   "defenceEffe": 3
+  },
+  "absent": []
+ },
+ {
+  "id": "f509",
+  "style": "asr",
+  "text": "robot 3481 and also in teleop it picked up from the depot the floor and the human player chute and also in auto it shot twenty seven sitting still so picking up fuel was strong and level three climb in like endgame right side",
+  "expect": {
+   "teamNumber": 3481,
+   "autoFuelScored": 27,
+   "AutoScored": true,
+   "scoringMannerismAuto": "STATIONARY",
+   "pickupTele": [
+    "DEPOT",
+    "H_Player",
+    "FLOOR"
+   ],
+   "pickupEffe": 4,
+   "climbed": "L3",
+   "climbPos": "RS"
+  },
+  "absent": []
+ },
+ {
+  "id": "f512",
+  "style": "chatty",
+  "text": "Team number twenty seven twelve. started blue one. the climb attempt failed. in auto it stopped and shot. my phone is on low battery. qual 42. tipped over on the bump and then just died, gotta run to the next match.",
+  "expect": {
+   "teamNumber": 2712,
+   "matchNumber": 42,
+   "matchType": "qm",
+   "startPos": "4",
+   "alliance": "blue",
+   "tipped": true,
+   "died": true,
+   "scoringMannerismAuto": "STATIONARY",
+   "climbed": "F"
+  },
+  "absent": []
+ },
+ {
+  "id": "f513",
+  "style": "asr",
+  "text": "scouting seven seven sixteen and also crossed over into the opponents zone and during auto it yeah stopped and shot and match 86",
+  "expect": {
+   "teamNumber": 716,
+   "matchNumber": 86,
+   "scoringMannerismAuto": "STATIONARY",
+   "crossedZone": true
+  },
+  "absent": [
+   "pickupTele"
+  ]
+ },
+ {
+  "id": "f514",
+  "style": "asr",
+  "text": "robot 1477 also in auto it shot twenty while like moving and tried to play defense yeah and two of the three robots climbed",
+  "expect": {
+   "teamNumber": 1477,
+   "autoFuelScored": 20,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE",
+   "robotDefended": "Attempted",
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f515",
+  "style": "typed",
+  "text": "6045 - crossed to opp zone",
+  "expect": {
+   "teamNumber": 6045,
+   "crossedZone": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f516",
+  "style": "asr",
+  "text": "scouting two two three three zero so in auto out over the bump and back under the trench all all on the same side so tipped over on the bump and then also honestly in auto the climb failed and then in teleop scored 86 sitting still also in auto scored nineteen both on the move uhh and sitting still and so started red one and then basically also match 112",
+  "expect": {
+   "teamNumber": 2230,
+   "matchNumber": 112,
+   "startPos": "1",
+   "alliance": "red",
+   "tipped": true,
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "autoClimbed": "Failed",
+   "autoFuelScored": 19,
+   "AutoScored": true,
+   "scoringMannerismAuto": "BOTH",
+   "teleopFuelScored": 86,
+   "scoringMannerismTele": "STATIONARY"
+  },
+  "absent": []
+ },
+ {
+  "id": "f517",
+  "style": "chatty",
+  "text": "Alright so, its 7970. also started blue won. also under the trench and back under the trench in auto. also didnt try to climb in auto. also event twenty twenty six m a w o r. also it was really hard to see from where I was sitting. also teleop pickup was from the human player chute and the floor, sorry if that was rambly.",
+  "expect": {
+   "teamNumber": 7970,
+   "eventKey": "2026mawor",
+   "startPos": "4",
+   "alliance": "blue",
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "autoClimbed": "NA",
+   "pickupTele": [
+    "H_Player",
+    "FLOOR"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f518",
+  "style": "chatty",
+  "text": "team number thirty two fifty six then no pickup in in otto then the crowd was insane right then then in tele uh op scored 24 while stationary then qualification match thirteen then the announcer kept yelling",
+  "expect": {
+   "teamNumber": 3256,
+   "matchNumber": 13,
+   "matchType": "qm",
+   "pickupfrom": [
+    "NONE"
+   ],
+   "teleopFuelScored": 24,
+   "scoringMannerismTele": "STATIONARY"
+  },
+  "absent": [
+   "mechIssue",
+   "TrenchRizz",
+   "passingEffe",
+   "died"
+  ]
+ },
+ {
+  "id": "f520",
+  "style": "asr",
+  "text": "robot six one one six six and also played defense and it was okay then in tele op uh scored 56 sitting still and also in auto trench to trench also scouter liam and uhh also red three and shot 7 fuel during auto",
+  "expect": {
+   "teamNumber": 6166,
+   "scoutName": "Liam",
+   "startPos": "3",
+   "alliance": "red",
+   "AutoPath": [
+    "Trench/Trench"
+   ],
+   "autoFuelScored": 7,
+   "AutoScored": true,
+   "teleopFuelScored": 56,
+   "scoringMannerismTele": "STATIONARY",
+   "robotDefended": "Yes",
+   "defenceEffe": 3
+  },
+  "absent": [
+   "tipped"
+  ]
+ },
+ {
+  "id": "f521",
+  "style": "asr",
+  "text": "its one seventy seven so passed fuel into the center also it lost a chain also match 9 so two of the three robots climbed",
+  "expect": {
+   "teamNumber": 177,
+   "matchNumber": 9,
+   "mechIssue": true,
+   "fuelPassed": [
+    "Center"
+   ],
+   "AllianceClimb": 2
+  },
+  "absent": []
+ },
+ {
+  "id": "f525",
+  "style": "typed",
+  "text": "6238: / no-show",
+  "expect": {
+   "teamNumber": 6238,
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f526",
+  "style": "noise",
+  "text": "testing testing and also scouting seventy four oh seven and then also qual 51 and also blue two and went straight to the outpost in auto and then in tele op it shot 34 on honestly the move",
+  "expect": {
+   "teamNumber": 7407,
+   "matchNumber": 51,
+   "matchType": "qm",
+   "startPos": "5",
+   "alliance": "blue",
+   "AutoPath": [
+    "Outpost"
+   ],
+   "teleopFuelScored": 34,
+   "scoringMannerismTele": "WHILE_DRIVE"
+  },
+  "absent": []
+ },
+ {
+  "id": "f527",
+  "style": "chatty",
+  "text": "Alright quick report. this is team seven sixteen. then hit like thirty percent of their shots. im starving honestly.",
+  "expect": {
+   "teamNumber": 716,
+   "scoringEffe": 30
+  },
+  "absent": [
+   "crossedZone",
+   "autoClimbPos"
+  ]
+ },
+ {
+  "id": "f528",
+  "style": "typed",
+  "text": "7970 - | qm 11 | auto 7 on the move",
+  "expect": {
+   "teamNumber": 7970,
+   "matchNumber": 11,
+   "matchType": "qm",
+   "autoFuelScored": 7,
+   "AutoScored": true,
+   "scoringMannerismAuto": "WHILE_DRIVE"
+  },
+  "absent": []
+ },
+ {
+  "id": "f529",
+  "style": "chatty",
+  "text": "alright quick report this is team four forty nine then in tele op they got 88 then someone was standing in like front of me the whole so time then all three of us climbed then someone was standing in front of me the whole time then one of the opponents died then qualification match 38 then it was really hard to see like from where i was was sitting then level one climb in endgame hope that helps the strategy people",
+  "expect": {
+   "teamNumber": 449,
+   "matchNumber": 38,
+   "matchType": "qm",
+   "teleopFuelScored": 88,
+   "climbed": "L1",
+   "AllianceClimb": 3
+  },
+  "absent": [
+   "climbPos",
+   "died",
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f530",
+  "style": "asr",
+  "text": "4936 and also 16 balls basically in autonomous also hung on level 1 also went over into the other alliances zone",
+  "expect": {
+   "teamNumber": 4936,
+   "autoFuelScored": 16,
+   "AutoScored": true,
+   "crossedZone": true,
+   "climbed": "L1"
+  },
+  "absent": []
+ },
+ {
+  "id": "f531",
+  "style": "typed",
+  "text": "812: / red3 / climb: no / defense: yes / teleop 57 stops to shoot",
+  "expect": {
+   "teamNumber": 812,
+   "startPos": "3",
+   "alliance": "red",
+   "teleopFuelScored": 57,
+   "scoringMannerismTele": "STATIONARY",
+   "robotDefended": "Yes",
+   "climbed": "No"
+  },
+  "absent": [
+   "defenceEffe"
+  ]
+ },
+ {
+  "id": "f532",
+  "style": "chatty",
+  "text": "so that match was wild uh team sixty four seventeen played defense and the defense uh was awful my phone is on low low battery it was really hard to to see from where i was sitting blue alliance station one it was really hard to see from where i was sitting auto path was trench to trench same yeah side anyway thats you know all i got",
+  "expect": {
+   "teamNumber": 6417,
+   "startPos": "4",
+   "alliance": "blue",
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "robotDefended": "Yes",
+   "defenceEffe": 1
+  },
+  "absent": [
+   "TrenchRizz"
+  ]
+ },
+ {
+  "id": "f533",
+  "style": "asr",
+  "text": "scouting ten ten thirty eight and also died with a minute left and you know didnt score in tele tele op and then also match 13 and then started red three and also no one on uhh the alliance climbed",
+  "expect": {
+   "teamNumber": 1038,
+   "matchNumber": 13,
+   "startPos": "3",
+   "alliance": "red",
+   "died": true,
+   "teleopFuelScored": 0,
+   "scoringMannerismTele": "NONE",
+   "AllianceClimb": 0
+  },
+  "absent": []
+ },
+ {
+  "id": "f534",
+  "style": "asr",
+  "text": "robot one seventy seven and then didnt play any defense and then also match 99 sorry 98 and in teleop you know scored 28 while um driving then blue one",
+  "expect": {
+   "teamNumber": 177,
+   "matchNumber": 98,
+   "startPos": "4",
+   "alliance": "blue",
+   "teleopFuelScored": 28,
+   "scoringMannerismTele": "WHILE_DRIVE",
+   "robotDefended": "No"
+  },
+  "absent": [
+   "passingEffe",
+   "AllianceClimb",
+   "crossedZone"
+  ]
+ },
+ {
+  "id": "f538",
+  "style": "asr",
+  "text": "scouting twenty eight thirty four and match number 53 and then also passing was awful and all three robots climbed and in tele they grabbed fuel from floor so on red one",
+  "expect": {
+   "teamNumber": 2834,
+   "matchNumber": 53,
+   "startPos": "1",
+   "alliance": "red",
+   "pickupTele": [
+    "FLOOR"
+   ],
+   "passingEffe": 1,
+   "AllianceClimb": 3
+  },
+  "absent": []
+ },
+ {
+  "id": "f539",
+  "style": "asr",
+  "text": "robot thirty five thirty eight then the opponents played defense uhh on them all match also on blue two and also in auto it was was a stationery shooter and in auto the climb failed",
+  "expect": {
+   "teamNumber": 3538,
+   "startPos": "5",
+   "alliance": "blue",
+   "autoClimbed": "Failed",
+   "scoringMannerismAuto": "STATIONARY"
+  },
+  "absent": [
+   "robotDefended",
+   "defenceEffe",
+   "scoringEffe",
+   "tipped"
+  ]
+ },
+ {
+  "id": "f541",
+  "style": "noise",
+  "text": "I think the pit crew is at table three.",
+  "expect": {},
+  "absent": [
+   "teamNumber",
+   "startPos",
+   "matchNumber"
+  ]
+ },
+ {
+  "id": "f542",
+  "style": "asr",
+  "text": "event twenty twenty six c t s c t and team seventy six thirty two and then also red three and then qualification match 79 and then scouter so sofia and never showed up for the match",
+  "expect": {
+   "teamNumber": 7632,
+   "matchNumber": 79,
+   "matchType": "qm",
+   "scoutName": "Sofia",
+   "eventKey": "2026ctsct",
+   "startPos": "3",
+   "alliance": "red",
+   "noShow": true
+  },
+  "absent": [
+   "climbPos",
+   "scoringEffe",
+   "AutoPickup"
+  ]
+ },
+ {
+  "id": "f543",
+  "style": "asr",
+  "text": "in tele op they got 41 and then also used the trench a lot in tele op and about eighty percent accuracy then this is team four six five one and then auto path was trench to trench same side and then also qual eight so no climb attempt in auto",
+  "expect": {
+   "teamNumber": 4651,
+   "matchNumber": 8,
+   "matchType": "qm",
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "autoClimbed": "NA",
+   "teleopFuelScored": 41,
+   "scoringEffe": 80,
+   "TrenchRizz": true
+  },
+  "absent": [
+   "tipped",
+   "autoClimbPos",
+   "scoringMannerismTele"
+  ]
+ },
+ {
+  "id": "f544",
+  "style": "asr",
+  "text": "they never played defense also red three and they grabbed fuel from the depot like and this is team 4 and uh then also qualification match four also 86 in tele op",
+  "expect": {
+   "teamNumber": 4,
+   "matchNumber": 4,
+   "matchType": "qm",
+   "startPos": "3",
+   "alliance": "red",
+   "teleopFuelScored": 86,
+   "pickupTele": [
+    "DEPOT"
+   ],
+   "robotDefended": "No"
+  },
+  "absent": []
+ },
+ {
+  "id": "f545",
+  "style": "typed",
+  "text": "6045: / match 74 / defense: yes / auto bump out trench back same side",
+  "expect": {
+   "teamNumber": 6045,
+   "matchNumber": 74,
+   "AutoPath": [
+    "Same Side Trench/Bump"
+   ],
+   "robotDefended": "Yes"
+  },
+  "absent": []
+ },
+ {
+  "id": "f546",
+  "style": "chatty",
+  "text": "its thirty one oh three in auto scored like eleven in auto trench both ways on the same side in tele op it picked up from midfield yeah in teleop scored 62 both on yeah the move and sitting still anyway thats all um i got",
+  "expect": {
+   "teamNumber": 3103,
+   "AutoPath": [
+    "Same Side Trench"
+   ],
+   "autoFuelScored": 11,
+   "AutoScored": true,
+   "teleopFuelScored": 62,
+   "scoringMannerismTele": "BOTH",
+   "pickupTele": [
+    "MID"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f547",
+  "style": "typed",
+  "text": "T 321. level 3. bump to bump auto. trench: yes. auto picked up outpost",
+  "expect": {
+   "teamNumber": 321,
+   "AutoPath": [
+    "Bump/Bump"
+   ],
+   "AutoPickup": true,
+   "pickupfrom": [
+    "H_Player"
+   ],
+   "TrenchRizz": true,
+   "climbed": "L3"
+  },
+  "absent": [
+   "climbPos"
+  ]
+ },
+ {
+  "id": "f550",
+  "style": "typed",
+  "text": "4936:. scouter ethan r. blue 2. tried d. auto bump/bump same side. mech issue with climber",
+  "expect": {
+   "teamNumber": 4936,
+   "scoutName": "Ethan R",
+   "startPos": "5",
+   "alliance": "blue",
+   "mechIssue": true,
+   "AutoPath": [
+    "Same Side Bump"
+   ],
+   "robotDefended": "Attempted"
+  },
+  "absent": [
+   "climbPos",
+   "doubleClimb",
+   "climbed"
+  ]
+ },
+ {
+  "id": "f554",
+  "style": "asr",
+  "text": "team number four seven seven seven also was a no show",
+  "expect": {
+   "teamNumber": 4777,
+   "noShow": true
+  },
+  "absent": [
+   "climbed",
+   "doubleClimb",
+   "startPos"
+  ]
+ },
+ {
+  "id": "f555",
+  "style": "chatty",
+  "text": "Uh team fifty eight twenty two. match 93 sorry 91. someone was standing in front of me the whole time. never showed up for the match.",
+  "expect": {
+   "teamNumber": 5822,
+   "matchNumber": 91,
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f556",
+  "style": "typed",
+  "text": "team 4:; red stn 2; goes under trench in tele; died w/ a minute left; opp tipped over; auto: preload; scored 89 in teleop",
+  "expect": {
+   "teamNumber": 4,
+   "startPos": "2",
+   "alliance": "red",
+   "died": true,
+   "AutoPath": [
+    "Pre-Load"
+   ],
+   "teleopFuelScored": 89,
+   "TrenchRizz": true
+  },
+  "absent": [
+   "tipped",
+   "robotDefended"
+  ]
+ },
+ {
+  "id": "f557",
+  "style": "chatty",
+  "text": "um you know so scouting fourteen seventy seven also teleop pickup was from the floor also about twenty two in auto i honestly think thats like everything",
+  "expect": {
+   "teamNumber": 1477,
+   "autoFuelScored": 22,
+   "AutoScored": true,
+   "pickupTele": [
+    "FLOOR"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f558",
+  "style": "typed",
+  "text": "Team 6624, QM 34, r3, auto trench/trench same side",
+  "expect": {
+   "teamNumber": 6624,
+   "matchNumber": 34,
+   "matchType": "qm",
+   "startPos": "3",
+   "alliance": "red",
+   "AutoPath": [
+    "Same Side Trench"
+   ]
+  },
+  "absent": []
+ },
+ {
+  "id": "f559",
+  "style": "typed",
+  "text": "bot 4651, QM 6, Dev scouting, didnt show up",
+  "expect": {
+   "teamNumber": 4651,
+   "matchNumber": 6,
+   "matchType": "qm",
+   "scoutName": "Dev",
+   "noShow": true
+  },
+  "absent": []
+ },
+ {
+  "id": "f560",
+  "style": "chatty",
+  "text": "alright so 4171 all three of us climbed im starving honestly",
+  "expect": {
+   "teamNumber": 4171,
+   "AllianceClimb": 3
+  },
+  "absent": []
+ }
+]
