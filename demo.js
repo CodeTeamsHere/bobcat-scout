@@ -350,6 +350,12 @@
         point: '#mode-bar',
         run: function (h) { return mode(h, 4); } },
 
+      { title: 'Practice before the event',
+        what: 'The <b>PRACTICE</b> button lets a scout scout a real past match from video and see how close they were to the official numbers.',
+        say: 'New scouts practice on real matches first. They watch a match, scout three robots, and the app compares their counts and climbs with the official score. When they score 80 or better three times in a row, they are a trusted scout.',
+        point: '#btn-practice',
+        run: function (h) { return h.sleep(100); } },
+
       { title: 'That\'s the whole loop',
         what: 'Pick a way, talk, auto-fill, check, send. About a minute a match, with no typing in the stands.',
         say: 'That\'s the scouting side. Next, what the strategy team gets out of all those rows: the analytics app.',
