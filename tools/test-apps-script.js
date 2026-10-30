@@ -20,119 +20,7 @@ const ROOT = path.join(__dirname, '..');
 const PASS = 'test-password';          // the scouts' passcode
 const READ_PASS = 'test-read-password'; // the strategy team's Analytics Password
 
-// ---------------------------------------------------------------- a fake Sheet
-function asStored(v) {
-  if (typeof v !== 'string') return v;
-  if (/^(true|false)$/i.test(v)) return v.toLowerCase() === 'true';
-  if (v.trim() !== '' && !isNaN(Number(v))) return Number(v);
-  return v;
-}
-
-function makeRange(sheet, r, c, nr, nc) {
-  const range = {
-    getValues() {
-      const out = [];
-      for (let i = 0; i < nr; i++) {
-        const row = sheet.rows[r - 1 + i] || [];
-        const o = [];
-        for (let j = 0; j < nc; j++) o.push(row[c - 1 + j] === undefined ? '' : row[c - 1 + j]);
-        out.push(o);
-      }
-      return out;
-    },
-    setValues(vals) {
-      vals.forEach((row, i) => {
-        const target = sheet.rows[r - 1 + i] || (sheet.rows[r - 1 + i] = []);
-        row.forEach((v, j) => { target[c - 1 + j] = asStored(v); });
-      });
-      return range;
-    },
-    setValue(v) { return range.setValues([[v]]); },
-    setFormula(f) { return range.setValues([[f]]); },
-    setFontWeight() { return range; },
-    setBackground() { return range; },
-    setFontColor() { return range; },
-  };
-  return range;
-}
-
-function colNumber(letters) {
-  return letters.split('').reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0);
-}
-
-function makeSheet(name) {
-  const sheet = {
-    name,
-    rows: [],
-    getLastRow() {
-      let last = 0;
-      sheet.rows.forEach((row, i) => { if (row && row.some((v) => v !== '' && v != null)) last = i + 1; });
-      return last;
-    },
-    getLastColumn() {
-      let last = 0;
-      sheet.rows.forEach((row) => (row || []).forEach((v, j) => { if (v !== '' && v != null) last = Math.max(last, j + 1); }));
-      return last;
-    },
-    getRange(a, b, nr, nc) {
-      if (typeof a === 'string') {
-        const m = /^([A-Z]+)(\d+)(?::([A-Z]+)(\d+))?$/.exec(a);
-        const c1 = colNumber(m[1]), r1 = Number(m[2]);
-        const c2 = m[3] ? colNumber(m[3]) : c1, r2 = m[4] ? Number(m[4]) : r1;
-        return makeRange(sheet, r1, c1, r2 - r1 + 1, c2 - c1 + 1);
-      }
-      return makeRange(sheet, a, b, nr || 1, nc || 1);
-    },
-    appendRow(values) { sheet.rows[sheet.getLastRow()] = values.map(asStored); },
-    clear() { sheet.rows.length = 0; },
-    setFrozenRows() {},
-    setColumnWidth() {},
-  };
-  return sheet;
-}
-
-// Loads a fresh copy of Code.gs against an empty spreadsheet.
-function freshScript() {
-  const sheets = {};
-  const props = {};
-  const ss = {
-    getSheetByName: (n) => sheets[n] || null,
-    insertSheet: (n) => (sheets[n] = makeSheet(n)),
-  };
-  const sandbox = {
-    console,
-    SpreadsheetApp: { getActiveSpreadsheet: () => ss, flush() {} },
-    ContentService: {
-      createTextOutput: (text) => ({ text, setMimeType() { return this; } }),
-      MimeType: { JAVASCRIPT: 'javascript', JSON: 'json' },
-    },
-    LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
-    PropertiesService: {
-      getDocumentProperties: () => ({ getProperty: (k) => props[k] || null, setProperty: (k, v) => { props[k] = v; } }),
-    },
-    UrlFetchApp: { fetch() { throw new Error('the tests never reach Google'); } },
-  };
-  vm.createContext(sandbox);
-  vm.runInContext(fs.readFileSync(path.join(ROOT, 'apps-script', 'Code.gs'), 'utf8'), sandbox, { filename: 'Code.gs' });
-
-  // The Config tab, with a known password.
-  const config = sandbox.getConfigSheet_(ss);
-  function setConfig(name, value) {
-    const row = config.rows.findIndex((r) => r && String(r[0]).toLowerCase() === name.toLowerCase());
-    config.rows[row][1] = value;
-  }
-  setConfig('Passcode', PASS);
-  setConfig('Analytics Password', READ_PASS);
-
-  // Same shape as a JSONP call: ?callback=cb&data=<json>
-  function call(payload) {
-    const out = sandbox.handle_({ parameter: { callback: 'cb', data: JSON.stringify(payload) } });
-    const m = /^cb\(([\s\S]*)\)$/.exec(out.text);
-    if (!m) throw new Error('not a JSONP answer: ' + out.text.slice(0, 80));
-    return JSON.parse(m[1]);
-  }
-  return { call, sheets, setConfig };
-}
+const { freshScript } = require('./fake-google');
 
 // ---------------------------------------------------------------- checks
 let pass = 0;
@@ -254,6 +142,90 @@ function match(over) {
   const read = s.call({ action: 'read', passcode: READ_PASS });
   check('an empty Sheet reads as no rows', read.ok && read.data.length === 0 && read.pit.length === 0, JSON.stringify(read));
   check('reading never creates a tab', !s.sheets.Data && !s.sheets.Pit, Object.keys(s.sheets).join(', '));
+}
+
+// ---- pit photos: into a private Drive folder, ids on the team's Pit row
+{
+  const s = freshScript();
+  const JPG = Buffer.from('fake jpeg bytes for team 177').toString('base64');
+  const photo = (extra) => Object.assign({ action: 'pitPhoto', passcode: PASS, eventKey: '2026ctwat', teamNumber: 177, scoutName: 'Ada', mime: 'image/jpeg', data: 'data:image/jpeg;base64,' + JPG }, extra || {});
+
+  const first = s.call(photo({ photoId: 'p1' }));
+  check('a scout can add a pit photo with the passcode', first.ok && first.photos === 1 && /^file/.test(first.fileId), JSON.stringify(first));
+  const folders = Object.values(s.drive.folders);
+  check('the photo goes in the pit-photo folder', folders.length === 1 && folders[0].name === 'Bobcat Scout pit photos' && folders[0].files.length === 1, JSON.stringify(folders));
+  check('the file is the photo, named by event and team', s.drive.files[first.fileId].name === '2026ctwat_177_p1.jpg' && Buffer.from(s.drive.files[first.fileId].bytes).toString() === 'fake jpeg bytes for team 177', s.drive.files[first.fileId].name);
+  let pit = s.call({ action: 'read', passcode: READ_PASS, eventKey: '2026ctwat' }).pit;
+  check('a photo before the report starts the team\'s Pit row', pit.length === 1 && pit[0].teamNumber === 177 && pit[0].photoIds === first.fileId, JSON.stringify(pit));
+
+  // the report arrives after the photo: the photo ids stay
+  s.call({ passcode: PASS, _form: 'pit', _order: ['scoutName', 'eventKey', 'teamNumber', 'drivetrain'], _id: 'pit_2026ctwat_177',
+    scoutName: 'Ada', eventKey: '2026ctwat', teamNumber: 177, drivetrain: 'swerve' });
+  pit = s.call({ action: 'read', passcode: READ_PASS, eventKey: '2026ctwat' }).pit;
+  check('the report fills the same row and keeps the photo', pit.length === 1 && pit[0].drivetrain === 'swerve' && pit[0].photoIds === first.fileId, JSON.stringify(pit));
+
+  const second = s.call(photo({ photoId: 'p2' }));
+  check('a second photo is added to the list', second.ok && second.photos === 2, JSON.stringify(second));
+  const again = s.call(photo({ photoId: 'p2' }));
+  check('the same photo sent twice (a retry) is saved once', again.ok && again.duplicate === true && Object.values(s.drive.folders)[0].files.length === 2, JSON.stringify(again));
+
+  // a re-sent report (say, a fixed typo) doesn't wipe the photos
+  s.call({ passcode: PASS, _form: 'pit', _order: ['scoutName', 'eventKey', 'teamNumber', 'drivetrain'], _id: 'pit_2026ctwat_177',
+    scoutName: 'Ada', eventKey: '2026ctwat', teamNumber: 177, drivetrain: 'tank' });
+  pit = s.call({ action: 'read', passcode: READ_PASS, eventKey: '2026ctwat' }).pit;
+  check('a re-sent report keeps both photos', pit.length === 1 && pit[0].drivetrain === 'tank' && String(pit[0].photoIds).split(',').length === 2, JSON.stringify(pit));
+
+  // the phone checking its upload arrived (the upload itself can't be read back from the browser)
+  const chk = s.call({ action: 'pitCheck', passcode: PASS, eventKey: '2026ctwat', teamNumber: 177 });
+  check('the scout\'s phone can check how many photos arrived', chk.ok && chk.exists && chk.photos === 2, JSON.stringify(chk));
+  const none = s.call({ action: 'pitCheck', passcode: PASS, eventKey: '2026ctwat', teamNumber: 4321 });
+  check('a team with no pit report says so', none.ok && !none.exists && none.photos === 0, JSON.stringify(none));
+
+  // what can't get in
+  const filesBefore = Object.keys(s.drive.files).length;
+  const wrong = s.call(photo({ passcode: 'nope', photoId: 'x1' }));
+  check('a wrong passcode adds no photo', !wrong.ok && /wrong passcode/i.test(wrong.error) && Object.keys(s.drive.files).length === filesBefore, JSON.stringify(wrong));
+  const pdf = s.call(photo({ mime: 'application/pdf', photoId: 'x2' }));
+  check('only photos are accepted', !pdf.ok && /not a photo/i.test(pdf.error), JSON.stringify(pdf));
+  const big = s.call(photo({ data: 'A'.repeat(3000001), photoId: 'x3' }));
+  check('a photo that is far too big is refused', !big.ok && /too big/i.test(big.error), JSON.stringify(big).slice(0, 120));
+  const noTeam = s.call(photo({ teamNumber: '', photoId: 'x4' }));
+  check('a photo needs a team number', !noTeam.ok && /teamNumber/.test(noTeam.error), JSON.stringify(noTeam));
+  check('none of those created a file', Object.keys(s.drive.files).length === filesBefore, String(Object.keys(s.drive.files).length));
+  const chkWrong = s.call({ action: 'pitCheck', passcode: 'nope', eventKey: '2026ctwat', teamNumber: 177 });
+  check('checking needs the passcode too', !chkWrong.ok, JSON.stringify(chkWrong));
+
+  // at most six photos a team
+  for (let i = 3; i <= 6; i++) s.call(photo({ photoId: 'p' + i }));
+  const seventh = s.call(photo({ photoId: 'p7' }));
+  check('a team keeps at most six photos', !seventh.ok && /already has 6/.test(seventh.error), JSON.stringify(seventh));
+
+  // reading a photo back: Analytics Password only, and only from the pit-photo folder
+  const got = s.call({ action: 'photo', passcode: READ_PASS, fileId: first.fileId });
+  check('the Analytics Password reads a pit photo back', got.ok && got.mime === 'image/jpeg' && got.data === JPG, JSON.stringify(got).slice(0, 120));
+  const scoutRead = s.call({ action: 'photo', passcode: PASS, fileId: first.fileId });
+  check('the scouts\' passcode cannot read photos', !scoutRead.ok && !scoutRead.data, JSON.stringify(scoutRead));
+  const elsewhere = s.call({ action: 'photo', passcode: READ_PASS, fileId: 'privateDocument12345' });
+  check('a file outside the pit-photo folder can never be read', !elsewhere.ok && !elsewhere.data && /not found/i.test(elsewhere.error), JSON.stringify(elsewhere));
+  const junk = s.call({ action: 'photo', passcode: READ_PASS, fileId: '../../x' });
+  check('a made-up photo id is refused', !junk.ok && /bad photo id/i.test(junk.error), JSON.stringify(junk));
+  const missing = s.call({ action: 'photo', passcode: READ_PASS, fileId: 'doesNotExist123456' });
+  check('a photo that isn\'t there says so', !missing.ok && /not found/i.test(missing.error), JSON.stringify(missing));
+
+  // the event gate applies to photos like to matches
+  s.setConfig('Active Event', '2026ctwat');
+  const otherEvent = s.call(photo({ eventKey: '2026cthar', photoId: 'z1' }));
+  check('photos follow the Active Event gate', !otherEvent.ok && /not open for event/i.test(otherEvent.error), JSON.stringify(otherEvent));
+}
+
+// ---- a photo for a brand-new Sheet: the folder and the Pit tab are made on the way
+{
+  const s = freshScript();
+  const r = s.call({ action: 'pitPhoto', passcode: PASS, eventKey: '2026ctwat', teamNumber: 254, scoutName: 'Bo', mime: 'image/png', data: Buffer.from('png').toString('base64') });
+  check('the first photo on a new Sheet works', r.ok && r.photos === 1 && !!s.sheets.Pit, JSON.stringify(r));
+  check('the folder is remembered for next time', !!s.props.PIT_PHOTO_FOLDER, JSON.stringify(s.props));
+  const r2 = s.call({ action: 'pitPhoto', passcode: PASS, eventKey: '2026ctwat', teamNumber: 254, scoutName: 'Bo', mime: 'image/png', data: Buffer.from('png2').toString('base64') });
+  check('and the second photo uses the same folder', r2.ok && Object.keys(s.drive.folders).length === 1, JSON.stringify(s.drive.folders));
 }
 
 // ---------------------------------------------------------------- report

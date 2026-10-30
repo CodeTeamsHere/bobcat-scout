@@ -81,8 +81,26 @@ Config tab) in as `passcode`. Then push.
 
 ### Tabs you can delete
 
-`Pit` (pit scouting was removed) and `Sheet1` (the empty default) are both unused now.
-Deleting them is optional and changes nothing.
+`Sheet1` (the empty default) is unused. Deleting it is optional and changes nothing.
+Keep `Pit`: the 🔧 PIT button writes one row per robot there.
+
+### Turning on pit photos (once, after updating the script)
+
+Pit photos are saved in a private folder in **your** Google Drive called
+**Bobcat Scout pit photos**. Nobody else can open it; Analytics shows the photos only to
+someone with the Analytics Password.
+
+1. Open the spreadsheet, then **Extensions → Apps Script**.
+2. Paste the new [`apps-script/Code.gs`](apps-script/Code.gs) over the old one
+   (click in the code, **Ctrl+A**, **Delete**, **Ctrl+V**), then click the **save** icon.
+3. In the function dropdown at the top choose **firstTimeSetup**, then click **Run**.
+4. Google asks for permission again, because the script now also uses Drive.
+   Click **Review permissions** → your account → **Advanced** → **Go to (project name)** → **Allow**.
+5. Top right: **Deploy → Manage deployments → edit (pencil)**. Under **Version** choose
+   **New version**, then click **Deploy**. The web app URL stays the same.
+6. Test it: on your own phone, tap **🔧 PIT**, type your own team number, pick a drivetrain,
+   add one photo, and tap **SAVE & SEND**. Within a minute the Pit tab has a row whose
+   **photoIds** column is filled in, and the folder appears in your Drive.
 
 ---
 

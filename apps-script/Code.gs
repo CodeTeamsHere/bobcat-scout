@@ -15,6 +15,11 @@
    It enforces: passcode • event gate • date gate • validation • dedupe • stamping,
    plus optional Google-login lockdown with an email/domain allow-list.
 
+   Pit photos go into a private folder in the Sheet owner's Google Drive ("Bobcat Scout pit
+   photos"); the Pit row keeps their file ids. Scouts can only add photos (with the Passcode);
+   only the Analytics app, with the Analytics Password, can read them back, and only files in
+   that folder. The first time after this update, Google asks the owner to allow Drive access.
+
    It also answers the Bobcat Scout Analytics app, which reads the Data and Pit tabs
    back (a request with action "read"; it never writes). Reading needs the Config
    tab's Analytics Password, not the scouts' Passcode, so scouts can send matches
@@ -50,6 +55,11 @@ var RANGES = {
 };
 var REQUIRED = ['scoutName', 'eventKey', 'matchNumber', 'teamNumber'];
 var PIT_REQUIRED = ['scoutName', 'teamNumber'];
+var PHOTO_FOLDER_NAME = 'Bobcat Scout pit photos';
+var PHOTO_MAX_BASE64 = 3000000;                 // about 2.2 MB of image; the app sends ~0.3 MB
+var PHOTO_MAX_PER_TEAM = 6;
+var PHOTO_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+var KEEP_COLS = ['photoIds'];                   // a re-sent pit report never wipes these
 
 // Run once from the editor to create all tabs.
 function firstTimeSetup() {
@@ -69,9 +79,23 @@ function handle_(e) {
   try {
     var data = readPayload_(e);
     var cfg = getConfig_();
-    if (String(data.action || '') === 'read') {  // the Analytics app reading the data back
+    var action = String(data.action || '');
+    if (action === 'read') {  // the Analytics app reading the data back
       checkReadGate_(data, cfg);
       return respond_({ ok: true, data: readRows_(DATA_SHEET, data.eventKey), pit: readRows_(PIT_SHEET, data.eventKey) }, cb);
+    }
+    if (action === 'photo') {  // the Analytics app reading one pit photo (Analytics Password only)
+      checkReadGate_(data, cfg);
+      return respond_(readPhoto_(String(data.fileId || '')), cb);
+    }
+    if (action === 'pitPhoto') {  // a scout adding a pit photo (sent as a POST: too big for a link)
+      checkGate_(data, cfg);
+      return respond_(savePitPhoto_(data), cb);
+    }
+    if (action === 'pitCheck') {  // a scout's phone checking its photos arrived (the POST can't be read)
+      checkGate_(data, cfg);
+      var found = findPitRow_(data.eventKey, data.teamNumber);
+      return respond_({ ok: true, exists: !!found, photos: found ? found.photoIds.length : 0 }, cb);
     }
     checkGate_(data, cfg);                       // passcode + login + event + dates
     if (String(data._form) === 'pit') {
@@ -219,6 +243,11 @@ function upsertRow_(d, sheetName, keyCols) {
     });
     var existing = findExistingRow_(sh, header, d, keyCols);
     if (existing > 0) {
+      var old = sh.getRange(existing, 1, 1, row.length).getValues()[0];
+      KEEP_COLS.forEach(function (code) {   // e.g. photo ids added separately: a re-sent report keeps them
+        var i = header.indexOf(code);
+        if (i >= 0 && (d[code] === undefined || d[code] === null || d[code] === '')) row[i] = old[i];
+      });
       sh.getRange(existing, 1, 1, row.length).setValues([row]);
       return { action: 'updated', row: existing };
     }
@@ -271,6 +300,90 @@ function formatVal_(v) {
   if (typeof v === 'boolean') return v ? 'true' : 'false';
   if (Array.isArray(v)) return v.join(',');
   return v;
+}
+
+// ---------------------------------------------------------------- pit photos
+// The folder lives in the owner's Drive; its id is remembered so renaming or moving it is fine.
+function getPhotoFolder_() {
+  var props = PropertiesService.getDocumentProperties();
+  var id = props.getProperty('PIT_PHOTO_FOLDER');
+  if (id) { try { return DriveApp.getFolderById(id); } catch (e) { /* deleted: make a new one */ } }
+  var folder = DriveApp.createFolder(PHOTO_FOLDER_NAME);
+  props.setProperty('PIT_PHOTO_FOLDER', folder.getId());
+  return folder;
+}
+
+// The Pit row for a team at an event, with its photo ids, or null.
+function findPitRow_(eventKey, teamNumber) {
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(PIT_SHEET);
+  if (!sh || sh.getLastRow() < 2) return null;
+  var values = sh.getRange(1, 1, sh.getLastRow(), Math.max(1, sh.getLastColumn())).getValues();
+  var header = values[0].map(function (h) { return String(h).trim(); });
+  var ev = header.indexOf('eventKey'), tm = header.indexOf('teamNumber'), ph = header.indexOf('photoIds');
+  var want = String(eventKey || '').trim().toLowerCase();
+  for (var r = 1; r < values.length; r++) {
+    if (tm < 0 || String(values[r][tm]).trim() !== String(teamNumber).trim()) continue;
+    if (ev >= 0 && String(values[r][ev]).trim().toLowerCase() !== want) continue;
+    var ids = ph >= 0 ? String(values[r][ph] || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean) : [];
+    return { sheet: sh, row: r + 1, header: header, photoIds: ids };
+  }
+  return null;
+}
+
+function savePitPhoto_(d) {
+  requireFields_(d, ['eventKey', 'teamNumber', 'scoutName', 'data']);
+  var n = Number(d.teamNumber);
+  if (isNaN(n) || n < 1 || n > 99999) throw new Error('Bad team number: ' + d.teamNumber);
+  var mime = String(d.mime || 'image/jpeg').toLowerCase();
+  if (!PHOTO_TYPES[mime]) throw new Error('Not a photo (' + mime + ')');
+  var b64 = String(d.data).replace(/^data:[^,]*,/, '');
+  if (b64.length > PHOTO_MAX_BASE64) throw new Error('Photo too big');
+  if (!findPitRow_(d.eventKey, d.teamNumber)) {   // the photo arrived before the report: start the team's row
+    upsertRow_({ eventKey: d.eventKey, teamNumber: d.teamNumber, scoutName: d.scoutName, _order: ['scoutName', 'eventKey', 'teamNumber', 'photoIds'], _id: 'pit_' + String(d.eventKey).toLowerCase() + '_' + n },
+      PIT_SHEET, ['eventKey', 'teamNumber']);   // (takes and releases the lock itself, so it runs before ours)
+  }
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    var found = findPitRow_(d.eventKey, d.teamNumber);
+    if (!found) throw new Error('Could not start the pit row for this team');
+    if (found.photoIds.length >= PHOTO_MAX_PER_TEAM) throw new Error('This team already has ' + PHOTO_MAX_PER_TEAM + ' photos');
+    // the same photo sent twice (a retry) is saved once
+    var tag = String(d.photoId || '');
+    var folder = getPhotoFolder_();
+    if (tag) {
+      var same = folder.getFilesByName(String(d.eventKey).toLowerCase() + '_' + n + '_' + tag + '.' + PHOTO_TYPES[mime]);
+      if (same.hasNext()) return { ok: true, fileId: same.next().getId(), photos: found.photoIds.length, duplicate: true };
+    }
+    var name = String(d.eventKey).toLowerCase() + '_' + n + '_' + (tag || new Date().getTime()) + '.' + PHOTO_TYPES[mime];
+    var file = folder.createFile(Utilities.newBlob(Utilities.base64Decode(b64), mime, name));
+    var ids = found.photoIds.concat([file.getId()]);
+    var col = found.header.indexOf('photoIds');
+    if (col < 0) {
+      found.header.push('photoIds');
+      col = found.header.length - 1;
+      found.sheet.getRange(1, col + 1).setValue('photoIds').setFontWeight('bold');
+    }
+    found.sheet.getRange(found.row, col + 1).setValue(ids.join(','));
+    return { ok: true, fileId: file.getId(), photos: ids.length };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// One photo, only if it is in the pit-photo folder (so the password can't read any other Drive file).
+function readPhoto_(fileId) {
+  if (!/^[A-Za-z0-9_-]{10,}$/.test(fileId)) throw new Error('Bad photo id');
+  var props = PropertiesService.getDocumentProperties();
+  var folderId = props.getProperty('PIT_PHOTO_FOLDER');
+  if (!folderId) throw new Error('No pit photos yet');
+  var file;
+  try { file = DriveApp.getFileById(fileId); } catch (e) { throw new Error('Photo not found'); }
+  var parents = file.getParents(), inFolder = false;
+  while (parents.hasNext()) if (parents.next().getId() === folderId) inFolder = true;
+  if (!inFolder) throw new Error('Photo not found');
+  var blob = file.getBlob();
+  return { ok: true, mime: blob.getContentType(), data: Utilities.base64Encode(blob.getBytes()) };
 }
 
 function getConfigSheet_(ss) {

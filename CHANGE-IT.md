@@ -190,7 +190,7 @@ Worth knowing so you do not go looking for a button that is not there.
 |---|---|
 | No in-app form editor | If every scouter could rebuild the form on their phone, the columns would drift and the rows would stop lining up. One shipped form, same for everyone. |
 | No settings page for scouters | Every key and address is set once, by you, in `team-config.js`. Nothing for a scouter to see or break. |
-| No pit scouting | Removed. This is match scouting only. |
+| Pit questions | Pit scouting is back (the 🔧 PIT button), but its questions live in `pit-form.js`, not on the phone. Change them there and push; keep each `code` the same once reports exist, or the old answers end up in an orphan column. |
 
 ---
 

@@ -1,0 +1,38 @@
+/* Pit scouting (pit.js): a full-screen overlay like the practice one. */
+body.pit-lock { overflow: hidden; }
+.pit-overlay { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(31, 20, 23, .72); padding: 14px; overflow-y: auto; }
+.pit-overlay.pit-open { display: block; }
+.pit-card { max-width: 640px; margin: 0 auto; background: var(--cream); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.4); overflow: hidden; }
+.pit-top { display: flex; align-items: center; justify-content: space-between; background: var(--maroon); color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 2; }
+.pit-title { font-weight: 800; letter-spacing: .12em; font-size: 13px; color: var(--gold-bright); }
+.pit-close { background: transparent; border: 0; color: #fff; font-size: 28px; line-height: 1; padding: 0 6px; }
+.pit-body { padding: 16px; }
+.pit-lead { font-size: 15px; margin-bottom: 12px; }
+.pit-sub { font-size: 12px; color: var(--gray); font-weight: 400; }
+.pit-h { margin: 18px 0 8px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--maroon); }
+.pit-h2 { display: flex; align-items: center; gap: 8px; margin: 6px 0 10px; font-size: 20px; color: var(--maroon-dark); }
+.pit-team-num { width: 120px; font-size: 20px; font-weight: 800; padding: 6px 8px; border: 1px solid #cfc6b4; border-radius: 6px; color: var(--maroon-dark); }
+.pit-note { background: var(--gold-soft); border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 0 6px 6px 0; font-size: 13px; margin: 10px 0; }
+.pit-warn { background: var(--error-bg); border-left-color: var(--error); }
+.pit-good { background: var(--success-bg); border-left-color: var(--success); }
+.pit-start { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 12px 0; }
+.pit-start label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; flex: 1 1 160px; }
+.pit-start input { padding: 10px; border: 1px solid #cfc6b4; border-radius: 6px; font-size: 16px; }
+.pit-btn { border: 1px solid var(--maroon); background: #fff; color: var(--maroon); font-weight: 800; letter-spacing: .05em; font-size: 12px; padding: 10px 14px; border-radius: 6px; min-height: 42px; }
+.pit-primary { background: var(--maroon); color: #fff; }
+.pit-link { background: none; border: 0; color: var(--maroon); font-weight: 700; font-size: 13px; padding: 4px 0; text-decoration: underline; }
+.pit-items { list-style: none; display: grid; gap: 6px; margin-bottom: 8px; }
+.pit-items li { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; display: flex; flex-direction: column; }
+.pit-teams { display: flex; flex-wrap: wrap; gap: 6px; }
+.pit-t { min-width: 64px; padding: 8px 10px; border: 1px solid #cfc6b4; background: #fff; border-radius: 6px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pit-t-done { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+.pit-t-wait { background: var(--gold-soft); border-color: var(--gold); }
+.pit-field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 700; margin: 10px 0; }
+.pit-field select, .pit-field input, .pit-field textarea { padding: 10px; border: 1px solid #cfc6b4; border-radius: 6px; font-size: 16px; background: #fff; font-family: inherit; width: 100%; }
+.pit-thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+.pit-thumb { position: relative; width: 104px; height: 104px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.pit-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pit-thumb button { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 16px; line-height: 1; }
+.pit-add { width: 104px; height: 104px; border: 2px dashed #cfc6b4; border-radius: 8px; display: grid; place-items: center; text-align: center; font-size: 12px; font-weight: 700; color: var(--maroon); cursor: pointer; background: #fff; }
+.pit-actions { display: flex; gap: 10px; margin: 16px 0 6px; }
+@media (max-width: 520px) { .pit-overlay { padding: 0; } .pit-card { border-radius: 0; min-height: 100%; } }
