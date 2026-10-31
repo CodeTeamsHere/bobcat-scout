@@ -1673,7 +1673,7 @@ function copyToClipboard(text, btn) {
 function saveMatchAndNext() {
   // Ask for the team password first, so the questions below are not asked twice.
   if (isSheetConnected() && !sheetPasscode) {
-    askForPasscode('Type the team password to save this match and send it to the Sheet.', saveMatchAndNext);
+    askForPasscode('Type your personal code (or the team password) to save this match and send it to the Sheet.', saveMatchAndNext);
     return;
   }
   if (!confirmUnusual()) return;
@@ -2256,6 +2256,7 @@ function saveSheetConfig() {
   updateSheetStatus();
   showSheetMsg(sheetEndpoint ? 'Saved. Matches will now also go to your Sheet.' : 'Cleared.', 'ok');
   flushQueue();
+  identifyMe();
 }
 function disconnectSheet() {
   sheetEndpoint = ''; sheetPasscode = '';
@@ -2302,7 +2303,30 @@ function showSheetMsg(msg, kind) {
 // it, and the phone remembers it after that.
 let afterPasscode = null;
 
-function isWrongPasscode(error) { return /wrong passcode/i.test(String(error || '')); }
+// "Wrong passcode" is the shared password; "code not recognised" / "turned off" are the personal-code versions
+// (the Sheet's Config tab, Personal Codes = yes). Either way: forget what was typed and ask again.
+function isWrongPasscode(error) { return /wrong passcode|code not recognised|code has been turned off/i.test(String(error || '')); }
+
+// Personal codes: ask the Sheet whose code this phone has, and use that name (the Sheet puts the code owner's
+// name on every row anyway, so this only keeps what the scout sees in step). Quiet when it is the shared password.
+async function identifyMe() {
+  try {
+    if (!isSheetConnected() || !sheetPasscode || !navigator.onLine) return;
+    const r = await jsonpSubmit({ action: 'whoami', passcode: sheetPasscode }, 10000, sheetEndpoint);
+    if (r && r.ok && r.personal && r.name) {
+      try { localStorage.setItem('scout_name', r.name); localStorage.setItem('person_role', r.role || ''); } catch (e) {}
+      if (typeof setField === 'function' && fields && fields.scoutName !== r.name) setField('scoutName', r.name);
+      const lab = $('sheet-label'); if (lab) lab.title = 'Signed in as ' + r.name + ' (' + r.role + ')';
+      if (!r.canSend) showSubmitStatus('Signed in as ' + r.name + ': this code can read the data but not send scouting data.', 'warn');
+    } else if (r && r.ok) {
+      try { localStorage.removeItem('person_role'); } catch (e) {}
+    } else if (r && /turned off/i.test(String(r.error || ''))) {
+      showSubmitStatus('Your personal code has been turned off. Ask your lead.', 'err');
+    } else if (r && isWrongPasscode(r.error)) {
+      // a code that is not (or no longer) recognised: nothing is sent with it, and the next send asks again
+    }
+  } catch (e) { /* no signal: try again next time */ }
+}
 
 function askForPasscode(message, then) {
   afterPasscode = then || null;
@@ -2336,12 +2360,13 @@ function onPasscodeEntered(e) {
   const then = afterPasscode;
   afterPasscode = null;
   flushQueue(); // anything that was waiting for the password goes now
+  identifyMe();
   if (then) then();
 }
 function cancelPasscodePrompt() {
   afterPasscode = null;
   closePasscodePrompt();
-  showSubmitStatus('Not sent yet: the Sheet needs the team password.', 'warn');
+  showSubmitStatus('Not sent yet: the Sheet needs your code or the team password.', 'warn');
 }
 
 // ---- Explicit "Submit to Sheet" button in the output step ----
@@ -2350,7 +2375,7 @@ async function submitCurrentMatch() {
   if (!v.ok) { showSubmitStatus(v.error, 'err'); return; }
   if (!isSheetConnected()) { showSubmitStatus('No Sheet connected — scan the QR code, or tap ⚙ SHEET above to connect one.', 'warn'); return; }
   // Before the questions below, so they are not asked twice when this runs again.
-  if (!sheetPasscode) { askForPasscode('Type the team password to send this match to the Sheet.', submitCurrentMatch); return; }
+  if (!sheetPasscode) { askForPasscode('Type your personal code (or the team password) to send this match to the Sheet.', submitCurrentMatch); return; }
   if (googleEnabled() && !googleTokenValid()) { showSubmitStatus('Sign in with Google first — open ⚙ SHEET and tap the Google button.', 'warn'); return; }
   if (!confirmUnusual()) { showSubmitStatus('Submission paused — adjust the flagged values, or confirm to continue.', 'warn'); return; }
   showSubmitStatus('Sending to Sheet…', 'info');
@@ -3904,6 +3929,7 @@ async function init() {
   updateSessionBar();
   updateSheetStatus();
   flushQueue();
+  identifyMe();
   initGoogleSignIn();
   registerServiceWorker();
   applyPresetUI();

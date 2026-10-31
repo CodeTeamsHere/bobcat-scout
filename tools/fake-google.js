@@ -119,6 +119,7 @@ function freshScript() {
   const fakeDrive = makeDrive();
   const sheets = {};
   const props = {};
+  const cache = {};
   const ss = {
     getSheetByName: (n) => sheets[n] || null,
     insertSheet: (n) => (sheets[n] = makeSheet(n)),
@@ -136,7 +137,9 @@ function freshScript() {
     },
     UrlFetchApp: { fetch() { throw new Error('the tests never reach Google'); } },
     DriveApp: fakeDrive.api,
+    CacheService: { getScriptCache: () => ({ get: (k) => (cache[k] === undefined ? null : cache[k]), put: (k, v) => { cache[k] = String(v); }, remove: (k) => { delete cache[k]; } }) },
     Utilities: {
+      getUuid: () => require('crypto').randomUUID(),
       base64Decode: (b64) => Array.from(Buffer.from(b64, 'base64')),
       base64Encode: (bytes) => Buffer.from(bytes).toString('base64'),
       newBlob: (bytes, mime, name) => ({ bytes, mime, name }),
@@ -161,7 +164,7 @@ function freshScript() {
     if (!m) throw new Error('not a JSONP answer: ' + out.text.slice(0, 80));
     return JSON.parse(m[1]);
   }
-  return { call, sheets, setConfig, drive: fakeDrive, props, handle: (e) => sandbox.handle_(e) };
+  return { call, sheets, setConfig, drive: fakeDrive, props, cache, sandbox, ss, handle: (e) => sandbox.handle_(e) };
 }
 
 module.exports = { freshScript, PASS, READ_PASS };

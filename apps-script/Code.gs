@@ -16,6 +16,11 @@
    It enforces: passcode • event gate • date gate • validation • dedupe • stamping,
    plus optional Google-login lockdown with an email/domain allow-list.
 
+   Personal codes (optional): set Config "Personal Codes" to yes and every person uses their own code from the
+   People tab (Name | Code | Role | Active | Last seen) instead of the shared Passcode. Roles: scout sends,
+   lead sends and reads, strategy reads. The Sheet writes the code owner's name on every row, and Active = no
+   cuts one person off. Bobcat Scout menu -> "Make personal codes" fills in the codes. Off by default.
+
    Pit photos go into a private folder in the Sheet owner's Google Drive ("Bobcat Scout pit
    photos"); the Pit row keeps their file ids. Scouts can only add photos (with the Passcode);
    only the Analytics app, with the Analytics Password, can read them back, and only files in
@@ -47,6 +52,14 @@ var DATA_SHEET = 'Data';
 var PIT_SHEET = 'Pit';
 var SUPER_SHEET = 'Super';                      // super-scout notes: one row per robot per match per super-scout
 var CONFIG_SHEET = 'Config';
+var PEOPLE_SHEET = 'People';                    // personal codes: Name | Code | Role | Active | Last seen
+var ROLES = {                                   // what each role may do (only used when Config "Personal Codes" is yes)
+  scout: { send: true, read: false },           // sends matches, pit reports, photos and super-scout notes
+  lead: { send: true, read: true },             // sends, and reads in Analytics
+  strategy: { send: false, read: true }         // reads in Analytics only
+};
+var CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no 0/O or 1/I: a code is read aloud and typed on a phone
+var CODE_LENGTH = 6;                                       // 31^6 = 887 million codes
 var META_COLS = ['_id', '_submittedAt', '_scoutEmail'];   // appended after the scouting fields
 
 // Server-side validation ranges for MATCH data. Anything outside is rejected as junk.
@@ -70,7 +83,16 @@ function firstTimeSetup() {
   getDataSheet_(ss);
   getPitSheet_(ss);
   getSuperSheet_(ss);
+  getPeopleSheet_(ss);
+  ensureConfigRow_(ss, 'Personal Codes', 'no');
   SpreadsheetApp.flush();
+}
+
+// A menu in the Sheet: "Bobcat Scout" -> "Make personal codes". (Runs by itself when the Sheet opens.)
+function onOpen() {
+  try {
+    SpreadsheetApp.getUi().createMenu('Bobcat Scout').addItem('Make personal codes for the People tab', 'makePersonalCodes').addToUi();
+  } catch (e) { /* no menu in this context */ }
 }
 
 // Both GET (used by the app via JSONP) and POST hit the same handler.
@@ -83,6 +105,9 @@ function handle_(e) {
     var data = readPayload_(e);
     var cfg = getConfig_();
     var action = String(data.action || '');
+    if (action === 'whoami') {  // a phone asking who its code belongs to (the scouting app fills in the name)
+      return respond_(whoami_(data, cfg), cb);
+    }
     if (action === 'read') {  // the Analytics app reading the data back
       checkReadGate_(data, cfg);
       return respond_({ ok: true, data: readRows_(DATA_SHEET, data.eventKey), pit: readRows_(PIT_SHEET, data.eventKey), sup: readRows_(SUPER_SHEET, data.eventKey) }, cb);
@@ -146,6 +171,7 @@ function getConfig_() {
     activeEvent: String(map['active event'] || '').trim().toLowerCase(),
     startDate: map['start date'] instanceof Date ? map['start date'] : null,
     endDate: map['end date'] instanceof Date ? map['end date'] : null,
+    personal: /^(yes|true|1)$/i.test(String(map['personal codes'] || '').trim()),
     requireLogin: /^(yes|true|1)$/i.test(String(map['require google login'] || '').trim()),
     clientId: String(map['google client id'] || '').trim(),
     allowedDomain: String(map['allowed domain'] || '').trim().toLowerCase(),
@@ -154,9 +180,17 @@ function getConfig_() {
 }
 
 function checkGate_(d, cfg) {
-  if (!cfg.passcode && !cfg.requireLogin) throw new Error('Set a Passcode or enable Google login in the Config tab');
-  if (cfg.requireLogin) verifyLogin_(d, cfg);
-  if (cfg.passcode && String(d.passcode || '') !== cfg.passcode) throw new Error('Wrong passcode');
+  if (cfg.personal) {
+    // Personal codes: each person's own code, from the People tab. The shared Passcode no longer works, and the
+    // name on every row is the code's owner, whatever the phone says.
+    if (cfg.requireLogin) verifyLogin_(d, cfg);
+    var who = authPerson_(d, 'send');
+    d.scoutName = who.name;
+  } else {
+    if (!cfg.passcode && !cfg.requireLogin) throw new Error('Set a Passcode or enable Google login in the Config tab');
+    if (cfg.requireLogin) verifyLogin_(d, cfg);
+    if (cfg.passcode && String(d.passcode || '') !== cfg.passcode) throw new Error('Wrong passcode');
+  }
   if (cfg.activeEvent && String(d.eventKey || '').toLowerCase() !== cfg.activeEvent) {
     throw new Error('Submissions are not open for event "' + d.eventKey + '"');
   }
@@ -169,9 +203,97 @@ function checkGate_(d, cfg) {
 // send matches but never read them back. It skips the event and date gates: the strategy team
 // reads after submissions close, and past events too. Off until an Analytics Password is set.
 function checkReadGate_(d, cfg) {
+  if (cfg.personal) {
+    // The Analytics Password still reads (blank it in the Config tab to switch that off); otherwise a lead's or strategy person's own code does.
+    if (cfg.requireLogin) verifyLogin_(d, cfg);
+    if (cfg.readPasscode && String(d.passcode || '') === cfg.readPasscode) return;
+    authPerson_(d, 'read');
+    return;
+  }
   if (!cfg.readPasscode) throw new Error('No Analytics Password: add one to the Config tab to let the Analytics app read');
   if (cfg.requireLogin) verifyLogin_(d, cfg);
   if (String(d.passcode || '') !== cfg.readPasscode) throw new Error('Wrong analytics password');
+}
+
+// ---------------------------------------------------------------- personal codes
+function normCode_(s) { return String(s == null ? '' : s).toUpperCase().replace(/[\s\-]/g, ''); }
+
+// The People tab: Name | Code | Role | Active | Last seen. Rows without a name and a code are skipped.
+function getPeople_() {
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(PEOPLE_SHEET);
+  if (!sh || sh.getLastRow() < 2) return [];
+  var vals = sh.getRange(2, 1, sh.getLastRow() - 1, 4).getValues(), out = [];
+  vals.forEach(function (r, i) {
+    var name = String(r[0] || '').trim(), code = normCode_(r[1]);
+    if (!name || !code) return;
+    out.push({ name: name, code: code, role: String(r[2] || 'scout').trim().toLowerCase() || 'scout', active: !/^(no|false|0|off)$/i.test(String(r[3] || '').trim()), row: i + 2, sheet: sh });
+  });
+  return out;
+}
+
+// Who a request's code belongs to, or an error that says what is wrong. need: 'send', 'read' or null (anyone).
+function authPerson_(d, need) {
+  var code = normCode_(d.passcode);
+  if (!code) throw new Error('Code not recognised: type your personal code');
+  var people = getPeople_();
+  if (!people.length) throw new Error('Personal codes are on, but the People tab has nobody in it');
+  var hit = null;
+  people.forEach(function (p) { if (p.code === code) hit = p; });
+  if (!hit) throw new Error('Code not recognised: check it with your lead');
+  if (!hit.active) throw new Error('This code has been turned off: ask your lead');
+  var role = ROLES[hit.role];
+  if (!role) throw new Error('The role "' + hit.role + '" for ' + hit.name + ' is not scout, lead or strategy: fix it in the People tab');
+  if (need && !role[need]) throw new Error(need === 'send' ? 'This code can read the data but not send scouting data' : 'This code is for scouting only: it cannot read the data');
+  touchPerson_(hit);
+  return hit;
+}
+
+// "Last seen", written at most every 5 minutes per person (every request writing to the Sheet would be slow).
+function touchPerson_(p) {
+  try {
+    var cache = CacheService.getScriptCache(), k = 'seen_' + p.row;
+    if (cache.get(k)) return;
+    cache.put(k, '1', 300);
+    p.sheet.getRange(p.row, 5).setValue(new Date());
+  } catch (e) { /* never fail a request over this */ }
+}
+
+// Who is asking: the name and role for a personal code, or just "ok" for the shared password.
+function whoami_(d, cfg) {
+  if (cfg.personal) {
+    var p = authPerson_(d, null), r = ROLES[p.role] || {};
+    return { ok: true, personal: true, name: p.name, role: p.role, canSend: !!r.send, canRead: !!r.read };
+  }
+  var pass = String(d.passcode || '');
+  if ((cfg.passcode && pass === cfg.passcode) || (cfg.readPasscode && pass === cfg.readPasscode)) return { ok: true, personal: false, name: '', role: '' };
+  throw new Error('Wrong passcode');
+}
+
+// A new random code that nobody has. rnd() returns a number from 0 up to (not including) 1; the default is Google's own UUID generator.
+function randomCode_(rnd) {
+  var pick = rnd || function () { return parseInt(Utilities.getUuid().replace(/-/g, '').slice(0, 8), 16) / 4294967296; };
+  var s = '';
+  for (var i = 0; i < CODE_LENGTH; i++) s += CODE_ALPHABET.charAt(Math.floor(pick() * CODE_ALPHABET.length));
+  return s;
+}
+
+// Menu item: give every person with a name and no code a fresh one (and role "scout", active "yes" if blank).
+function makePersonalCodes(rnd) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), sh = getPeopleSheet_(ss);
+  if (sh.getLastRow() < 2) return 0;
+  var vals = sh.getRange(2, 1, sh.getLastRow() - 1, 4).getValues(), taken = {}, made = 0;
+  vals.forEach(function (r) { if (normCode_(r[1])) taken[normCode_(r[1])] = 1; });
+  vals.forEach(function (r, i) {
+    if (!String(r[0] || '').trim()) return;
+    if (!normCode_(r[1])) {
+      var c; do { c = randomCode_(rnd); } while (taken[c]);
+      taken[c] = 1; sh.getRange(i + 2, 2).setValue(c); made++;
+    }
+    if (!String(r[2] || '').trim()) sh.getRange(i + 2, 3).setValue('scout');
+    if (!String(r[3] || '').trim()) sh.getRange(i + 2, 4).setValue('yes');
+  });
+  try { SpreadsheetApp.getUi().alert(made ? 'Made ' + made + ' code' + (made === 1 ? '' : 's') + '. Give each person only their own, in private. To use them, set "Personal Codes" to yes in the Config tab.' : 'Everyone with a name already has a code.'); } catch (e) { /* no screen */ }
+  return made;
 }
 
 // A tab's rows as { header: value } objects. Dates go out as ISO text, blank rows are skipped,
@@ -411,10 +533,10 @@ function getConfigSheet_(ss) {
   if (sh) return sh;
   sh = ss.insertSheet(CONFIG_SHEET);
   sh.getRange('A1:B1').setValues([['Setting', 'Value']]).setFontWeight('bold');
-  sh.getRange('A2:B10').setValues([
+  sh.getRange('A2:B11').setValues([
     ['Passcode', 'changeme'], ['Active Event', ''], ['Start Date', ''], ['End Date', ''],
     ['Require Google Login', 'no'], ['Google Client ID', ''], ['Allowed Domain', ''], ['Allowed Emails', ''],
-    ['Analytics Password', '']
+    ['Analytics Password', ''], ['Personal Codes', 'no']
   ]);
   sh.getRange('A12').setValue('Tips: leave Active Event and dates blank to allow any event/day. The Passcode must match the app. ' +
     'Analytics Password lets the Analytics app read the data; give it only to the strategy team, never the scouts. ' +
@@ -426,6 +548,24 @@ function getConfigSheet_(ss) {
 
 function getDataSheet_(ss) { return ss.getSheetByName(DATA_SHEET) || ss.insertSheet(DATA_SHEET); }
 function getPitSheet_(ss) { return ss.getSheetByName(PIT_SHEET) || ss.insertSheet(PIT_SHEET); }
+function getPeopleSheet_(ss) {
+  var sh = ss.getSheetByName(PEOPLE_SHEET);
+  if (sh) return sh;
+  sh = ss.insertSheet(PEOPLE_SHEET);
+  sh.getRange(1, 1, 1, 5).setValues([['Name', 'Code', 'Role', 'Active', 'Last seen']]).setFontWeight('bold');
+  sh.getRange('G1').setValue('Type names (and a role: scout sends matches; lead sends and reads in Analytics; strategy reads only). Then Bobcat Scout menu -> Make personal codes. Active = no turns one person off. Keep this tab private: the codes are passwords.');
+  sh.setFrozenRows(1);
+  return sh;
+}
+// Adds a row to the Config tab if its label is not there yet (older Sheets), after the existing ones.
+function ensureConfigRow_(ss, label, value) {
+  var sh = getConfigSheet_(ss), last = Math.max(sh.getLastRow(), 1);
+  var col = sh.getRange(1, 1, last, 1).getValues();
+  for (var i = 0; i < col.length; i++) if (String(col[i][0]).trim().toLowerCase() === label.toLowerCase()) return;
+  var row = 11;                                  // the first free row below the settings (row 12 holds the tips)
+  while (row <= last && String(col[row - 1][0] || '').trim() !== '') row++;
+  sh.getRange(row, 1, 1, 2).setValues([[label, value]]);
+}
 function getSuperSheet_(ss) { return ss.getSheetByName(SUPER_SHEET) || ss.insertSheet(SUPER_SHEET); }
 
 function startOfDay_(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0); }

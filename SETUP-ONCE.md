@@ -84,10 +84,41 @@ Config tab) in as `passcode`. Then push.
 `Sheet1` (the empty default) is unused. Deleting it is optional and changes nothing.
 Keep `Pit`: the 🔧 PIT button writes one row per robot there.
 
+### Personal codes: everyone gets their own code (optional, off until you switch it on)
+
+Why: with one shared password, everyone has the same key, a leaked link can't be taken back without
+changing it for everybody, and a row's name is whatever the phone says. With personal codes each person has
+their own code, you can switch off one person, and the Sheet puts the code owner's real name on every row.
+**Nothing changes until you do step 6**, and you can turn it back off the same way.
+
+1. Update the script first (the steps in the next section: paste, **firstTimeSetup**, new version). That adds a
+   **People** tab and a **Personal Codes** row (set to `no`) in the Config tab. Reload the Sheet; a **Bobcat Scout**
+   menu appears at the top.
+2. Open the **People** tab. In column A (**Name**) type one name per row. In column C (**Role**) type
+   `scout` (sends matches, pit reports, photos and super-scout notes), `lead` (sends and also reads in Analytics)
+   or `strategy` (reads in Analytics only). Leave **Code** empty.
+3. Click **Bobcat Scout → Make personal codes for the People tab**. The first time, Google asks you to allow the
+   script: click through the same way as before. Each name gets a 6-character code (no 0, O, 1 or I). Active is
+   set to `yes`.
+4. Give each person **only their own code**, in private (a message to them, not the group chat). A scout can
+   type it when the app asks, or you can send them their own scouting link ending in `?key=THEIRCODE`.
+   **The Sheet must stay private to you: the People tab is full of passwords.**
+5. Decide about the **Analytics Password** in the Config tab. Leaving it means the strategy team can still read with it
+   (handy to keep for now). Blanking it means only `lead` and `strategy` people can read.
+6. In the **Config** tab, change **Personal Codes** from `no` to `yes`. From now on the shared **Passcode** is refused
+   for sending, and each person's own code is required.
+
+To switch one person off: in the People tab type `no` in their **Active** cell. Their code stops working at once
+(the Analytics **Ask** tab can take a few minutes to notice). To switch everything back: set **Personal Codes** to `no`.
+The **Last seen** column shows when each code was last used (updated at most every 5 minutes).
+What this does not do: it doesn't stop someone sharing their own code, or from reading a screen over a shoulder.
+It makes it easy to see who, and to cut one person off.
+
 ### Turning on pit photos and super-scout notes (once, after updating the script)
 
-The same update also adds a **Super** tab (running **firstTimeSetup** below creates it): the 👁 SUPER button
-writes one row per robot per match there. Nothing else to set up for it.
+The same update also adds a **Super** tab and a **People** tab (running **firstTimeSetup** below creates them):
+the 👁 SUPER button writes one row per robot per match to Super; People is for personal codes (section above).
+Nothing else to set up for either.
 
 Pit photos are saved in a private folder in **your** Google Drive called
 **Bobcat Scout pit photos**. Nobody else can open it; Analytics shows the photos only to

@@ -257,6 +257,111 @@ function match(over) {
   check('the scouts\' passcode cannot read them', !s.call({ action: 'read', passcode: PASS, eventKey: '2026ctwat' }).ok);
 }
 
+// ---- personal codes: each person's own code, off until the lead turns it on
+{
+  const people = (s, rows) => { const sh = s.sandbox.getPeopleSheet_(s.ss); rows.forEach((r) => sh.appendRow(r)); return sh; };
+  const SORDER2 = ['scoutName', 'eventKey', 'matchNumber', 'teamNumber', 'alliance', 'tags', 'driverRating', 'note'];
+  const sup = (code, over) => Object.assign({ passcode: code, _form: 'super', _order: SORDER2, _id: 'sup_p_' + Math.random(), scoutName: 'Spoofed Name', eventKey: '2026ctwat', matchNumber: 3, teamNumber: 254, tags: 'Fast cycles', driverRating: 4, note: '' }, over);
+
+  // off by default: nothing changes
+  {
+    const s = freshScript();
+    check('a new Sheet has the Personal Codes setting, set to no', s.sandbox.getConfig_().personal === false);
+    people(s, [['Ada', 'ABC234', 'scout', 'yes', '']]);
+    check('with it off, the shared passcode works and a personal code does not', s.call(match({})).ok && !s.call(match({ passcode: 'ABC234' })).ok);
+    check('with it off, whoami just checks the shared passcode', s.call({ action: 'whoami', passcode: PASS }).ok && s.call({ action: 'whoami', passcode: PASS }).personal === false && !s.call({ action: 'whoami', passcode: 'nope' }).ok);
+  }
+
+  // on: the people in the People tab, and only them
+  {
+    const s = freshScript();
+    people(s, [['Ada Scout', 'abc-234', 'scout', 'yes', ''], ['Bo Lead', 'LEAD77', 'lead', '', ''], ['Cy Strategy', 'STRAT9', 'Strategy', 'yes', ''], ['Di Gone', 'GONE22', 'scout', 'no', ''], ['Ed Odd', 'ODD123', 'wizard', 'yes', '']]);
+    s.setConfig('Personal Codes', 'yes');
+    const sendAs = (code, over) => s.call(match(Object.assign({ passcode: code, scoutName: 'Spoofed Name' }, over || {})));
+    const a = sendAs('ABC234', { teamNumber: 971 });
+    check('a personal code sends a match, whatever case or dashes it is typed with', a.ok, JSON.stringify(a));
+    check('the row carries the code owner\'s name, not the name the phone sent', s.sheets.Data.rows[1][s.sheets.Data.rows[0].indexOf('scoutName')] === 'Ada Scout', JSON.stringify(s.sheets.Data.rows[1]));
+    check('the shared passcode no longer works', /code not recognised/i.test(sendAs(PASS, { teamNumber: 972 }).error || ''));
+    check('no code at all', /code not recognised/i.test(sendAs('', { teamNumber: 973 }).error || ''));
+    check('a wrong code', /code not recognised/i.test(sendAs('ZZZZZZ', { teamNumber: 974 }).error || ''));
+    check('a lead (Active left blank) sends too', sendAs('lead77', { teamNumber: 975 }).ok);
+    check('a code that is turned off is refused, and says so', /turned off/i.test(sendAs('GONE22', { teamNumber: 976 }).error || ''));
+    check('a strategy code can read but not send', /read the data but not send/i.test(sendAs('STRAT9', { teamNumber: 977 }).error || ''));
+    check('a role that is not scout, lead or strategy gets no access and the error says why', /"wizard".*not scout, lead or strategy/i.test(sendAs('ODD123', { teamNumber: 978 }).error || ''));
+    // pit, photo, super: the name is forced there too
+    const sp = s.call(sup('ABC234'));
+    check('a super-scout note under a personal code is saved under the person\'s name', sp.ok && s.sheets.Super.rows[1][s.sheets.Super.rows[0].indexOf('scoutName')] === 'Ada Scout', JSON.stringify(sp));
+    const ph = s.call({ action: 'pitPhoto', passcode: 'ABC234', eventKey: '2026ctwat', teamNumber: 254, scoutName: 'Spoofed Name', mime: 'image/png', data: Buffer.from('png').toString('base64') });
+    check('a photo under a personal code works', ph.ok && ph.photos === 1, JSON.stringify(ph));
+    check('the pit row it started carries the real name', s.sheets.Pit.rows[1][s.sheets.Pit.rows[0].indexOf('scoutName')] === 'Ada Scout', JSON.stringify(s.sheets.Pit.rows[1]));
+    check('pitCheck follows the same gate', !s.call({ action: 'pitCheck', passcode: PASS, eventKey: '2026ctwat', teamNumber: 254 }).ok && s.call({ action: 'pitCheck', passcode: 'ABC234', eventKey: '2026ctwat', teamNumber: 254 }).ok);
+    // reading
+    check('a scout\'s code cannot read the data', /scouting only/i.test(s.call({ action: 'read', passcode: 'ABC234', eventKey: '2026ctwat' }).error || ''));
+    check('a strategy code can read', s.call({ action: 'read', passcode: 'STRAT9', eventKey: '2026ctwat' }).ok);
+    check('a lead\'s code can read', s.call({ action: 'read', passcode: 'LEAD77', eventKey: '2026ctwat' }).ok);
+    check('the Analytics Password still reads until it is blanked', s.call({ action: 'read', passcode: READ_PASS, eventKey: '2026ctwat' }).ok);
+    s.setConfig('Analytics Password', '');
+    check('blank the Analytics Password and only people can read', !s.call({ action: 'read', passcode: READ_PASS, eventKey: '2026ctwat' }).ok && s.call({ action: 'read', passcode: 'STRAT9', eventKey: '2026ctwat' }).ok);
+    check('the shared scouts\' passcode cannot read either', !s.call({ action: 'read', passcode: PASS, eventKey: '2026ctwat' }).ok);
+    check('a strategy code can read a photo, a scout code cannot', (() => { const id = ph.fileId; return s.call({ action: 'photo', passcode: 'STRAT9', fileId: id }).ok && !s.call({ action: 'photo', passcode: 'ABC234', fileId: id }).ok; })());
+    // whoami
+    const w = s.call({ action: 'whoami', passcode: 'abc 234' });
+    check('whoami says the name and role, and what the code may do', w.ok && w.personal === true && w.name === 'Ada Scout' && w.role === 'scout' && w.canSend === true && w.canRead === false, JSON.stringify(w));
+    check('whoami for a strategy person', (() => { const x = s.call({ action: 'whoami', passcode: 'STRAT9' }); return x.ok && x.canSend === false && x.canRead === true; })());
+    check('whoami refuses an unknown code', !s.call({ action: 'whoami', passcode: 'nope' }).ok);
+    // revoking one person leaves the others working
+    const sh = s.ss.getSheetByName('People'); sh.rows[1][3] = 'no';
+    check('turn one person off: their code stops, the others keep working', !sendAs('ABC234', { teamNumber: 979 }).ok && sendAs('LEAD77', { teamNumber: 980 }).ok);
+    // last seen
+    check('last seen is written (once per few minutes)', s.ss.getSheetByName('People').rows[2][4] instanceof Date || typeof s.ss.getSheetByName('People').rows[2][4] === 'object', JSON.stringify(s.ss.getSheetByName('People').rows[2]));
+    const stamp = s.ss.getSheetByName('People').rows[2][4]; s.call(sendAs.bind(null) ? { action: 'whoami', passcode: 'LEAD77' } : {});
+    check('and not rewritten on every request', s.ss.getSheetByName('People').rows[2][4] === stamp);
+  }
+
+  // switched on but nobody listed
+  {
+    const s = freshScript(); s.setConfig('Personal Codes', 'yes');
+    check('on, with nobody in the People tab: a clear error, nothing is accepted', /nobody in it/i.test(s.call(match({})).error || '') && !s.call(match({ passcode: PASS })).ok);
+  }
+
+  // event gate still applies, and Google login (if on) still applies on top
+  {
+    const s = freshScript(); s.setConfig('Personal Codes', 'yes'); s.setConfig('Active Event', '2026ctwat');
+    s.sandbox.getPeopleSheet_(s.ss).appendRow(['Ada', 'ABC234', 'scout', 'yes', '']);
+    check('the event gate still applies to a personal code', /not open for event/i.test(s.call(match({ passcode: 'ABC234', eventKey: '2026cthar' })).error || '') && s.call(match({ passcode: 'ABC234' })).ok);
+  }
+
+  // making codes
+  {
+    const s = freshScript();
+    const sh = s.sandbox.getPeopleSheet_(s.ss);
+    sh.appendRow(['Ada', '', '', '', '']); sh.appendRow(['Bo', 'KEEP22', 'lead', 'yes', '']); sh.appendRow(['', 'ORPHAN', '', '', '']); sh.appendRow(['Cy', '', 'strategy', '', '']);
+    const made = s.sandbox.makePersonalCodes();
+    const rows = s.ss.getSheetByName('People').rows;
+    check('codes are made for people who have none (2 of 3 names; a row with no name is ignored)', made === 2, made);
+    check('a code that was already there is kept, and blank role and active are filled in', rows[2][1] === 'KEEP22' && rows[1][2] === 'scout' && rows[1][3] === 'yes' && rows[4][2] === 'strategy' && rows[4][3] === 'yes', JSON.stringify(rows));
+    check('each made code is 6 characters from the readable alphabet (no 0 O 1 I)', [rows[1][1], rows[4][1]].every((c) => /^[A-HJ-NP-Z2-9]{6}$/.test(c)), [rows[1][1], rows[4][1]]);
+    check('they are different', rows[1][1] !== rows[4][1]);
+    check('a row with no name gets no role or active added', rows[3][2] === '' && rows[3][3] === '', JSON.stringify(rows[3]));
+    check('running it again changes nothing', s.sandbox.makePersonalCodes() === 0);
+    // a collision with an existing code is skipped over
+    const s2 = freshScript(); const sh2 = s2.sandbox.getPeopleSheet_(s2.ss); sh2.appendRow(['Taken', 'AAAAAA', 'scout', 'yes', '']); sh2.appendRow(['New', '', '', '', '']);
+    let calls = 0; const seq = [0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5];   // first try is AAAAAA (taken), second is not
+    s2.sandbox.makePersonalCodes(() => seq[calls++ % seq.length]);
+    check('a code someone already has is never handed out twice', s2.ss.getSheetByName('People').rows[2][1] !== 'AAAAAA' && /^[A-Z2-9]{6}$/.test(s2.ss.getSheetByName('People').rows[2][1]), JSON.stringify(s2.ss.getSheetByName('People').rows));
+  }
+
+  // an older Sheet gets the new Config row, once, without disturbing the others
+  {
+    const s = freshScript();
+    const cfg = s.ss.getSheetByName('Config');
+    const idx = cfg.rows.findIndex((r) => r && String(r[0]) === 'Personal Codes'); cfg.rows[idx] = ['', ''];   // an old Sheet: no such row
+    check('an old Sheet reads as personal codes off', s.sandbox.getConfig_().personal === false);
+    s.sandbox.ensureConfigRow_(s.ss, 'Personal Codes', 'no'); s.sandbox.ensureConfigRow_(s.ss, 'Personal Codes', 'no');
+    check('the row is added once, and the passcode row is untouched', cfg.rows.filter((r) => r && String(r[0]) === 'Personal Codes').length === 1 && cfg.rows.some((r) => r && r[0] === 'Passcode' && r[1] === PASS), JSON.stringify(cfg.rows.slice(0, 14)));
+  }
+}
+
 // ---------------------------------------------------------------- report
 if (failures.length) {
   console.log(`\n${pass} passed, ${failures.length} FAILED\n`);
