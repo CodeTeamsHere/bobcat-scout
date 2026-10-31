@@ -84,7 +84,10 @@ Config tab) in as `passcode`. Then push.
 `Sheet1` (the empty default) is unused. Deleting it is optional and changes nothing.
 Keep `Pit`: the 🔧 PIT button writes one row per robot there.
 
-### Turning on pit photos (once, after updating the script)
+### Turning on pit photos and super-scout notes (once, after updating the script)
+
+The same update also adds a **Super** tab (running **firstTimeSetup** below creates it): the 👁 SUPER button
+writes one row per robot per match there. Nothing else to set up for it.
 
 Pit photos are saved in a private folder in **your** Google Drive called
 **Bobcat Scout pit photos**. Nobody else can open it; Analytics shows the photos only to

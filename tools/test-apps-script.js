@@ -228,6 +228,35 @@ function match(over) {
   check('and the second photo uses the same folder', r2.ok && Object.keys(s.drive.folders).length === 1, JSON.stringify(s.drive.folders));
 }
 
+// ---- super-scout notes: one row per robot per match per super-scout, in their own tab
+{
+  const s = freshScript();
+  const SORDER = ['scoutName', 'eventKey', 'matchNumber', 'teamNumber', 'alliance', 'tags', 'driverRating', 'note'];
+  // the app gives every note an id of its own (event, match, robot, scout), like this
+  const sup = (over) => { const o = Object.assign({ passcode: PASS, _form: 'super', _order: SORDER, scoutName: 'Sam', eventKey: '2026ctwat', matchNumber: 7, teamNumber: 254, alliance: 'red', tags: 'Plays defense, Fast cycles', driverRating: 4, note: 'strong' }, over); if (!over || !over._id) o._id = ['sup', o.eventKey, o.matchNumber, o.teamNumber, o.scoutName].join('_'); return o; };
+  const a = s.call(sup({}));
+  check('a super-scout note is saved in its own Super tab', a.ok && a.action === 'added' && a.form === 'super' && !!s.sheets.Super && !s.sheets.Data, JSON.stringify(a));
+  const header = s.sheets.Super.rows[0], row = s.sheets.Super.rows[1];
+  check('the columns are who, event, match, team, tags, rating, note', ['scoutName', 'eventKey', 'matchNumber', 'teamNumber', 'tags', 'driverRating', 'note'].every((k) => header.indexOf(k) >= 0), JSON.stringify(header));
+  check('the tags and note are kept as sent', row[header.indexOf('tags')] === 'Plays defense, Fast cycles' && row[header.indexOf('note')] === 'strong', JSON.stringify(row));
+  const again = s.call(sup({ note: 'changed my mind', driverRating: 5 }));
+  check('the same super-scout, match and robot again updates the row (no duplicate)', again.action === 'updated' && s.sheets.Super.rows.length === 2, JSON.stringify(again));
+  const other = s.call(sup({ scoutName: 'Dee' }));
+  check('a second super-scout on the same robot gets their own row', other.action === 'added' && s.sheets.Super.rows.length === 3, JSON.stringify(other));
+  const other2 = s.call(sup({ teamNumber: 118 }));
+  check('and another robot in the same match too', other2.action === 'added' && s.sheets.Super.rows.length === 4, JSON.stringify(other2));
+  check('the wrong passcode is turned away', /wrong passcode/i.test(s.call(sup({ passcode: 'nope' })).error || ''));
+  check('a match number out of range is refused', !s.call(sup({ matchNumber: 999 })).ok);
+  check('a driver rating of 9 is refused', /1 to 5/.test(s.call(sup({ driverRating: 9 })).error || ''));
+  check('no rating at all is fine (tags only)', s.call(sup({ teamNumber: 971, driverRating: '' })).ok);
+  check('a missing team is refused', /teamNumber/.test(s.call(sup({ teamNumber: '' })).error || ''));
+  check('a note that is far too long is refused', /too long/.test(s.call(sup({ teamNumber: 33, note: 'x'.repeat(500) })).error || ''));
+  check('super rows follow the Active Event gate', (() => { s.setConfig('Active Event', '2026ctwat'); const r = s.call(sup({ eventKey: '2026cthar', teamNumber: 55 })); return !r.ok && /not open for event/i.test(r.error); })());
+  const rd = s.call({ action: 'read', passcode: READ_PASS, eventKey: '2026ctwat' });
+  check('the Analytics Password reads the super rows back, with the data and pit rows', rd.ok && Array.isArray(rd.sup) && rd.sup.length === 4 && rd.sup[0].tags === 'Plays defense, Fast cycles' && Array.isArray(rd.data) && Array.isArray(rd.pit), JSON.stringify(rd).slice(0, 200));
+  check('the scouts\' passcode cannot read them', !s.call({ action: 'read', passcode: PASS, eventKey: '2026ctwat' }).ok);
+}
+
 // ---------------------------------------------------------------- report
 if (failures.length) {
   console.log(`\n${pass} passed, ${failures.length} FAILED\n`);

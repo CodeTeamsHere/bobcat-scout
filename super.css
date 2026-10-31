@@ -1,0 +1,34 @@
+/* Super-scout (super.js): a full-screen overlay like pit scouting. */
+body.sup-lock { overflow: hidden; }
+.sup-overlay { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(31, 20, 23, .72); padding: 14px; overflow-y: auto; }
+.sup-overlay.sup-open { display: block; }
+.sup-card { max-width: 680px; margin: 0 auto; background: var(--cream); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.4); overflow: hidden; }
+.sup-top { display: flex; align-items: center; justify-content: space-between; background: var(--maroon); color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 2; }
+.sup-title { font-weight: 800; letter-spacing: .12em; font-size: 13px; color: var(--gold-bright); }
+.sup-close { background: transparent; border: 0; color: #fff; font-size: 28px; line-height: 1; padding: 0 6px; }
+.sup-body { padding: 16px; }
+.sup-lead { font-size: 15px; margin-bottom: 12px; }
+.sup-sub { font-size: 12px; color: var(--gray); margin: 6px 0; }
+.sup-note { background: var(--gold-soft); border-left: 4px solid var(--gold); padding: 10px 12px; border-radius: 0 6px 6px 0; font-size: 13px; margin: 10px 0; }
+.sup-warn { background: var(--error-bg); border-left-color: var(--error); }
+.sup-good { background: var(--success-bg); border-left-color: var(--success); }
+.sup-start { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 12px 0; }
+.sup-start label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; flex: 1 1 160px; }
+.sup-start input { padding: 10px; border: 1px solid #cfc6b4; border-radius: 6px; font-size: 16px; }
+.sup-btn { border: 1px solid var(--maroon); background: #fff; color: var(--maroon); font-weight: 800; letter-spacing: .05em; font-size: 12px; padding: 10px 14px; border-radius: 6px; min-height: 42px; }
+.sup-primary { background: var(--maroon); color: #fff; }
+.sup-bot { background: #fff; border: 1px solid var(--border); border-left: 6px solid #bbb; border-radius: 8px; padding: 10px 12px; margin: 12px 0; }
+.sup-red { border-left-color: #b3261e; } .sup-blue { border-left-color: #2b5da8; }
+.sup-bot-h { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.sup-ally { font-size: 11px; font-weight: 800; letter-spacing: .08em; color: var(--gray); }
+.sup-team { width: 110px; font-size: 20px; font-weight: 800; padding: 6px 8px; border: 1px solid #cfc6b4; border-radius: 6px; color: var(--maroon-dark); }
+.sup-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+.sup-gt { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--gray); min-width: 64px; }
+.sup-chip { padding: 8px 12px; border: 1px solid #cfc6b4; background: #fff; border-radius: 18px; font-size: 13px; min-height: 40px; }
+.sup-chip.on { background: var(--maroon); border-color: var(--maroon); color: #fff; font-weight: 700; }
+.sup-rate { display: flex; gap: 6px; align-items: center; margin: 8px 0; }
+.sup-star { width: 44px; height: 44px; border: 1px solid #cfc6b4; background: #fff; border-radius: 8px; font-size: 18px; font-weight: 800; }
+.sup-star.on { background: var(--gold); border-color: var(--gold); color: #1f1f1f; }
+.sup-notebox { width: 100%; padding: 10px; border: 1px solid #cfc6b4; border-radius: 6px; font-size: 16px; font-family: inherit; }
+.sup-actions { display: flex; gap: 10px; margin: 16px 0 6px; position: sticky; bottom: 0; background: var(--cream); padding: 8px 0; }
+@media (max-width: 520px) { .sup-overlay { padding: 0; } .sup-card { border-radius: 0; min-height: 100%; } }

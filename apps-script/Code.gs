@@ -7,6 +7,7 @@
      • Config    — settings the team lead controls (passcode, event/date gate, login)
      • Data      — one row per MATCH report (quantitative match scouting)
      • Pit       — one row per TEAM (qualitative pit scouting: robot capabilities)
+     • Super     — one row per robot per match per super-scout (tags, driver rating, a note)
 
    It does no analysis itself: the Bobcat Scout Analytics app does that, reading the
    Data tab (below). Sheets set up before 2026-10 may still have an "Analytics" tab
@@ -28,7 +29,7 @@
    ----- ONE-TIME SETUP -----------------------------------------------------
    1. sheets.google.com → new blank spreadsheet.
    2. Extensions → Apps Script. Delete the sample, paste THIS FILE, save (💾).
-   3. Run `firstTimeSetup` once (authorize when asked). Creates Config/Data/Pit.
+   3. Run `firstTimeSetup` once (authorize when asked). Creates Config/Data/Pit/Super.
    4. Config tab → set Passcode (+ optional Active Event / dates / Google login),
       and an Analytics Password for the strategy team's Analytics app.
    5. Deploy → New deployment → Web app → Execute as: Me, Access: Anyone → copy /exec URL.
@@ -44,6 +45,7 @@
 
 var DATA_SHEET = 'Data';
 var PIT_SHEET = 'Pit';
+var SUPER_SHEET = 'Super';                      // super-scout notes: one row per robot per match per super-scout
 var CONFIG_SHEET = 'Config';
 var META_COLS = ['_id', '_submittedAt', '_scoutEmail'];   // appended after the scouting fields
 
@@ -67,6 +69,7 @@ function firstTimeSetup() {
   getConfigSheet_(ss);
   getDataSheet_(ss);
   getPitSheet_(ss);
+  getSuperSheet_(ss);
   SpreadsheetApp.flush();
 }
 
@@ -82,7 +85,7 @@ function handle_(e) {
     var action = String(data.action || '');
     if (action === 'read') {  // the Analytics app reading the data back
       checkReadGate_(data, cfg);
-      return respond_({ ok: true, data: readRows_(DATA_SHEET, data.eventKey), pit: readRows_(PIT_SHEET, data.eventKey) }, cb);
+      return respond_({ ok: true, data: readRows_(DATA_SHEET, data.eventKey), pit: readRows_(PIT_SHEET, data.eventKey), sup: readRows_(SUPER_SHEET, data.eventKey) }, cb);
     }
     if (action === 'photo') {  // the Analytics app reading one pit photo (Analytics Password only)
       checkReadGate_(data, cfg);
@@ -102,6 +105,11 @@ function handle_(e) {
       checkPit_(data);
       var rp = upsertRow_(data, PIT_SHEET, ['eventKey', 'teamNumber']);   // one pit row per team/event
       return respond_({ ok: true, action: rp.action, row: rp.row, form: 'pit' }, cb);
+    }
+    if (String(data._form) === 'super') {
+      checkSuper_(data);
+      var rs = upsertRow_(data, SUPER_SHEET, ['eventKey', 'matchNumber', 'teamNumber', 'scoutName']);   // one note per robot per match per super-scout
+      return respond_({ ok: true, action: rs.action, row: rs.row, form: 'super' }, cb);
     }
     checkData_(data);
     var res = upsertRow_(data, DATA_SHEET, ['eventKey', 'matchType', 'matchNumber', 'teamNumber', 'scoutName']);
@@ -222,6 +230,18 @@ function checkPit_(d) {
   if (isNaN(n) || n < 1 || n > 99999) throw new Error('Bad team number: ' + d.teamNumber);
 }
 
+function checkSuper_(d) {
+  requireFields_(d, ['scoutName', 'eventKey', 'matchNumber', 'teamNumber']);
+  var m = Number(d.matchNumber), t = Number(d.teamNumber);
+  if (isNaN(m) || m < 1 || m > 200) throw new Error('Bad match number: ' + d.matchNumber);
+  if (isNaN(t) || t < 1 || t > 99999) throw new Error('Bad team number: ' + d.teamNumber);
+  if (d.driverRating !== undefined && d.driverRating !== null && d.driverRating !== '') {
+    var r = Number(d.driverRating);
+    if (isNaN(r) || r < 1 || r > 5) throw new Error('Driver rating must be 1 to 5');
+  }
+  ['tags', 'note'].forEach(function (k) { if (String(d[k] === undefined || d[k] === null ? '' : d[k]).length > 400) throw new Error(k + ' is too long'); });
+}
+
 function requireFields_(d, list) {
   list.forEach(function (k) {
     if (d[k] === undefined || d[k] === null || String(d[k]).trim() === '') throw new Error('Missing required field: ' + k);
@@ -230,7 +250,7 @@ function requireFields_(d, list) {
 
 function upsertRow_(d, sheetName, keyCols) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = sheetName === PIT_SHEET ? getPitSheet_(ss) : getDataSheet_(ss);
+  var sh = sheetName === PIT_SHEET ? getPitSheet_(ss) : (sheetName === SUPER_SHEET ? getSuperSheet_(ss) : getDataSheet_(ss));
   var lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -406,6 +426,7 @@ function getConfigSheet_(ss) {
 
 function getDataSheet_(ss) { return ss.getSheetByName(DATA_SHEET) || ss.insertSheet(DATA_SHEET); }
 function getPitSheet_(ss) { return ss.getSheetByName(PIT_SHEET) || ss.insertSheet(PIT_SHEET); }
+function getSuperSheet_(ss) { return ss.getSheetByName(SUPER_SHEET) || ss.insertSheet(SUPER_SHEET); }
 
 function startOfDay_(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0); }
 function endOfDay_(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59); }
