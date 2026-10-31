@@ -1,0 +1,9 @@
+/* The shift strip (assign.js): one line under the header saying what to scout next. */
+.assign-strip { display: flex; align-items: center; gap: 10px; margin: 8px 0; padding: 10px 12px; border-radius: 8px; background: var(--gold-soft); border: 1px solid var(--gold); font-size: 15px; font-weight: 600; }
+.assign-strip.hidden { display: none; }
+.assign-now { background: var(--success-bg); border-color: var(--success); }
+.assign-break { background: #eef3f9; border-color: #9db4d1; }
+.assign-done { background: #f3f1ee; border-color: #cfc6b4; color: var(--gray); }
+.assign-ico { font-size: 20px; }
+.assign-txt { flex: 1; min-width: 0; }
+.assign-all { border: 1px solid #cfc6b4; background: #fff; border-radius: 6px; min-width: 40px; min-height: 40px; font-size: 18px; }

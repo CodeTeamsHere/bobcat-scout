@@ -39,6 +39,7 @@ function makeRange(sheet, r, c, nr, nc) {
       return range;
     },
     setValue(v) { return range.setValues([[v]]); },
+    clearContent() { for (let i = 0; i < nr; i++) { const row = sheet.rows[r - 1 + i]; if (row) for (let j = 0; j < nc; j++) row[c - 1 + j] = ''; } return range; },
     setFormula(f) { return range.setValues([[f]]); },
     setFontWeight() { return range; },
     setBackground() { return range; },
@@ -87,6 +88,9 @@ function makeDrive() {
   const d = { folders: {}, files: {}, n: 0 };
   const fileObj = (f) => ({
     getId: () => f.id,
+    getName: () => f.name,
+    getDateCreated: () => new Date(f.created || 0),
+    setTrashed(v) { f.trashed = !!v; },
     getParents() { let done = false; return { hasNext: () => !done, next: () => { done = true; return { getId: () => f.parent }; } }; },
     getBlob: () => ({ getContentType: () => f.mime, getBytes: () => f.bytes }),
   });
@@ -98,6 +102,11 @@ function makeDrive() {
       d.files[id] = f; fo.files.push(id);
       return fileObj(f);
     },
+    getFiles() {   // the folder's files that are not in the trash
+      const list = fo.files.map((i) => d.files[i]).filter((f) => !f.trashed);
+      let i = 0;
+      return { hasNext: () => i < list.length, next: () => fileObj(list[i++]) };
+    },
     getFilesByName(name) {
       const list = fo.files.map((i) => d.files[i]).filter((f) => f.name === name);
       let i = 0;
@@ -107,7 +116,12 @@ function makeDrive() {
   d.api = {
     createFolder(name) { const id = 'folder' + (++d.n) + 'abcdefghij'; d.folders[id] = { id, name, files: [] }; return folderObj(d.folders[id]); },
     getFolderById(id) { if (!d.folders[id]) throw new Error('no folder'); return folderObj(d.folders[id]); },
-    getFileById(id) { if (!d.files[id]) throw new Error('no file'); return fileObj(d.files[id]); },
+    getFileById(id) {
+      if (id === 'the-spreadsheet') {   // the Sheet itself: it can be copied into a folder
+        return { makeCopy(name, folder) { const f = { id: 'copy' + (++d.n) + 'abcdefghijkl', name, bytes: [], mime: 'application/vnd.google-apps.spreadsheet', parent: folder.getId(), created: (d.clock = (d.clock || 1000) + 1000) }; d.files[f.id] = f; d.folders[folder.getId()].files.push(f.id); return fileObj(f); } };
+      }
+      if (!d.files[id]) throw new Error('no file'); return fileObj(d.files[id]);
+    },
   };
   // a private file elsewhere in the owner's Drive, which a photo request must never reach
   d.files.privateDocument12345 = { id: 'privateDocument12345', name: 'budget.xlsx', bytes: [1, 2, 3], mime: 'application/vnd.ms-excel', parent: 'someOtherFolder' };
@@ -120,7 +134,9 @@ function freshScript() {
   const sheets = {};
   const props = {};
   const cache = {};
+  const triggers = [];
   const ss = {
+    getId: () => 'the-spreadsheet',
     getSheetByName: (n) => sheets[n] || null,
     insertSheet: (n) => (sheets[n] = makeSheet(n)),
   };
@@ -137,6 +153,11 @@ function freshScript() {
     },
     UrlFetchApp: { fetch() { throw new Error('the tests never reach Google'); } },
     DriveApp: fakeDrive.api,
+    ScriptApp: {
+      newTrigger: (fn) => ({ timeBased() { return { everyHours() { return { create() { triggers.push({ fn }); } }; } }; } }),
+      getProjectTriggers: () => triggers.map((t) => ({ getHandlerFunction: () => t.fn, _t: t })),
+      deleteTrigger: (t) => { const i = triggers.indexOf(t._t); if (i >= 0) triggers.splice(i, 1); },
+    },
     CacheService: { getScriptCache: () => ({ get: (k) => (cache[k] === undefined ? null : cache[k]), put: (k, v) => { cache[k] = String(v); }, remove: (k) => { delete cache[k]; } }) },
     Utilities: {
       getUuid: () => require('crypto').randomUUID(),
@@ -164,7 +185,7 @@ function freshScript() {
     if (!m) throw new Error('not a JSONP answer: ' + out.text.slice(0, 80));
     return JSON.parse(m[1]);
   }
-  return { call, sheets, setConfig, drive: fakeDrive, props, cache, sandbox, ss, handle: (e) => sandbox.handle_(e) };
+  return { call, sheets, setConfig, drive: fakeDrive, props, cache, sandbox, ss, triggers, handle: (e) => sandbox.handle_(e) };
 }
 
 module.exports = { freshScript, PASS, READ_PASS };

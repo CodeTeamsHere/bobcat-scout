@@ -362,6 +362,85 @@ function match(over) {
   }
 }
 
+// ---- the rotation reaches the scouts' phones
+{
+  const blocks = [
+    { from: 1, to: 4, stations: { R1: 'Ada', R2: 'Bo', R3: 'Cy', B1: 'Di', B2: 'Ed', B3: 'Fay' }, off: ['Gus'] },
+    { from: 5, to: 8, stations: { R1: 'Gus', R2: 'Ada', R3: 'Bo', B1: 'Cy', B2: 'Di', B3: 'Ed' }, off: ['Fay'] }
+  ];
+  const save = (s, over) => s.call(Object.assign({ action: 'assignSave', passcode: READ_PASS, eventKey: '2026CTWAT', blocks }, over || {}));
+  // without personal codes: the Analytics Password publishes
+  {
+    const s = freshScript();
+    const r = save(s);
+    check('the Analytics Password publishes a rotation (14 stations and breaks)', r.ok && r.saved === 14 && r.shifts === 2, JSON.stringify(r));
+    check('the scouts\' passcode cannot publish', /wrong analytics password/i.test(save(s, { passcode: PASS }).error || ''));
+    check('a scout asks for their own shifts and gets them in match order', JSON.stringify(s.call({ action: 'assignMine', passcode: PASS, eventKey: '2026ctwat', scoutName: ' ada ' }).shifts) === JSON.stringify([{ from: 1, to: 4, station: 'R1' }, { from: 5, to: 8, station: 'R2' }]));
+    check('a break shows up as a BREAK shift', JSON.stringify(s.call({ action: 'assignMine', passcode: PASS, eventKey: '2026ctwat', scoutName: 'Gus' }).shifts) === JSON.stringify([{ from: 1, to: 4, station: 'BREAK' }, { from: 5, to: 8, station: 'R1' }]));
+    check('someone not in the rotation has no shifts', s.call({ action: 'assignMine', passcode: PASS, eventKey: '2026ctwat', scoutName: 'Zed' }).shifts.length === 0);
+    check('asking needs the scouts\' passcode', !s.call({ action: 'assignMine', passcode: 'nope', eventKey: '2026ctwat', scoutName: 'Ada' }).ok);
+    // publishing again replaces that event only
+    s.call(Object.assign({ action: 'assignSave', passcode: READ_PASS, eventKey: '2026cthar', blocks: [{ from: 1, to: 3, stations: { R1: 'Ada' }, off: [] }] }));
+    const r2 = save(s, { blocks: [{ from: 1, to: 2, stations: { R1: 'Zed' }, off: [] }] });
+    check('publishing again replaces that event\'s rotation', r2.ok && s.call({ action: 'assignMine', passcode: PASS, eventKey: '2026ctwat', scoutName: 'Ada' }).shifts.length === 0 && s.call({ action: 'assignMine', passcode: PASS, eventKey: '2026ctwat', scoutName: 'Zed' }).shifts.length === 1);
+    check('...and another event\'s rotation is left alone', s.call({ action: 'assignMine', passcode: PASS, eventKey: '2026cthar', scoutName: 'Ada' }).shifts.length === 1);
+    check('a bad station is refused', /unknown station/i.test(save(s, { blocks: [{ from: 1, to: 2, stations: { X9: 'Ada' } }] }).error || ''));
+    check('bad match numbers are refused', /bad match numbers/i.test(save(s, { blocks: [{ from: 5, to: 2, stations: { R1: 'Ada' } }] }).error || '') && /bad match numbers/i.test(save(s, { blocks: [{ from: 1, to: 999, stations: { R1: 'Ada' } }] }).error || ''));
+    check('an empty rotation is refused', !save(s, { blocks: [] }).ok && /nobody/i.test(save(s, { blocks: [{ from: 1, to: 2, stations: { R1: '  ' }, off: [] }] }).error || ''));
+    check('the Assignments tab is made on first use with a header', s.sheets.Assignments.rows[0].join() === 'eventKey,fromMatch,toMatch,station,scoutName,savedBy,savedAt');
+    check('who published it is recorded', s.sheets.Assignments.rows[1][5] === 'Analytics');
+  }
+  // with personal codes: only a lead publishes, and a scout gets the shifts for their own name
+  {
+    const s = freshScript();
+    const sh = s.sandbox.getPeopleSheet_(s.ss);
+    sh.appendRow(['Ada', 'ADA234', 'scout', 'yes', '']); sh.appendRow(['Bo Lead', 'BOLEAD', 'lead', 'yes', '']); sh.appendRow(['Cy', 'CYSTRT', 'strategy', 'yes', '']);
+    s.setConfig('Personal Codes', 'yes');
+    check('a lead publishes', save(s, { passcode: 'BOLEAD' }).ok && s.sheets.Assignments.rows[1][5] === 'Bo Lead');
+    check('a scout cannot', /only a lead/i.test(save(s, { passcode: 'ADA234' }).error || ''));
+    check('a strategy person cannot', /only a lead/i.test(save(s, { passcode: 'CYSTRT' }).error || ''));
+    check('the shared Analytics Password cannot, even though it can read', /code not recognised/i.test(save(s, { passcode: READ_PASS }).error || ''));
+    check('the scout asks by code: the shifts are for the name on the code, whatever name the phone sends', JSON.stringify(s.call({ action: 'assignMine', passcode: 'ada234', eventKey: '2026ctwat', scoutName: 'Spoofed' }).shifts.map((x) => x.station)) === JSON.stringify(['R1', 'R2']));
+  }
+}
+
+// ---- phone health
+{
+  const s = freshScript();
+  const ping = (over) => s.call(Object.assign({ action: 'ping', passcode: PASS, eventKey: '2026ctwat', scoutName: 'Ada', appVersion: 'bobcat-scout-v28', waiting: 3, waitingPit: 1, lastMatch: 12, online: true }, over || {}));
+  check('a ping is saved', ping().ok && s.sheets.Phones.rows.length === 2, JSON.stringify(s.sheets.Phones && s.sheets.Phones.rows));
+  const header = s.sheets.Phones.rows[0], row = s.sheets.Phones.rows[1];
+  check('it carries the version and what is waiting', row[header.indexOf('appVersion')] === 'bobcat-scout-v28' && row[header.indexOf('waiting')] === 3 && row[header.indexOf('waitingPit')] === 1 && row[header.indexOf('lastMatch')] === 12, JSON.stringify(row));
+  check('the same scout pings again: the row is updated, not added', ping({ waiting: 0 }).action === 'updated' && s.sheets.Phones.rows.length === 2 && s.sheets.Phones.rows[1][header.indexOf('waiting')] === 0);
+  check('another scout gets their own row', ping({ scoutName: 'Bo' }).ok && s.sheets.Phones.rows.length === 3);
+  check('a ping with the wrong passcode is refused', !ping({ passcode: 'nope' }).ok);
+  check('nonsense numbers are cleaned', (() => { ping({ scoutName: 'Cy', waiting: -5, waitingPit: 'lots', lastMatch: 1e9 }); const r = s.sheets.Phones.rows[3]; return r[header.indexOf('waiting')] === 0 && r[header.indexOf('waitingPit')] === 0 && r[header.indexOf('lastMatch')] === 9999; })());
+  check('offline is recorded as no', (() => { ping({ scoutName: 'Di', online: false }); return s.sheets.Phones.rows[4][header.indexOf('online')] === 'no'; })());
+  const rd = s.call({ action: 'read', passcode: READ_PASS, eventKey: '2026ctwat' });
+  check('the Analytics read returns the phones', rd.ok && Array.isArray(rd.phones) && rd.phones.length === 4 && rd.phones.some((p) => p.scoutName === 'Ada' && p.appVersion === 'bobcat-scout-v28'), JSON.stringify(rd).slice(0, 200));
+  check('the scouts\' passcode still cannot read', !s.call({ action: 'read', passcode: PASS, eventKey: '2026ctwat' }).ok);
+}
+
+// ---- backups
+{
+  const s = freshScript();
+  const items = (n) => Array.from({ length: n }, (_, i) => ({ name: 'b' + i, created: i * 10, ref: 'r' + i }));
+  check('the oldest backups are the ones to trash (keep 3 of 5)', JSON.stringify(s.sandbox.backupsToTrash_(items(5), 3)) === JSON.stringify(['r1', 'r0']));
+  check('nothing to trash while under the limit', s.sandbox.backupsToTrash_(items(3), 24).length === 0);
+  const n1 = s.sandbox.backupNow();
+  check('a backup is a copy of the Sheet in its own folder, named by date', n1 === 1 && Object.values(s.drive.folders).some((f) => f.name === 'Bobcat Scout backups') && Object.values(s.drive.files).some((f) => /^Bobcat Scouting backup \d{4}-\d{2}-\d{2} \d{2}-\d{2}$/.test(f.name)), JSON.stringify(s.drive.files));
+  check('the folder is remembered, so the next backup uses it', (() => { s.sandbox.backupNow(); return Object.values(s.drive.folders).filter((f) => f.name === 'Bobcat Scout backups').length === 1 && s.props.BACKUP_FOLDER; })());
+  for (let i = 0; i < 30; i++) s.sandbox.backupNow();
+  const live = Object.values(s.drive.files).filter((f) => /^Bobcat Scouting backup/.test(f.name) && !f.trashed);
+  check('only the newest 24 are kept; older ones go to the Drive trash, not deleted', live.length === 24 && Object.values(s.drive.files).filter((f) => f.trashed).length === 32 - 24, [live.length, Object.values(s.drive.files).filter((f) => f.trashed).length]);
+  check('the newest ones survive', (() => { const names = live.map((f) => f.created); return Math.min(...names) > Math.max(...Object.values(s.drive.files).filter((f) => f.trashed).map((f) => f.created)); })());
+  check('files in the folder that are not backups are never touched', (() => { const folder = s.drive.api.getFolderById(s.props.BACKUP_FOLDER); folder.createFile({ name: 'notes.txt', bytes: [1], mime: 'text/plain' }); for (let i = 0; i < 30; i++) s.sandbox.backupNow(); return Object.values(s.drive.files).find((f) => f.name === 'notes.txt').trashed !== true; })());
+  s.sandbox.startBackups(); s.sandbox.startBackups();
+  check('hourly backups: one trigger, however many times it is switched on', s.triggers.length === 1 && s.triggers[0].fn === 'backupNow');
+  s.sandbox.stopBackups();
+  check('and switched off', s.triggers.length === 0);
+}
+
 // ---------------------------------------------------------------- report
 if (failures.length) {
   console.log(`\n${pass} passed, ${failures.length} FAILED\n`);

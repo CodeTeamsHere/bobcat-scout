@@ -84,6 +84,25 @@ Config tab) in as `passcode`. Then push.
 `Sheet1` (the empty default) is unused. Deleting it is optional and changes nothing.
 Keep `Pit`: the 🔧 PIT button writes one row per robot there.
 
+### Back up the Sheet (do this: it takes one minute)
+
+The Sheet is the team's only copy of its scouting. After the script update (next sections), reload the Sheet and use the
+**Bobcat Scout** menu at the top: **Back up this Sheet now**, and **Turn on hourly backups**. The first time Google asks you to
+allow the script (click through like before). Copies go into a Drive folder called **Bobcat Scout backups**; the newest 24
+are kept and older ones go to your Drive trash. To get data back after a mistake: open the newest copy in that folder.
+The backups hold the People tab too, so keep that folder private.
+
+### Send the scout rotation to every phone, and see stuck phones
+
+In Analytics, **Lead** tab, **Rotation and breaks**: type the scouts' names, build the rotation, then **SEND TO SCOUTS' PHONES**.
+Each scout then sees a green strip under the header: "Scout Red 1 (team 177) in Q9, through Q12", or "You are on a break".
+It updates about every 5 minutes while the scouting app is open, and it still shows with no signal. The names must match the
+names on the scouts' phones (with personal codes: the names in the People tab). Who can send it: with personal codes on, a
+person whose Role is **lead**; with them off, anyone who has the Analytics Password.
+The same screen shows **Scouts' phones**: each phone tells the Sheet every 5 minutes that it is alive, which app version it
+runs, and how many matches or pit reports are waiting to send (never scouting data). The lead gets a warning when data is stuck on a
+phone or a phone runs an older app.
+
 ### Personal codes: everyone gets their own code (optional, off until you switch it on)
 
 Why: with one shared password, everyone has the same key, a leaked link can't be taken back without

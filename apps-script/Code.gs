@@ -16,6 +16,10 @@
    It enforces: passcode • event gate • date gate • validation • dedupe • stamping,
    plus optional Google-login lockdown with an email/domain allow-list.
 
+   Also: an Assignments tab (the scout rotation a lead publishes from Analytics; each phone asks for its own
+   shifts), a Phones tab (each phone's app version and what is waiting to send), and a Bobcat Scout menu to back
+   the whole Sheet up to Drive (now, or hourly).
+
    Personal codes (optional): set Config "Personal Codes" to yes and every person uses their own code from the
    People tab (Name | Code | Role | Active | Last seen) instead of the shared Passcode. Roles: scout sends,
    lead sends and reads, strategy reads. The Sheet writes the code owner's name on every row, and Active = no
@@ -58,7 +62,12 @@ var ROLES = {                                   // what each role may do (only u
   lead: { send: true, read: true },             // sends, and reads in Analytics
   strategy: { send: false, read: true }         // reads in Analytics only
 };
-var CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no 0/O or 1/I: a code is read aloud and typed on a phone
+var ASSIGN_SHEET = 'Assignments';               // who scouts which station in which matches: Event | From | To | Station | Scout | Saved by | Saved at
+var PHONES_SHEET = 'Phones';                    // one row per scout's phone: app version, waiting to send, last heard from
+var STATIONS = ['R1', 'R2', 'R3', 'B1', 'B2', 'B3'];
+var BACKUP_FOLDER_NAME = 'Bobcat Scout backups';
+var BACKUP_KEEP = 24;                           // how many backup copies to keep (the oldest are put in the Drive trash)
+var CODE_ALPHABET ='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no 0/O or 1/I: a code is read aloud and typed on a phone
 var CODE_LENGTH = 6;                                       // 31^6 = 887 million codes
 var META_COLS = ['_id', '_submittedAt', '_scoutEmail'];   // appended after the scouting fields
 
@@ -84,6 +93,8 @@ function firstTimeSetup() {
   getPitSheet_(ss);
   getSuperSheet_(ss);
   getPeopleSheet_(ss);
+  getAssignSheet_(ss);
+  getPhonesSheet_(ss);
   ensureConfigRow_(ss, 'Personal Codes', 'no');
   SpreadsheetApp.flush();
 }
@@ -91,7 +102,13 @@ function firstTimeSetup() {
 // A menu in the Sheet: "Bobcat Scout" -> "Make personal codes". (Runs by itself when the Sheet opens.)
 function onOpen() {
   try {
-    SpreadsheetApp.getUi().createMenu('Bobcat Scout').addItem('Make personal codes for the People tab', 'makePersonalCodes').addToUi();
+    SpreadsheetApp.getUi().createMenu('Bobcat Scout')
+      .addItem('Make personal codes for the People tab', 'makePersonalCodes')
+      .addSeparator()
+      .addItem('Back up this Sheet now', 'backupNow')
+      .addItem('Turn on hourly backups', 'startBackups')
+      .addItem('Turn off hourly backups', 'stopBackups')
+      .addToUi();
   } catch (e) { /* no menu in this context */ }
 }
 
@@ -108,9 +125,22 @@ function handle_(e) {
     if (action === 'whoami') {  // a phone asking who its code belongs to (the scouting app fills in the name)
       return respond_(whoami_(data, cfg), cb);
     }
+    if (action === 'assignSave') {  // a lead publishing the scout rotation to the phones
+      checkAdmin_(data, cfg);
+      return respond_(saveAssignments_(data, data._savedBy), cb);
+    }
+    if (action === 'assignMine') {  // a scout's phone asking for its own shifts
+      checkGate_(data, cfg);
+      return respond_({ ok: true, shifts: myShifts_(data.eventKey, data.scoutName) }, cb);
+    }
+    if (action === 'ping') {  // a phone saying it is alive: app version, what is waiting to send
+      checkGate_(data, cfg);
+      var pg = upsertRow_(pingRow_(data), PHONES_SHEET, ['eventKey', 'scoutName']);
+      return respond_({ ok: true, action: pg.action }, cb);
+    }
     if (action === 'read') {  // the Analytics app reading the data back
       checkReadGate_(data, cfg);
-      return respond_({ ok: true, data: readRows_(DATA_SHEET, data.eventKey), pit: readRows_(PIT_SHEET, data.eventKey), sup: readRows_(SUPER_SHEET, data.eventKey) }, cb);
+      return respond_({ ok: true, data: readRows_(DATA_SHEET, data.eventKey), pit: readRows_(PIT_SHEET, data.eventKey), sup: readRows_(SUPER_SHEET, data.eventKey), phones: readRows_(PHONES_SHEET, data.eventKey) }, cb);
     }
     if (action === 'photo') {  // the Analytics app reading one pit photo (Analytics Password only)
       checkReadGate_(data, cfg);
@@ -213,6 +243,111 @@ function checkReadGate_(d, cfg) {
   if (!cfg.readPasscode) throw new Error('No Analytics Password: add one to the Config tab to let the Analytics app read');
   if (cfg.requireLogin) verifyLogin_(d, cfg);
   if (String(d.passcode || '') !== cfg.readPasscode) throw new Error('Wrong analytics password');
+}
+
+// ---------------------------------------------------------------- scout assignments
+// Who may publish the rotation: with personal codes, a person whose role is lead; without them, the Analytics Password.
+// (The Analytics Password stays read-only when personal codes are on: it is a shared secret, and this changes what scouts see.)
+function checkAdmin_(d, cfg) {
+  if (cfg.requireLogin) verifyLogin_(d, cfg);
+  if (cfg.personal) {
+    var p = authPerson_(d, null);
+    if (p.role !== 'lead') throw new Error('Only a lead can send assignments to scouts');
+    d._savedBy = p.name;
+    return;
+  }
+  if (!cfg.readPasscode) throw new Error('No Analytics Password: add one to the Config tab');
+  if (String(d.passcode || '') !== cfg.readPasscode) throw new Error('Wrong analytics password');
+  d._savedBy = 'Analytics';
+}
+
+// d: { eventKey, blocks: [{ from, to, stations: { R1: name, ... }, off: [name, ...] }] }. Replaces that event's rotation.
+function saveAssignments_(d, savedBy) {
+  var ek = String(d.eventKey || '').trim().toLowerCase();
+  if (!ek) throw new Error('Missing required field: eventKey');
+  if (!Array.isArray(d.blocks) || !d.blocks.length) throw new Error('No rotation to save');
+  if (d.blocks.length > 60) throw new Error('Too many shifts');
+  var rows = [], at = new Date();
+  d.blocks.forEach(function (b) {
+    var from = Number(b.from), to = Number(b.to);
+    if (!(from >= 1 && to >= from && to <= 200) || Math.floor(from) !== from || Math.floor(to) !== to) throw new Error('Bad match numbers in a shift: ' + b.from + ' to ' + b.to);
+    Object.keys(b.stations || {}).forEach(function (s) {
+      if (STATIONS.indexOf(s) < 0) throw new Error('Unknown station: ' + s);
+      var name = String(b.stations[s] || '').trim().slice(0, 40);
+      if (name) rows.push([ek, from, to, s, name, savedBy || '', at]);
+    });
+    (b.off || []).forEach(function (n) { var name = String(n || '').trim().slice(0, 40); if (name) rows.push([ek, from, to, 'BREAK', name, savedBy || '', at]); });
+  });
+  if (!rows.length) throw new Error('The rotation has nobody in it');
+  if (rows.length > 600) throw new Error('Too many assignments');
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    var sh = getAssignSheet_(SpreadsheetApp.getActiveSpreadsheet());
+    var kept = [];
+    if (sh.getLastRow() >= 2) sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues().forEach(function (r) { if (String(r[0]).trim().toLowerCase() !== ek && String(r[0]).trim() !== '') kept.push(r); });
+    sh.getRange(2, 1, Math.max(sh.getLastRow(), 2), 7).clearContent();
+    var all = kept.concat(rows);
+    sh.getRange(2, 1, all.length, 7).setValues(all);
+    return { ok: true, saved: rows.length, shifts: d.blocks.length };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// One scout's shifts for an event, in match order: [{ from, to, station }] (station "BREAK" is a break).
+function myShifts_(eventKey, scoutName) {
+  var ek = String(eventKey || '').trim().toLowerCase(), who = String(scoutName || '').trim().toLowerCase();
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(ASSIGN_SHEET);
+  if (!ek || !who || !sh || sh.getLastRow() < 2) return [];
+  var out = [];
+  sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues().forEach(function (r) {
+    if (String(r[0]).trim().toLowerCase() === ek && String(r[4]).trim().toLowerCase() === who) out.push({ from: Number(r[1]), to: Number(r[2]), station: String(r[3]) });
+  });
+  return out.sort(function (a, b) { return a.from - b.from; });
+}
+
+// ---------------------------------------------------------------- phone health
+// What a phone reports about itself: kept as one row per scout per event. Numbers only, no scouting data.
+function pingRow_(d) {
+  var num = function (x) { var n = Number(x); return isNaN(n) || n < 0 ? 0 : Math.min(n, 9999); };
+  return {
+    _order: ['scoutName', 'eventKey', 'appVersion', 'waiting', 'waitingPit', 'lastMatch', 'online'],
+    _id: 'phone_' + String(d.eventKey || '').toLowerCase() + '_' + String(d.scoutName || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    scoutName: d.scoutName, eventKey: d.eventKey,
+    appVersion: String(d.appVersion || '').slice(0, 30), waiting: num(d.waiting), waitingPit: num(d.waitingPit), lastMatch: num(d.lastMatch), online: d.online === false ? 'no' : 'yes'
+  };
+}
+
+// ---------------------------------------------------------------- backups
+// The Sheet is the team's only copy of its scouting. A copy of the whole Sheet goes into a Drive folder, the oldest are trashed.
+function getBackupFolder_() {
+  var props = PropertiesService.getDocumentProperties(), id = props.getProperty('BACKUP_FOLDER');
+  if (id) { try { return DriveApp.getFolderById(id); } catch (e) { /* trashed: make a new one */ } }
+  var folder = DriveApp.createFolder(BACKUP_FOLDER_NAME);
+  props.setProperty('BACKUP_FOLDER', folder.getId());
+  return folder;
+}
+// items: [{ name, created (ms), ref }]. Returns the refs of the ones to trash: everything but the newest `keep`.
+function backupsToTrash_(items, keep) {
+  return items.slice().sort(function (a, b) { return b.created - a.created; }).slice(keep).map(function (x) { return x.ref; });
+}
+function backupNow() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), folder = getBackupFolder_();
+  var stamp = new Date().toISOString().slice(0, 16).replace('T', ' ').replace(':', '-');
+  DriveApp.getFileById(ss.getId()).makeCopy('Bobcat Scouting backup ' + stamp, folder);
+  var files = folder.getFiles(), items = [];
+  while (files.hasNext()) { var f = files.next(); if (/^Bobcat Scouting backup /.test(f.getName())) items.push({ name: f.getName(), created: f.getDateCreated().getTime(), ref: f }); }
+  backupsToTrash_(items, BACKUP_KEEP).forEach(function (f) { f.setTrashed(true); });
+  return items.length;
+}
+function startBackups() {
+  stopBackups();
+  ScriptApp.newTrigger('backupNow').timeBased().everyHours(1).create();
+  try { SpreadsheetApp.getUi().alert('Hourly backups are on. Copies go to a Drive folder called "' + BACKUP_FOLDER_NAME + '"; the newest ' + BACKUP_KEEP + ' are kept.'); } catch (e) { /* no screen */ }
+}
+function stopBackups() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'backupNow') ScriptApp.deleteTrigger(t); });
 }
 
 // ---------------------------------------------------------------- personal codes
@@ -372,7 +507,7 @@ function requireFields_(d, list) {
 
 function upsertRow_(d, sheetName, keyCols) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sh = sheetName === PIT_SHEET ? getPitSheet_(ss) : (sheetName === SUPER_SHEET ? getSuperSheet_(ss) : getDataSheet_(ss));
+  var sh = sheetName === PIT_SHEET ? getPitSheet_(ss) : (sheetName === SUPER_SHEET ? getSuperSheet_(ss) : (sheetName === PHONES_SHEET ? getPhonesSheet_(ss) : getDataSheet_(ss)));
   var lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -548,6 +683,15 @@ function getConfigSheet_(ss) {
 
 function getDataSheet_(ss) { return ss.getSheetByName(DATA_SHEET) || ss.insertSheet(DATA_SHEET); }
 function getPitSheet_(ss) { return ss.getSheetByName(PIT_SHEET) || ss.insertSheet(PIT_SHEET); }
+function getPhonesSheet_(ss) { return ss.getSheetByName(PHONES_SHEET) || ss.insertSheet(PHONES_SHEET); }
+function getAssignSheet_(ss) {
+  var sh = ss.getSheetByName(ASSIGN_SHEET);
+  if (sh) return sh;
+  sh = ss.insertSheet(ASSIGN_SHEET);
+  sh.getRange(1, 1, 1, 7).setValues([['eventKey', 'fromMatch', 'toMatch', 'station', 'scoutName', 'savedBy', 'savedAt']]).setFontWeight('bold');
+  sh.setFrozenRows(1);
+  return sh;
+}
 function getPeopleSheet_(ss) {
   var sh = ss.getSheetByName(PEOPLE_SHEET);
   if (sh) return sh;
