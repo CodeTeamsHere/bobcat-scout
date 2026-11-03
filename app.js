@@ -1557,13 +1557,31 @@ function hideMicError() {
 // PROCESS / GENERATE / OUTPUT
 // =====================================================================
 
+// ---- Talk-to-fill for a game the parser was not written for -------------------------------------
+// parseTranscript() knows the 2026 game's boxes. For any other season's game pack it still finds the
+// identity boxes (name, event, match, team, alliance, comments); every other box is filled by
+// generic-fill.js from the pack alone, and marked "medium" so the scout checks it.
+const PARSER_IDENTITY = ['scoutName', 'eventKey', 'matchNumber', 'matchType', 'teamNumber', 'alliance', 'noShow', 'co'];
+function parserKnowsThisGame() { return !CONFIG || !CONFIG.game || CONFIG.game.year === 2026; }
+function withGenericFill(result, text, before) {
+  if (parserKnowsThisGame() || !window.SCOUT_GENERIC) return result;
+  Object.keys(result.fields).forEach(k => {
+    if (PARSER_IDENTITY.indexOf(k) !== -1) return;
+    if (before && k in before) result.fields[k] = before[k]; else delete result.fields[k];
+    delete result.confidence[k];
+  });
+  const g = window.SCOUT_GENERIC.fill(text, CONFIG, PARSER_IDENTITY);
+  Object.keys(g.fields).forEach(k => { result.fields[k] = g.fields[k]; result.confidence[k] = g.confidence[k]; });
+  return result;
+}
+
 function processTranscript() {
   const text = $('transcript').value.trim();
   if (!text) return;
   // Remember which boxes the scout set by hand, so they still count as answered.
   const byHand = {};
   Object.keys(confidence).forEach(k => { if (confidence[k] === 'user') byHand[k] = 'user'; });
-  const result = parseTranscript(text, fields);
+  const result = withGenericFill(parseTranscript(text, fields), text, fields);
   fields = result.fields;
   confidence = Object.assign(byHand, result.confidence);
   if (strictMode()) refreshDerived();
@@ -2899,7 +2917,7 @@ function noteExtras(final, q) {
   if (!clause) return [];
   const answered = answeredNow();
   const own = q.fields.map(f => f.code);
-  const r = parseTranscript(clause, fields);
+  const r = withGenericFill(parseTranscript(clause, fields), clause, fields);
   const notes = [];
   Object.keys(r.confidence).forEach(code => {
     if (code === 'co' || own.indexOf(code) !== -1 || answered[code]) return;
@@ -3877,6 +3895,8 @@ async function init() {
   // Load config (a custom one the host built for this season, else the built-in game)
   try {
     CONFIG = await loadConfig();
+    const tagline = document.querySelector('.tagline');   // the game's name comes from the pack, not the page
+    if (tagline && CONFIG && CONFIG.title) tagline.textContent = tagline.textContent.replace(/·[^·]*·/, '· ' + String(CONFIG.title).toUpperCase() + ' ·');
   } catch (e) {
     document.body.innerHTML = `
       <div style="padding:40px;text-align:center;font-family:sans-serif;">

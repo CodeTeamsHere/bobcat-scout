@@ -1,0 +1,247 @@
+{
+  "title": "TEST GAME 2027",
+  "delimiter": "\t",
+  "game": {
+    "name": "Test Game",
+    "year": 2027,
+    "note": "Made-up game for tests. Not a real FRC game.",
+    "display": {
+      "autoCountCode": "autoBalls",
+      "teleCountCode": "teleBalls",
+      "defenseCode": "defRating",
+      "climbCode": "endgame",
+      "climbLevels": [
+        "P",
+        "H1",
+        "H2"
+      ]
+    },
+    "tba": {
+      "year": 2027,
+      "game": "Test Game",
+      "counts": [
+        {
+          "key": "autoBalls",
+          "label": "Auto balls",
+          "field": "autoBalls",
+          "path": "balls.autoTotal"
+        },
+        {
+          "key": "teleBalls",
+          "label": "Teleop balls",
+          "field": "teleBalls",
+          "path": "balls.teleTotal"
+        }
+      ],
+      "robots": [
+        {
+          "key": "endgame",
+          "label": "Endgame",
+          "field": "endgame",
+          "path": "endgameRobot{n}",
+          "kind": "levels",
+          "levels": {
+            "Park": "P",
+            "Hang1": "H1",
+            "Hang2": "H2"
+          },
+          "none": "N",
+          "failed": "X",
+          "noneOfficial": "None"
+        }
+      ]
+    }
+  },
+  "sections": [
+    {
+      "name": "Prematch",
+      "fields": [
+        {
+          "title": "Abbreviated Scouter Name",
+          "type": "text",
+          "code": "scoutName",
+          "required": true,
+          "preserve": true,
+          "placeholder": "Your name",
+          "help": "QRScout calls this 'scouter'. Kept as scoutName because every row is stamped with it."
+        },
+        {
+          "title": "Event Key",
+          "type": "text",
+          "code": "eventKey",
+          "required": true,
+          "preserve": true,
+          "placeholder": "2026ctwat",
+          "help": "Set once per competition. The Sheet uses it to keep events apart."
+        },
+        {
+          "title": "Match Number",
+          "type": "number",
+          "code": "matchNumber",
+          "required": true,
+          "help": "Select the match number.",
+          "default": 1,
+          "min": 1,
+          "max": 200
+        },
+        {
+          "title": "Match Type",
+          "type": "select",
+          "code": "matchType",
+          "default": "qm",
+          "options": [
+            {
+              "k": "qm",
+              "v": "Qualification"
+            },
+            {
+              "k": "pm",
+              "v": "Practice"
+            },
+            {
+              "k": "sf",
+              "v": "Playoff"
+            }
+          ]
+        },
+        {
+          "title": "Team and Robot",
+          "type": "number",
+          "code": "teamNumber",
+          "required": true,
+          "help": "Select the team and robot position you are scouting.",
+          "preserve": true,
+          "default": 177,
+          "min": 1,
+          "max": 99999
+        },
+        {
+          "title": "Alliance",
+          "type": "select",
+          "code": "alliance",
+          "hidden": true,
+          "preserve": true,
+          "default": "",
+          "help": "Derived from the starting position. Never typed.",
+          "options": [
+            {
+              "k": "",
+              "v": "—"
+            },
+            {
+              "k": "red",
+              "v": "Red"
+            },
+            {
+              "k": "blue",
+              "v": "Blue"
+            }
+          ]
+        },
+        {
+          "title": "No Show",
+          "type": "boolean",
+          "code": "noShow",
+          "help": "Check if the robot did not show up for the match.",
+          "default": false,
+          "fail": true
+        }
+      ]
+    },
+    {
+      "name": "Autonomous",
+      "fields": [
+        {
+          "title": "Balls scored in auto",
+          "type": "counter",
+          "code": "autoBalls",
+          "default": 0,
+          "min": 0,
+          "max": 60,
+          "points": 2
+        },
+        {
+          "title": "Left the start line?",
+          "type": "boolean",
+          "code": "leftLine",
+          "default": false,
+          "points": 3
+        }
+      ]
+    },
+    {
+      "name": "Teleop",
+      "fields": [
+        {
+          "title": "Balls scored in teleop",
+          "type": "counter",
+          "code": "teleBalls",
+          "default": 0,
+          "min": 0,
+          "max": 200,
+          "points": 1
+        },
+        {
+          "title": "Defense (0-5)",
+          "type": "range",
+          "code": "defRating",
+          "default": 0,
+          "min": 0,
+          "max": 5
+        }
+      ]
+    },
+    {
+      "name": "Endgame",
+      "fields": [
+        {
+          "title": "Endgame",
+          "type": "select",
+          "code": "endgame",
+          "default": "N",
+          "options": [
+            {
+              "k": "N",
+              "v": "Nothing"
+            },
+            {
+              "k": "P",
+              "v": "Parked"
+            },
+            {
+              "k": "H1",
+              "v": "Hang level 1"
+            },
+            {
+              "k": "H2",
+              "v": "Hang level 2"
+            },
+            {
+              "k": "X",
+              "v": "Failed"
+            }
+          ],
+          "optionPoints": {
+            "P": 2,
+            "H1": 8,
+            "H2": 15
+          }
+        },
+        {
+          "title": "Died?",
+          "type": "boolean",
+          "code": "died",
+          "default": false,
+          "fail": true
+        },
+        {
+          "title": "Comments",
+          "type": "textarea",
+          "code": "co",
+          "default": "",
+          "maxLength": 2500
+        }
+      ]
+    }
+  ]
+}

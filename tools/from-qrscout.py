@@ -108,6 +108,23 @@ DISPLAY = {
     "climbLevels": ["L1", "L2", "L3"]
 }
 
+# Which scouting fields match which numbers in FIRST's official score breakdown (read through
+# The Blue Alliance). Scout Trust uses this; a new game needs its own block. See the comment at
+# the top of bobcat-scout-analytics/trust.js for what each key means.
+TBA = {
+    "year": 2026, "game": "REBUILT",
+    "counts": [
+        {"key": "autoFuel", "label": "Auto fuel", "field": "autoFuelScored", "path": "hubScore.autoCount"},
+        {"key": "teleFuel", "label": "Teleop fuel", "field": "teleopFuelScored", "path": "hubScore.teleopCount"}
+    ],
+    "robots": [
+        {"key": "autoClimb", "label": "Auto climb", "field": "autoClimbed", "path": "autoTowerRobot{n}", "kind": "yesno",
+         "yes": ["Level1"], "scoutedYes": "Success", "scoutedNo": "NA", "failed": "Failed", "noneOfficial": "None"},
+        {"key": "climb", "label": "Endgame climb", "field": "climbed", "path": "endGameTowerRobot{n}", "kind": "levels",
+         "levels": {"Level1": "L1", "Level2": "L2", "Level3": "L3"}, "none": "No", "failed": "F", "noneOfficial": "None"}
+    ]
+}
+
 # QRScout points at imgur; we keep a copy in the repo so it works offline.
 # Re-download with: curl -L -o assets/field-layout.jpg <the imgur url>
 LOCAL_IMAGES = {
@@ -227,7 +244,8 @@ def main():
             "note": "Generated from reference/QRScout_config.json by tools/from-qrscout.py. "
                     "Edit the QRScout config and re-run rather than hand-editing this file. "
                     "Scoring values live in SCORING inside that script.",
-            "display": DISPLAY
+            "display": DISPLAY,
+            "tba": TBA
         },
         "sections": sections
     }

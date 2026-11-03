@@ -15,6 +15,55 @@
         "L2",
         "L3"
       ]
+    },
+    "tba": {
+      "year": 2026,
+      "game": "REBUILT",
+      "counts": [
+        {
+          "key": "autoFuel",
+          "label": "Auto fuel",
+          "field": "autoFuelScored",
+          "path": "hubScore.autoCount"
+        },
+        {
+          "key": "teleFuel",
+          "label": "Teleop fuel",
+          "field": "teleopFuelScored",
+          "path": "hubScore.teleopCount"
+        }
+      ],
+      "robots": [
+        {
+          "key": "autoClimb",
+          "label": "Auto climb",
+          "field": "autoClimbed",
+          "path": "autoTowerRobot{n}",
+          "kind": "yesno",
+          "yes": [
+            "Level1"
+          ],
+          "scoutedYes": "Success",
+          "scoutedNo": "NA",
+          "failed": "Failed",
+          "noneOfficial": "None"
+        },
+        {
+          "key": "climb",
+          "label": "Endgame climb",
+          "field": "climbed",
+          "path": "endGameTowerRobot{n}",
+          "kind": "levels",
+          "levels": {
+            "Level1": "L1",
+            "Level2": "L2",
+            "Level3": "L3"
+          },
+          "none": "No",
+          "failed": "F",
+          "noneOfficial": "None"
+        }
+      ]
     }
   },
   "sections": [
