@@ -145,7 +145,7 @@ At the end of the pilot event we should be able to answer these with numbers, no
 
 ## Try it right now
 
-The app is live and free at **codeteamshere.github.io/bobcat-scout**
+The app is live and free at **bobcat-scout.krishmunukotiishere.workers.dev**
 
 Open it, tap **⚡ SETUP**, choose **I am a scouter**, and run the practice match. It takes two minutes and does not require any account, any key, or any setup.
 

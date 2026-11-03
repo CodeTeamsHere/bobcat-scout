@@ -1,0 +1,16 @@
+// Cloudflare hosting for the scouting app (static files only; no server code).
+// Live at https://bobcat-scout.krishmunukotiishere.workers.dev
+// Deploy with  node tools/deploy.js  (it fills dist/ with only the page's own files first).
+// The old GitHub Pages copy (codeteamshere.github.io/bobcat-scout) stays up as a backup.
+{
+  "name": "bobcat-scout",
+  "compatibility_date": "2026-10-01",
+  // Only the live address: no public preview address per uploaded version.
+  "preview_urls": false,
+  "assets": {
+    "directory": "./dist"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

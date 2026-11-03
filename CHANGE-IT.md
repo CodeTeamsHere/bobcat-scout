@@ -31,7 +31,7 @@ Paste that into the File Explorer address bar and press Enter to jump straight t
 | The practice matches for new scouts (the PRACTICE button) | `practice-data.js`, made by `tools/build-practice.js` | At a new game: write the new game's official numbers in `GAME` inside the script, then `node tools/build-practice.js 2027xxxx` once real events have played (job 4) |
 | Tests | `tools\test-parser.js`, `tools\test-modes.js`, `tools\test-apps-script.js`, `tools\test-config.js` | No |
 
-**The live app:** <https://codeteamshere.github.io/bobcat-scout>
+**The live app:** <https://bobcat-scout.krishmunukotiishere.workers.dev>
 **The code online:** <https://github.com/CodeTeamsHere/bobcat-scout>
 
 ---

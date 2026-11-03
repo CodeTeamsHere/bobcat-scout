@@ -1,0 +1,8 @@
+/*
+  X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+/service-worker.js
+  Cache-Control: no-cache
+/config.json
+  Access-Control-Allow-Origin: *

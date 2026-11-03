@@ -26,7 +26,7 @@ from urllib.parse import quote
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-APP = 'https://codeteamshere.github.io/bobcat-scout/'
+APP = 'https://bobcat-scout.krishmunukotiishere.workers.dev/'
 
 
 def preset(key):

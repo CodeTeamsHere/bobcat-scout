@@ -28,7 +28,7 @@ class Doc(FPDF):
         self.set_y(-14)
         self.set_font('Helvetica', '', 8)
         self.set_text_color(*GRAY)
-        self.cell(0, 6, 'codeteamshere.github.io/bobcat-scout', align='L')
+        self.cell(0, 6, 'bobcat-scout.krishmunukotiishere.workers.dev', align='L')
         self.cell(0, 6, str(self.page_no()), align='R')
 
 
@@ -323,7 +323,7 @@ pdf.set_x(pdf.l_margin + 6)
 pdf.set_font('Helvetica', '', 9.5)
 pdf.set_text_color(235, 220, 205)
 pdf.multi_cell(W - 12, 4.6,
-               'codeteamshere.github.io/bobcat-scout   -   open it, tap SETUP, choose "I am a scouter", and run '
+               'bobcat-scout.krishmunukotiishere.workers.dev   -   open it, tap SETUP, choose "I am a scouter", and run '
                'the practice match. Two minutes, no account, no key, no setup.',
                new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 

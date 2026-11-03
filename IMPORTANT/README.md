@@ -44,7 +44,7 @@ can email, print, or open on a screen.
 
 | | |
 |---|---|
-| **The live app** | <https://codeteamshere.github.io/bobcat-scout> |
+| **The live app** | <https://bobcat-scout.krishmunukotiishere.workers.dev> |
 | The code | <https://github.com/CodeTeamsHere/bobcat-scout> |
 | Your scouting spreadsheet | *(paste the link here once it exists)* |
 | The Blue Alliance events | <https://www.thebluealliance.com/events> |

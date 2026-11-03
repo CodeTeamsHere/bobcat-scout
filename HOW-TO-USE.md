@@ -12,7 +12,7 @@ A plain-English, click-by-click guide for **two kinds of people**:
 > the separate **Analytics app**, which turns it into pick lists, predictions, and comparisons against
 > the real results. The scouting app itself is only for scouting.
 
-The app lives at **https://codeteamshere.github.io/bobcat-scout** — anyone can open it; what makes it
+The app lives at **https://bobcat-scout.krishmunukotiishere.workers.dev** — anyone can open it; what makes it
 *yours* is the Sheet you connect to it.
 
 ---
@@ -118,7 +118,7 @@ Every row the gate writes is already analysis-ready, because it:
 
 ## Step 3 — Connect the app to your Sheet
 
-1. Open **https://codeteamshere.github.io/bobcat-scout** and tap **⚙ SHEET** (top bar).
+1. Open **https://bobcat-scout.krishmunukotiishere.workers.dev** and tap **⚙ SHEET** (top bar).
 2. Paste the **Web app URL** and the **Passcode** (the same one from the Config tab). Tap **SAVE**.
 3. Tap **SEND TEST ROW** — you should see **✓ Success** and a `CONNECTION TEST` row appear in your Sheet's **Data** tab. (Delete that row afterward.)
 

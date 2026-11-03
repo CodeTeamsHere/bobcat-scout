@@ -10,7 +10,7 @@ GRAY = (107, 107, 107)
 CREAM = (250, 247, 240)
 LINE = (222, 216, 205)
 
-APP = 'codeteamshere.github.io/bobcat-scout'
+APP = 'bobcat-scout.krishmunukotiishere.workers.dev'
 QR_PNG = 'qs_qr.png'
 OUT = r'C:\Users\kishg\Downloads\Bobcat Scout - Scouter Quick Start.pdf'
 

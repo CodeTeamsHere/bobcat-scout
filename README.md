@@ -79,7 +79,7 @@ The game changes every season, so the form is fully editable in-app: tap **🛠 
 
 ## Live URL
 
-After deployment via GitHub Pages: `https://codeteamshere.github.io/bobcat-scout/`
+Live on Cloudflare: `https://bobcat-scout.krishmunukotiishere.workers.dev/` (deploy: `node tools/deploy.js`). The GitHub Pages copy at https://codeteamshere.github.io/bobcat-scout/ stays up as a backup.
 
 ## How to run locally (for testing changes before deploying)
 
