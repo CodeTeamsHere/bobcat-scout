@@ -123,6 +123,11 @@ async function reset(request, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // The new-game page lives on the Analytics site, so its POSTs to /api/* are cross-site: the browser
+    // first asks (OPTIONS) whether that is allowed. Without this answer the publish fails with "Failed to fetch".
+    if (request.method === 'OPTIONS' && url.pathname.indexOf('/api/') === 0) {
+      return new Response(null, { status: 204, headers: { ...CORS, 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400' } });
+    }
     if (url.pathname === '/config.json') {
       const custom = env.PACK ? await env.PACK.get('pack') : null;
       if (custom) return new Response(custom, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache', ...CORS } });

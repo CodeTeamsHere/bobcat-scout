@@ -107,6 +107,16 @@ async function call(path_, body, method = 'POST') {
   check('reset to bundled: the shipped pack is back', r.status === 200 && cfg.text === bundled && s3.json.custom === false);
 }
 
+// ---- the browser's cross-site permission check (the Analytics site publishes to this one)
+{
+  for (const p of ['/api/pack', '/api/pack-reset']) {
+    const r = await call(p, null, 'OPTIONS');
+    check('preflight ' + p + ' is answered for cross-site POSTs', r.status === 204 && r.headers.get('access-control-allow-origin') === '*' && /POST/.test(r.headers.get('access-control-allow-methods')) && /Content-Type/i.test(r.headers.get('access-control-allow-headers')), JSON.stringify([r.status, ...r.headers]));
+  }
+  const live = await call('/api/pack', { password: 'nope', pack: {} });
+  check('real replies carry the cross-site header too', live.headers.get('access-control-allow-origin') === '*');
+}
+
 // ---- the rest
 {
   const r = await call('/somewhere-else', null, 'GET');
