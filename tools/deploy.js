@@ -22,7 +22,7 @@ const SITE_FILES = ['index.html', 'styles.css', 'app.js', 'demo.js', 'demo.css',
   'pit-form.js', 'pit-core.js', 'pit.js', 'pit.css', 'super-form.js', 'super-core.js', 'super.js', 'super.css', 'assign-core.js', 'assign.js', 'assign.css',
   'team-config.js', 'scout-modes.js', 'scout-lexicon.js', 'generic-fill.js', 'config.json', 'browser-check.js', 'service-worker.js', 'manifest.webmanifest',
   'icon.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'assets/field-layout.jpg', 'vendor/qrcode-generator.js', '_headers', 'robots.txt'];
-const TESTS = ['test-config', 'test-parser', 'test-modes', 'test-voice', 'test-trainer', 'test-pit', 'test-super', 'test-assign', 'test-apps-script', 'test-pack', 'test-generic'].map((t) => `node tools/${t}.js`);
+const TESTS = ['test-config', 'test-parser', 'test-modes', 'test-voice', 'test-trainer', 'test-pit', 'test-super', 'test-assign', 'test-apps-script', 'test-pack', 'test-pack-core', 'test-generic'].map((t) => `node tools/${t}.js`).concat(['node tools/test-worker.mjs']);
 
 function run(cmd) { execSync(cmd, { cwd: ROOT, stdio: 'inherit' }); }
 

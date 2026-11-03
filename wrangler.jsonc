@@ -1,14 +1,29 @@
-// Cloudflare hosting for the scouting app (static files only; no server code).
+// Cloudflare hosting for the scouting app: the page's files, plus a little server code
+// (worker/index.js) that serves the game pack (/config.json) and lets a new one be published.
 // Live at https://bobcat-scout.krishmunukotiishere.workers.dev
 // Deploy with  node tools/deploy.js  (it fills dist/ with only the page's own files first).
 // The old GitHub Pages copy (codeteamshere.github.io/bobcat-scout) stays up as a backup.
 {
   "name": "bobcat-scout",
+  "main": "worker/index.js",
   "compatibility_date": "2026-10-01",
   // Only the live address: no public preview address per uploaded version.
   "preview_urls": false,
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // Everything is a plain file except these, which the server code answers (it falls back to the
+    // file for /config.json when no new pack has been published).
+    "run_worker_first": ["/config.json", "/api/*"]
+  },
+  // The published game pack, and the one before it (so a bad publish can be undone in one tap).
+  "kv_namespaces": [
+    { "binding": "PACK", "id": "c9a10f00f40e4523b5c32fe8e555434f" }
+  ],
+  "vars": {
+    // The scouting Sheet's address (already public in the app). Publishing a pack asks it whether
+    // the Analytics Password is right; nothing is stored.
+    "SHEET_URL": "https://script.google.com/macros/s/AKfycbz6aXksgsVBMshkKifAnvFGZoJSidxousfwGVwFnizArKy1zVI2GrdvtGpXkIppBgPi/exec"
   },
   "observability": {
     "enabled": true
