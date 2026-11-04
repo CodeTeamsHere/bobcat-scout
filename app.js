@@ -3172,6 +3172,28 @@ function showUpdateBanner() {
   document.body.appendChild(bar);
 }
 
+// A new game pack can be published from the Analytics site. The phone gets it the next time it opens
+// with signal, silently, so say so once: a changed signature means the boxes may be different.
+function packSignature(cfg) {
+  const codes = (cfg.sections || []).map(s => (s.fields || []).map(f => f.code + ':' + f.type).join(',')).join('|');
+  let h = 0;
+  for (let i = 0; i < codes.length; i++) h = (h * 31 + codes.charCodeAt(i)) | 0;
+  return (cfg.title || '') + '#' + h;
+}
+function notePackChange() {
+  if (!CONFIG) return;
+  let before = null;
+  const now = packSignature(CONFIG);
+  try { before = localStorage.getItem('pack_signature'); localStorage.setItem('pack_signature', now); } catch (e) { return; }
+  if (before === null || before === now || $('pack-banner')) return;   // first run, or nothing changed
+  const bar = document.createElement('div');
+  bar.id = 'pack-banner';
+  bar.className = 'update-banner';
+  bar.innerHTML = 'The form changed: ' + escapeHTML(CONFIG.title || 'a new game pack') + ' is loaded. Check the boxes before you scout. <button type="button" class="btn btn-gold">OK</button>';
+  bar.querySelector('button').addEventListener('click', () => bar.remove());
+  document.body.appendChild(bar);
+}
+
 // =====================================================================
 // TBA MATCH SCHEDULE (optional) — auto-fill team # from match/alliance/station
 // =====================================================================
@@ -3897,6 +3919,7 @@ async function init() {
     CONFIG = await loadConfig();
     const tagline = document.querySelector('.tagline');   // the game's name comes from the pack, not the page
     if (tagline && CONFIG && CONFIG.title) tagline.textContent = tagline.textContent.replace(/·[^·]*·/, '· ' + String(CONFIG.title).toUpperCase() + ' ·');
+    notePackChange();
   } catch (e) {
     document.body.innerHTML = `
       <div style="padding:40px;text-align:center;font-family:sans-serif;">

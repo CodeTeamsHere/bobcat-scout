@@ -119,7 +119,7 @@
     return out;
   }
 
-  var API = { fill: fill, keywords: keywords, windows: windows };
+  var API = { fill: fill, keywords: keywords, windows: windows, phaseOf: phaseOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.SCOUT_GENERIC = API;
 })(typeof window !== 'undefined' ? window : this);

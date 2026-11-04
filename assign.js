@@ -59,14 +59,40 @@
   async function version() {
     try { var keys = await caches.keys(); var k = keys.filter(function (x) { return /^bobcat-scout-/.test(x); }).sort().pop(); return k || ''; } catch (e) { return ''; }
   }
+  // Two more things the heartbeat carries, both only numbers and a short message, never scouting data:
+  // the last error this phone hit (browser-check.js remembers it), and how far the scout got in PRACTICE
+  // (the trainer keeps its results on the phone; the scout is told the lead sees this).
+  function healthExtras() {
+    var out = {};
+    try {
+      var err = JSON.parse(localStorage.getItem('last_error') || 'null');
+      if (err && err.msg) { out.lastError = String(err.msg).slice(0, 110); out.errorAt = Number(err.at) || 0; out.errorCount = Number(err.n) || 1; }
+    } catch (e) { /* nothing remembered */ }
+    try {
+      var all = JSON.parse(localStorage.getItem('trainer_results') || '[]'), best = {}, last = 0;
+      (Array.isArray(all) ? all : []).forEach(function (r) {
+        if (!r || r.id == null) return;
+        var s = Number(r.score); if (!isFinite(s)) return;
+        if (best[r.id] === undefined || s > best[r.id]) best[r.id] = s;
+        var t = Date.parse(r.at); if (t > last) last = t;
+      });
+      var ids = Object.keys(best);
+      if (ids.length) {
+        out.practiceDone = ids.length;
+        out.practiceAvg = Math.round(ids.reduce(function (a, k) { return a + best[k]; }, 0) / ids.length);
+        out.practiceAt = last;
+      }
+    } catch (e) { /* no practice yet */ }
+    return out;
+  }
   async function ping() {
     if (!connected() || !eventKey() || !ls('scout_name')) return;
     var waitingPit = 0;
     try { if (window.PIT_UI && window.PIT_UI._allItems) waitingPit = (await window.PIT_UI._allItems()).length; } catch (e) {}
     var waiting = 0; try { waiting = pendingQueue.length; } catch (e) {}   // eslint-disable-line no-undef
     try {
-      await jsonpSubmit(auth({ action: 'ping', eventKey: eventKey(), scoutName: ls('scout_name'), appVersion: await version(), waiting: waiting, waitingPit: waitingPit,
-        lastMatch: C.lastSent(sessionMatches(), eventKey()), online: navigator.onLine }), 12000, sheetEndpoint);   // eslint-disable-line no-undef
+      await jsonpSubmit(auth(Object.assign({ action: 'ping', eventKey: eventKey(), scoutName: ls('scout_name'), appVersion: await version(), waiting: waiting, waitingPit: waitingPit,
+        lastMatch: C.lastSent(sessionMatches(), eventKey()), online: navigator.onLine }, healthExtras())), 12000, sheetEndpoint);   // eslint-disable-line no-undef
     } catch (e) { /* no signal: the Sheet will show this phone as quiet, which is the point */ }
   }
 

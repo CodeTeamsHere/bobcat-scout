@@ -311,11 +311,15 @@ function myShifts_(eventKey, scoutName) {
 // What a phone reports about itself: kept as one row per scout per event. Numbers only, no scouting data.
 function pingRow_(d) {
   var num = function (x) { var n = Number(x); return isNaN(n) || n < 0 ? 0 : Math.min(n, 9999); };
+  var stamp = function (x) { var n = Number(x); return isNaN(n) || n < 0 ? 0 : Math.min(Math.round(n), 9e12); };   // a time in milliseconds
   return {
-    _order: ['scoutName', 'eventKey', 'appVersion', 'waiting', 'waitingPit', 'lastMatch', 'online'],
+    _order: ['scoutName', 'eventKey', 'appVersion', 'waiting', 'waitingPit', 'lastMatch', 'online', 'lastError', 'errorAt', 'errorCount', 'practiceDone', 'practiceAvg', 'practiceAt'],
     _id: 'phone_' + String(d.eventKey || '').toLowerCase() + '_' + String(d.scoutName || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-'),
     scoutName: d.scoutName, eventKey: d.eventKey,
-    appVersion: String(d.appVersion || '').slice(0, 30), waiting: num(d.waiting), waitingPit: num(d.waitingPit), lastMatch: num(d.lastMatch), online: d.online === false ? 'no' : 'yes'
+    appVersion: String(d.appVersion || '').slice(0, 30), waiting: num(d.waiting), waitingPit: num(d.waitingPit), lastMatch: num(d.lastMatch), online: d.online === false ? 'no' : 'yes',
+    // the last error the phone hit (a short message, no links) and how far the scout got in PRACTICE: numbers and a short line, never scouting data
+    lastError: String(d.lastError || '').replace(/https?:[^\s)]*/g, '').slice(0, 110), errorAt: stamp(d.errorAt), errorCount: num(d.errorCount),
+    practiceDone: num(d.practiceDone), practiceAvg: Math.min(100, num(d.practiceAvg)), practiceAt: stamp(d.practiceAt)
   };
 }
 

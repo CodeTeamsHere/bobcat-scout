@@ -66,14 +66,16 @@
         var kind, ok, text;
         // The field only records climbs that worked, so "tried and failed" on a robot the field did not
         // see climb is as right as "no climb": nobody can tell them apart from the official numbers.
+        // A generated practice match (practice-gen.js) names its own "nothing happened" answers in ch.noneKeys.
+        var isNone = function (v) { return v === 'No' || v === 'NA' || (ch.noneKeys || []).indexOf(v) >= 0; };
         var unverifiable = yours === 'F' && (official === 'No' || official == null);
         if (yours === official || unverifiable) {
           ok = true; kind = unverifiable ? 'unverifiable' : 'same';
           text = unverifiable ? 'The field only records climbs that worked, so it can\'t say if it tried. Nothing to fix.' : 'Matches the field.';
-        } else if (official === 'No' || official === 'NA') {
+        } else if (isNone(official)) {
           ok = false; kind = 'extra';
           text = 'The field recorded no ' + ch.label.toLowerCase() + ' for this robot, and you said ' + word(yours).toLowerCase() + '. Check whether it reached the tower but let go, or whether you were watching a different robot.';
-        } else if (yours === 'No' || yours === 'NA') {
+        } else if (isNone(yours)) {
           ok = false; kind = 'missed';
           text = 'The field recorded ' + word(official).toLowerCase() + '. Watch the last seconds of the match again: a climb is easy to miss when three robots crowd the tower.';
         } else {

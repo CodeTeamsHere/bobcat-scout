@@ -416,8 +416,16 @@ function match(over) {
   check('a ping with the wrong passcode is refused', !ping({ passcode: 'nope' }).ok);
   check('nonsense numbers are cleaned', (() => { ping({ scoutName: 'Cy', waiting: -5, waitingPit: 'lots', lastMatch: 1e9 }); const r = s.sheets.Phones.rows[3]; return r[header.indexOf('waiting')] === 0 && r[header.indexOf('waitingPit')] === 0 && r[header.indexOf('lastMatch')] === 9999; })());
   check('offline is recorded as no', (() => { ping({ scoutName: 'Di', online: false }); return s.sheets.Phones.rows[4][header.indexOf('online')] === 'no'; })());
+  const NOW = 1790000000000;
+  check('an error and practice progress are saved with the ping', (() => {
+    ping({ scoutName: 'Ed', lastError: 'TypeError: x is undefined https://evil.example/a?b=1', errorAt: NOW, errorCount: 3, practiceDone: 4, practiceAvg: 82, practiceAt: NOW - 5000 });
+    const r = s.sheets.Phones.rows.find((x) => x[header.indexOf('scoutName')] === 'Ed');
+    return r && r[header.indexOf('lastError')] === 'TypeError: x is undefined ' && r[header.indexOf('errorAt')] === NOW && r[header.indexOf('errorCount')] === 3 && r[header.indexOf('practiceDone')] === 4 && r[header.indexOf('practiceAvg')] === 82 && r[header.indexOf('practiceAt')] === NOW - 5000;
+  })(), JSON.stringify(s.sheets.Phones.rows[s.sheets.Phones.rows.length - 1]));
+  check('links are stripped from the error and its length is capped', (() => { ping({ scoutName: 'Fy', lastError: 'x'.repeat(500), practiceAvg: 900 }); const r = s.sheets.Phones.rows.find((x) => x[header.indexOf('scoutName')] === 'Fy'); return r[header.indexOf('lastError')].length === 110 && r[header.indexOf('practiceAvg')] === 100; })());
+  check('an old phone that sends neither is fine', (() => { ping({ scoutName: 'Gus' }); const r = s.sheets.Phones.rows.find((x) => x[header.indexOf('scoutName')] === 'Gus'); return r && r[header.indexOf('lastError')] === '' && r[header.indexOf('practiceDone')] === 0; })());
   const rd = s.call({ action: 'read', passcode: READ_PASS, eventKey: '2026ctwat' });
-  check('the Analytics read returns the phones', rd.ok && Array.isArray(rd.phones) && rd.phones.length === 4 && rd.phones.some((p) => p.scoutName === 'Ada' && p.appVersion === 'bobcat-scout-v28'), JSON.stringify(rd).slice(0, 200));
+  check('the Analytics read returns the phones', rd.ok && Array.isArray(rd.phones) && rd.phones.length === 7 && rd.phones.some((p) => p.scoutName === 'Ada' && p.appVersion === 'bobcat-scout-v28'), JSON.stringify(rd).slice(0, 200));
   check('the scouts\' passcode still cannot read', !s.call({ action: 'read', passcode: PASS, eventKey: '2026ctwat' }).ok);
 }
 

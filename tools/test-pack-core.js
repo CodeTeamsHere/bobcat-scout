@@ -80,5 +80,25 @@ if (fs.existsSync(fx)) {
   ok('the built block is the same shape Scout Trust reads', t.robots[0].kind === 'levels' && t.robots[0].none === 'No' && t.robots[0].failed === 'F' && t.counts[0].path === 'hubScore.autoCount');
 } else console.log('  (skipped the breakdown checks: the Analytics fixture was not found next to this repo)');
 
+// ---- the publish diff -------------------------------------------------------------------------------
+const d0 = core.diffPacks(real, real);
+ok('the same pack has no differences', d0.same === true && !d0.added.length && !d0.removed.length && !d0.changed.length, d0);
+const edited = JSON.parse(JSON.stringify(real));
+const fld = (cfg, code) => cfg.sections.flatMap((s) => s.fields).find((x) => x.code === code);
+fld(edited, 'climbed').optionPoints.L3 = 35;
+fld(edited, 'autoFuelScored').points = 2;
+edited.sections[3].fields = edited.sections[3].fields.filter((x) => x.code !== 'tipped');
+edited.sections[1].fields.push({ title: 'New thing', type: 'boolean', code: 'newThing', default: false, points: 1 });
+const d1 = core.diffPacks(real, edited);
+ok('a changed point value is reported with old and new', d1.changed.some((l) => /Climbed.*L3: 30.*L3: 35/.test(l)) && d1.changed.some((l) => /autoFuelScored.*points 1 -> 2/.test(l)), d1.changed);
+ok('a removed box and an added box are listed', d1.removed.some((l) => /tipped/.test(l)) && d1.added.some((l) => /New thing/.test(l)), d1);
+ok('removing a box within a season warns not to do it mid-event', d1.notes.some((n) => /middle of an event/.test(n)), d1.notes);
+const test27 = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'pack-2027-test.json'), 'utf8'));
+const d2 = core.diffPacks(real, test27);
+ok('a new season says so and lists everything as added and removed', d2.notes.some((n) => /2026 to 2027/.test(n)) && d2.added.length > 3 && d2.removed.length > 20, [d2.added.length, d2.removed.length]);
+const noTba = JSON.parse(JSON.stringify(real)); delete noTba.game.tba;
+ok('losing the Scout Trust map is called out', core.diffPacks(real, noTba).notes.some((n) => /Scout Trust will stop/.test(n)));
+ok('diffing against nothing does not crash', core.diffPacks(null, real).added.length > 20 && core.diffPacks(real, null).removed.length > 20);
+
 if (fails.length) { console.log(`${pass} passed, ${fails.length} FAILED`); fails.forEach((x) => console.log('  x ' + x)); process.exit(1); }
 console.log(`All ${pass} pack-core checks passed.`);

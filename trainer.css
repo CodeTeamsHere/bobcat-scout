@@ -66,3 +66,4 @@ body.tr-lock { overflow: hidden; }
   .tr-stats b { font-size: 18px; }
   .tr-score-n { font-size: 44px; }
 }
+.tr-narration { margin: 6px 0 10px; padding: 8px 10px; background: #f6f3ee; border-left: 3px solid var(--maroon-dark); font-size: 14px; line-height: 1.45; }

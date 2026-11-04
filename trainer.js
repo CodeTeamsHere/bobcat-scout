@@ -2,13 +2,25 @@
  *
  * A scout picks a real past match, watches its video, scouts the three robots of one alliance on a
  * small form, and gets feedback against The Blue Alliance's official score breakdown (trainer-core.js
- * does the grading; practice-data.js holds the matches). Nothing is sent anywhere: results are kept
- * on this phone only, so a scout can see their own progress and earn a "trusted scout" badge.
+ * does the grading; practice-data.js holds the matches). Answers and results are kept on
+ * this phone, so a scout can see their own progress and earn a "trusted scout" badge. Only two numbers leave the
+ * phone, with the regular check-in (assign.js healthExtras): matches finished and the average score. The scout is
+ * told so on the home screen.
  */
 (function () {
   'use strict';
-  if (!window.PRACTICE || !window.TRAINER) return;
+  if (!window.TRAINER || (!window.PRACTICE && !window.PRACTICE_GEN)) return;
   var P = window.PRACTICE, T = window.TRAINER;
+  // The practice set follows the game pack: the real 2026 matches for the 2026 game, otherwise a made-up
+  // set built from the pack's own boxes (practice-gen.js). The pack loads after this file, so look it up
+  // when the scout opens PRACTICE, not before.
+  function pickPractice() {
+    var cfg = null;
+    try { cfg = (typeof CONFIG !== 'undefined') ? CONFIG : null; } catch (e) {}
+    if (!window.PRACTICE_GEN || !cfg) return window.PRACTICE || P;
+    if (!S.genFor || S.genFor.cfg !== cfg) S.genFor = { cfg: cfg, set: window.PRACTICE_GEN.forConfig(cfg, window.PRACTICE) };
+    return S.genFor.set || window.PRACTICE || P;
+  }
   var KEY = 'trainer_results';
   var S = { view: 'home', match: null, answers: null, result: null, overlay: null };
 
@@ -30,6 +42,8 @@
 
   /* ---------- the overlay ---------- */
   function open() {
+    P = pickPractice();
+    if (!P) return;
     if (!S.overlay) {
       var o = document.createElement('div');
       o.id = 'trainer-overlay'; o.className = 'tr-overlay'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'Practice scouting');
@@ -63,7 +77,7 @@
   /* ---------- the list ---------- */
   function home() {
     var results = loadResults(), pr = T.progress(results, P.matches), next = T.nextMatch(P.matches, pr.best);
-    var h = '<p class="tr-lead">Watch a real match, scout the three robots of one alliance, and see how close you were to the <strong>official</strong> numbers. It takes about 10 minutes. Nothing is sent anywhere: your results stay on this phone.</p>';
+    var h = P.generated ? '<p class="tr-lead">Read a made-up match, scout the three robots of one alliance, and see how close you were to the true answers. Your matches and answers stay on this phone. Your scouting lead can see <strong>how many practice matches you finished and your average score</strong> (the app sends just those two numbers with its regular check-in), so they know who is ready.</p>' : '<p class="tr-lead">Watch a real match, scout the three robots of one alliance, and see how close you were to the <strong>official</strong> numbers. It takes about 10 minutes. Your matches and answers stay on this phone. Your scouting lead can see <strong>how many practice matches you finished and your average score</strong> (the app sends just those two numbers with its regular check-in), so they know who is ready.</p>';
     h += '<div class="tr-stats"><div><b>' + pr.matchesDone + ' / ' + P.matches.length + '</b><span>matches practised</span></div>' +
       '<div><b>' + (pr.recentAverage == null ? '–' : pr.recentAverage) + '</b><span>recent average</span></div>' +
       '<div class="' + (pr.trusted ? 'tr-badge-on' : '') + '"><b>' + (pr.trusted ? '✓' : pr.streak + ' / 3') + '</b><span>' + (pr.trusted ? 'trusted scout!' : 'in a row at 80+') + '</span></div></div>';
@@ -89,11 +103,16 @@
     var m = S.match, a = S.answers, side = m.alliance === 'red' ? 'Red' : 'Blue';
     var h = '<div class="tr-nav"><button type="button" class="tr-link" data-tr="home">← All matches</button></div>';
     h += '<h2 class="tr-h2">' + esc(name(m)) + ' <span class="tr-sub">' + esc(m.eventName) + '</span></h2>';
-    h += '<p class="tr-lead">Watch the video. Then scout <strong>all three ' + side.toLowerCase() + ' robots</strong>: watch it once for each robot, at half speed if you like (the ⚙ in the video). The field only counts the whole alliance, so the three counts are added up and checked together.</p>';
-    h += '<div class="tr-video"><iframe src="https://www.youtube-nocookie.com/embed/' + esc(m.video) + '?rel=0" title="Match video" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
-    h += '<p class="tr-sub tr-center"><a href="https://www.youtube.com/watch?v=' + esc(m.video) + '" target="_blank" rel="noopener">Video not showing? Open it on YouTube</a> · the match starts at the beginning of the video</p>';
+    if (m.narrations) {
+      h += '<p class="tr-lead">This practice match is written out instead of filmed. Read what happened to each <strong>' + side.toLowerCase() + '</strong> robot, then fill in its boxes. The counts of the three robots are added up and checked together.</p>';
+    } else {
+      h += '<p class="tr-lead">Watch the video. Then scout <strong>all three ' + side.toLowerCase() + ' robots</strong>: watch it once for each robot, at half speed if you like (the ⚙ in the video). The field only counts the whole alliance, so the three counts are added up and checked together.</p>';
+      h += '<div class="tr-video"><iframe src="https://www.youtube-nocookie.com/embed/' + esc(m.video) + '?rel=0" title="Match video" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
+      h += '<p class="tr-sub tr-center"><a href="https://www.youtube.com/watch?v=' + esc(m.video) + '" target="_blank" rel="noopener">Video not showing? Open it on YouTube</a> · the match starts at the beginning of the video</p>';
+    }
     m.teams.forEach(function (team, i) {
       h += '<div class="tr-robot"><div class="tr-robot-h"><span class="tr-pos">' + side + ' ' + (i + 1) + '</span> <strong>Team ' + esc(team) + '</strong></div>';
+      if (m.narrations) h += '<p class="tr-narration">' + esc(m.narrations[i]) + '</p>';
       P.counts.forEach(function (c) {
         h += '<label class="tr-field"><span>' + esc(c.label) + '</span><div class="tr-counter"><button type="button" data-tr="dec" data-c="' + c.code + '" data-i="' + i + '" aria-label="one less">−</button>' +
           '<input type="number" inputmode="numeric" min="0" max="999" data-count="' + c.code + '" data-i="' + i + '" value="' + esc(a.counts[c.code][i]) + '" placeholder="0">' +
@@ -127,7 +146,7 @@
         '<div class="tr-count-n"><div><b>' + c.yours + '</b><span>you counted<br>(' + c.perRobot.join(' + ') + ')</span></div><div><b>' + c.official + '</b><span>the field<br>recorded</span></div></div>' +
         '<p>' + esc(c.tip) + '</p></div>';
     });
-    h += '<h3 class="tr-h">Climbs, robot by robot</h3>';
+    h += '<h3 class="tr-h">' + (P.generated ? 'Choices' : 'Climbs') + ', robot by robot</h3>';
     r.robots.forEach(function (rob, i) {
       var allOk = rob.rows.every(function (x) { return x.ok; });
       h += '<div class="tr-rob ' + (allOk ? 'tr-rob-ok' : '') + '"><div class="tr-robot-h"><span class="tr-pos">' + (m.alliance === 'red' ? 'Red ' : 'Blue ') + (i + 1) + '</span> <strong>Team ' + esc(rob.team) + '</strong>' + (allOk ? ' <span class="tr-chip tr-chip-ok">all match</span>' : '') + '</div>';

@@ -313,8 +313,47 @@
     return t;
   }
 
+  // ---- What would change if this pack replaced the live one --------------------------------------
+  // Plain-words lines for the publish step, so a bad publish is caught before it reaches phones.
+  function fieldMap(pack) {
+    var by = {};
+    ((pack && pack.sections) || []).forEach(function (s) { (s.fields || []).forEach(function (f) { if (f && f.code) by[f.code] = { f: f, section: s.name }; }); });
+    return by;
+  }
+  function optionText(f) { return (f.options || []).map(function (o) { return o.k + '=' + o.v; }).join(', '); }
+  function pointsText(f) {
+    if (f.optionPoints) return Object.keys(f.optionPoints).map(function (k) { return k + ': ' + f.optionPoints[k]; }).join(', ');
+    return f.points != null ? String(f.points) : 'none';
+  }
+  function diffPacks(live, next) {
+    var a = fieldMap(live), b = fieldMap(next), out = { added: [], removed: [], changed: [], notes: [], same: false };
+    Object.keys(b).forEach(function (c) { if (!a[c]) out.added.push(b[c].f.title + ' (' + c + ', ' + b[c].section + ')'); });
+    Object.keys(a).forEach(function (c) { if (!b[c]) out.removed.push(a[c].f.title + ' (' + c + ', ' + a[c].section + ')'); });
+    Object.keys(b).forEach(function (c) {
+      if (!a[c]) return;
+      var x = a[c].f, y = b[c].f, what = [];
+      if (x.type !== y.type) what.push('type ' + x.type + ' -> ' + y.type);
+      if (x.title !== y.title) what.push('name "' + x.title + '" -> "' + y.title + '"');
+      if (pointsText(x) !== pointsText(y)) what.push('points ' + pointsText(x) + ' -> ' + pointsText(y));
+      if (optionText(x) !== optionText(y)) what.push('choices changed');
+      if (!!x.fail !== !!y.fail) what.push(y.fail ? 'now counts as a breakdown' : 'no longer counts as a breakdown');
+      if (a[c].section !== b[c].section) what.push('moved from ' + a[c].section + ' to ' + b[c].section);
+      if (what.length) out.changed.push(y.title + ' (' + c + '): ' + what.join('; '));
+    });
+    var ly = live && live.game && live.game.year, ny = next && next.game && next.game.year;
+    if (ly !== ny) out.notes.push('The season changes from ' + ly + ' to ' + ny + '.');
+    var lt = !!(live && live.game && live.game.tba), nt = !!(next && next.game && next.game.tba);
+    if (lt && !nt) out.notes.push('Scout Trust will stop working: the new pack has no official-score matching (step 5).');
+    if (!lt && nt) out.notes.push('Scout Trust will start working: the new pack has official-score matching.');
+    if (out.removed.length && ly === ny) out.notes.push('Boxes are being removed within the same season. Rows already in the Sheet keep their old columns, but they will be blank on new rows. Do not do this in the middle of an event.');
+    var ls = JSON.stringify(live && live.game && live.game.display || {}), ns = JSON.stringify(next && next.game && next.game.display || {});
+    if (ls !== ns) out.notes.push('The columns Analytics summarises changed (auto count, teleop count, endgame).');
+    out.same = !out.added.length && !out.removed.length && !out.changed.length && !out.notes.length;
+    return out;
+  }
+
   var API = { validate: validate, NEEDED: NEEDED, TYPES: TYPES, cleanSpec: cleanSpec, buildPack: buildPack, selectScoringText: selectScoringText,
-    draftMessages: draftMessages, parseDraftReply: parseDraftReply, suggestTba: suggestTba, buildTba: buildTba, camelId: camelId };
+    draftMessages: draftMessages, parseDraftReply: parseDraftReply, suggestTba: suggestTba, buildTba: buildTba, camelId: camelId, diffPacks: diffPacks };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.PACK_CORE = API;
 })(typeof window !== 'undefined' ? window : this);
