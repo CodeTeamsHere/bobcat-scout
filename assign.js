@@ -51,7 +51,7 @@
     if (!connected() || !navigator.onLine || !eventKey()) return;
     try {
       var r = await jsonpSubmit(auth({ action: 'assignMine', eventKey: eventKey(), scoutName: ls('scout_name') }), 12000, sheetEndpoint);   // eslint-disable-line no-undef
-      if (r && r.ok && Array.isArray(r.shifts)) { try { localStorage.setItem('my_shifts_' + eventKey(), JSON.stringify(r.shifts)); } catch (e) {} render(); }
+      if (r && r.ok && Array.isArray(r.shifts)) { try { localStorage.setItem('my_shifts_' + eventKey(), JSON.stringify(r.shifts)); } catch (e) {} render(); try { if (window.PUSH_UI) window.PUSH_UI.shiftsChanged(); } catch (e) { /* reminders are optional */ } }
     } catch (e) { /* no signal: the last answer stays */ }
   }
 

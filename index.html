@@ -69,6 +69,9 @@
       <button id="btn-ready-hide" class="btn btn-ghost" style="padding:8px 10px;font-size:11px;" title="Hide this">&times;</button>
     </div>
 
+    <!-- Shown while a match that was already saved or sent is open for fixing -->
+    <div id="fix-banner" class="fix-banner hidden" role="status" aria-live="polite"></div>
+
     <!-- How is this match being scouted? Chosen for every match. -->
     <section id="mode-card" class="card mode-card hidden" aria-labelledby="mode-title">
       <div class="card-bar" id="mode-title">HOW ARE YOU SCOUTING THIS MATCH?</div>
@@ -383,6 +386,12 @@
         </section>
 
         <section class="help-section">
+          <h3>Fixed a typo?</h3>
+          <p class="help-intro">Sent a wrong team number or count? You do not need your lead. Tap <strong>SAVED</strong> at the top, find the match, and tap <strong>FIX</strong>. It opens that match with everything you entered. Change what is wrong and tap <strong>SUBMIT TO SHEET</strong> (or <strong>SAVE &amp; NEXT MATCH</strong>) again. The old row in the Sheet is replaced, never doubled. Your own match in progress is set aside and comes back when you tap <strong>BACK TO MY MATCH</strong> (or <strong>CANCEL</strong>, which changes nothing).</p>
+          <div class="help-note">No signal? The fix waits on your phone and replaces the row when you are back online. If the whole match should never have been entered, tap <strong>MARK AS A MISTAKE</strong>: the row stays in the Sheet but is marked No Show with a note, so your lead knows to skip it.</div>
+        </section>
+
+        <section class="help-section">
           <h3>How your data flows &amp; who can see what</h3>
           <p class="help-intro">Scouters can <strong>send</strong> matches into the host's Sheet, but they <strong>never get access to the Sheet itself</strong> — they can't open it, read other rows, or edit anything. Here's the path every match takes:</p>
           <div class="flow-diagram">
@@ -628,9 +637,11 @@
   <script src="super-core.js"></script>
   <script src="assign-core.js"></script>
   <script src="generic-fill.js"></script>
+  <script src="fix-core.js"></script>
   <script src="app.js"></script>
   <script src="pit.js"></script>
   <script src="super.js"></script>
   <script src="assign.js"></script>
+  <script src="push-ui.js"></script>
 </body>
 </html>

@@ -1360,3 +1360,22 @@ footer {
   .guided-controls { grid-template-columns: repeat(2, 1fr); }
   .mode-option { min-height: 64px; }
 }
+
+/* Fixing a match that was already sent */
+.fix-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 12px 16px; margin-bottom: 12px;
+  border: 1px solid var(--gold); border-radius: 2px;
+  background: var(--gold-soft); color: var(--charcoal);
+  font-size: 13px; line-height: 1.5;
+}
+.fix-banner.fix-done { background: var(--success-bg); border-color: #cfe6d7; color: var(--success); }
+.fix-banner.hidden { display: none; }
+.session-list .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.row-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.row-btn {
+  padding: 4px 10px; border: 1px solid var(--maroon); border-radius: 2px;
+  background: var(--white); color: var(--maroon);
+  font-size: 11px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer;
+}
+.row-btn-quiet { border-color: var(--border); color: var(--gray); font-weight: 600; }

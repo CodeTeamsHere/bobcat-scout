@@ -7,3 +7,15 @@
 .assign-ico { font-size: 20px; }
 .assign-txt { flex: 1; min-width: 0; }
 .assign-all { border: 1px solid #cfc6b4; background: #fff; border-radius: 6px; min-width: 40px; min-height: 40px; font-size: 18px; }
+
+/* The "Remind me before my shift" switch (push-ui.js), under the strip. */
+.push-row { margin: 0 0 8px; }
+.push-row.hidden { display: none; }
+.push-switch { display: flex; align-items: center; gap: 10px; min-height: 44px; width: 100%; padding: 6px 12px; border: 1px solid #cfc6b4; border-radius: 8px; background: #fff; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; }
+.push-switch:disabled { opacity: .6; cursor: default; }
+.push-knob { position: relative; flex: none; width: 40px; height: 22px; border-radius: 11px; background: #b9b3a6; transition: background .15s; }
+.push-knob::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; }
+.push-switch.on .push-knob { background: var(--success, #2e7d32); }
+.push-switch.on .push-knob::after { left: 20px; }
+.push-note { margin: 6px 2px 0; font-size: 13px; line-height: 1.35; color: var(--gray, #555); }
+.push-why { margin: 0; padding: 8px 10px; border: 1px dashed #cfc6b4; border-radius: 8px; background: #f7f5f0; }

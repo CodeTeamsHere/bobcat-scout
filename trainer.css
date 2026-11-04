@@ -30,7 +30,7 @@ body.tr-lock { overflow: hidden; }
 .tr-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; }
 .tr-list .tr-sub { display: block; }
 .tr-li-r { display: flex; align-items: center; gap: 10px; }
-.tr-new { font-size: 11px; font-weight: 800; color: var(--gold); letter-spacing: .08em; text-transform: uppercase; }
+.tr-new { font-size: 11px; font-weight: 800; color: #8a5a00; letter-spacing: .08em; text-transform: uppercase; }
 .tr-best { font-size: 12px; color: var(--gray); font-weight: 700; } .tr-best.tr-ok { color: var(--success); }
 .tr-video { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; overflow: hidden; margin: 8px 0 4px; }
 .tr-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }

@@ -1,7 +1,8 @@
 /* ==========================================================================
    The scouting app's server code: the game pack (config.json) and how a new one is published.
    --------------------------------------------------------------------------
-   Everything else on the site is plain files (the assets folder). Four routes run here:
+   Everything else on the site is plain files (the assets folder). Four routes run here (plus the
+   /api/push/* shift-reminder routes and the 2-minute reminder job, both in worker/push.js):
 
      GET  /config.json          the current game pack: the published one if there is one, else the
                                 pack that shipped with the site. Open to everyone (scouts' phones
@@ -18,6 +19,7 @@
    draft can never replace a working form.
    ========================================================================== */
 import packCore from '../pack-core.js';
+import { pushRoute, runReminders } from './push.js';   // shift reminders on phones (see push.js)
 
 const MAX_PACK_BYTES = 300 * 1024;
 const PASSWORD_OK_MS = 30 * 60 * 1000;
@@ -140,6 +142,14 @@ export default {
     if (url.pathname === '/api/pack-status') return status(env);
     if (url.pathname === '/api/pack') return publish(request, env);
     if (url.pathname === '/api/pack-reset') return reset(request, env);
+    if (url.pathname.indexOf('/api/push/') === 0) {
+      const answered = await pushRoute(request, env, url.pathname);
+      if (answered) return answered;
+    }
     return new Response('Not found', { status: 404 });
+  },
+  // Every 2 minutes (the cron in wrangler.jsonc): send any shift reminders that are due.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runReminders(env).catch((err) => console.warn('push: reminder run failed: ' + (err && err.message))));
   },
 };

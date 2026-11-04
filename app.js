@@ -20,6 +20,7 @@ let activeTab = 'qr';
 
 // The way this match is being scouted, chosen at the start of every match (scout-modes.js):
 // '1' describe it · '2' talk, then fill the gaps · '3' guided questions. null = not chosen yet.
+const FIX = window.BOBCAT_FIX;          // fixing an already-sent match (fix-core.js)
 const MODES = window.SCOUT_MODES;
 const LEXICON = window.SCOUT_LEXICON;   // the robotics dictionary for speech (scout-lexicon.js)
 const MODE_NAMES = { '1': '1 · Describe it', '2': '2 · Talk, then fill gaps', '3': '3 · Guided', '4': '4 · Describe it, strict' };
@@ -1116,7 +1117,23 @@ function renderAllFields() {
     html += `</div>`;
   });
   container.innerHTML = html;
+  nameFormControls(container);
   attachFieldListeners(container);
+}
+
+// A screen reader (or a voice-control user) needs each box to have a name. Every field is drawn as
+// [data-field] with a visible label, but the label is not tied to the box, so give each box its label's words.
+function nameFormControls(container) {
+  Array.prototype.forEach.call(container.querySelectorAll('[data-field]'), box => {
+    const label = box.querySelector('.field-label');
+    if (!label) return;
+    const text = label.textContent.replace(/\*/g, '').replace(/\s+/g, ' ').trim();
+    const required = !!label.querySelector('.req');
+    Array.prototype.forEach.call(box.querySelectorAll('input:not([type=hidden]), select, textarea'), el => {
+      if (!el.hasAttribute('aria-label') && !el.hasAttribute('aria-labelledby')) el.setAttribute('aria-label', text);
+      if (required && !el.hasAttribute('aria-required')) el.setAttribute('aria-required', 'true');
+    });
+  });
 }
 
 // The whole form, or in way 2 (until SHOW EVERY FIELD) only the boxes the app didn't catch.
@@ -1695,30 +1712,199 @@ function saveMatchAndNext() {
     return;
   }
   if (!confirmUnusual()) return;
+  if (fixing) { saveFixAndGoBack(); return; }   // a fixed match replaces its old copy instead
   if (isDuplicateInSession(fields)) {
     if (!confirm('You already saved Match ' + fields.matchNumber + ' for team ' + fields.teamNumber + ' this session.\n\nSave it again anyway?')) return;
   }
   const snap = Object.assign({}, fields, { _ts: Date.now(), _id: currentMatchId });
   sessionMatches.push(snap);
+  saveSessionMatches();
+  updateSessionBar();
+  // If a Sheet is connected, also push this match online (queues if offline).
+  sendSavedCopy(snap);
+  resetMatch();
+}
+
+function saveSessionMatches() {
   try {
     localStorage.setItem('session_matches', JSON.stringify(sessionMatches));
   } catch(e) { console.warn('Storage save failed', e); }
-  updateSessionBar();
-  // If a Sheet is connected, also push this match online (queues if offline).
-  if (isSheetConnected()) {
-    submitMatch(snap).then(res => {
-      if (res.status === 'rejected' && isWrongPasscode(res.error)) {
-        // Keep it waiting on this phone, and send it once the right password is typed.
-        enqueue(buildPayload(snap), sheetEndpoint);
-        forgetPasscode();
-        askForPasscode('That password doesn’t match the Sheet. The match is saved on this phone and goes as soon as you type the right one.', null);
-      } else if (res.status === 'rejected') {
-        alert('Saved on this phone, but the Sheet rejected it:\n' + res.error + '\n\nShow this message to your lead.');
-      }
-      updateSheetStatus();
-    });
+}
+
+// Push a saved copy to the Sheet (queues if offline) and tell the scout if it was turned away.
+function sendSavedCopy(snap) {
+  if (!isSheetConnected()) return;
+  submitMatch(snap).then(res => {
+    if (res.status === 'rejected' && isWrongPasscode(res.error)) {
+      // Keep it waiting on this phone, and send it once the right password is typed.
+      enqueue(buildPayload(snap), sheetEndpoint);
+      forgetPasscode();
+      askForPasscode('That password doesn’t match the Sheet. The match is saved on this phone and goes as soon as you type the right one.', null);
+    } else if (res.status === 'rejected') {
+      alert('Saved on this phone, but the Sheet rejected it:\n' + res.error + '\n\nShow this message to your lead.');
+    }
+    updateSheetStatus();
+  });
+}
+
+// =====================================================================
+// FIX A MATCH THAT WAS ALREADY SAVED OR SENT (helpers in fix-core.js)
+// The fixed copy keeps the ORIGINAL match id, so the Sheet replaces that row instead of adding one.
+// =====================================================================
+
+let fixing = null;   // { id, matchNumber, teamNumber, stash, done, note } while a saved match is open for fixing
+
+function saveFixState() {
+  try {
+    if (fixing) localStorage.setItem('fix_state', JSON.stringify(fixing));
+    else localStorage.removeItem('fix_state');
+  } catch (e) {}
+}
+
+// After a reload mid-fix: the draft already holds the match being fixed, so just bring the banner back.
+function loadFixState() {
+  try {
+    const raw = localStorage.getItem('fix_state');
+    if (!raw) return;
+    const st = JSON.parse(raw);
+    if (st && st.id && st.id === currentMatchId && FIX.findSaved(sessionMatches, st.id)) fixing = st;
+    else localStorage.removeItem('fix_state');
+  } catch (e) {}
+}
+
+// What the scout is working on right now, so it can be put back exactly as it was.
+function currentDraftSnapshot() {
+  return JSON.parse(JSON.stringify({
+    fields: fields, confidence: confidence, matchId: currentMatchId,
+    transcript: $('transcript') ? $('transcript').value : '',
+    mode: scoutMode, gapPlan: gapPlan, guidedReview: guidedReview
+  }));
+}
+
+function restoreDraftSnapshot(d) {
+  guidedStop();
+  fields = Object.assign(initialFieldState(), d.fields || {});
+  confidence = d.confidence || {};
+  currentMatchId = d.matchId || newMatchId();
+  $('transcript').value = d.transcript || '';
+  resetTranscriptBuffer();
+  scoutMode = d.mode || null; gapPlan = d.gapPlan || null; guidedReview = !!d.guidedReview;
+  showAllFields = false; choosingMode = false;
+  $('output-section').classList.add('hidden');
+  $('generate-row').classList.remove('hidden');
+  const ss = $('submit-status'); if (ss) ss.classList.add('hidden');
+  if (scoutMode === '3' && !guidedReview) guidedReady();
+  applyModeUI();
+  renderAllFields();
+  updateProcessButton();
+  updateGenerateButton();
+  saveDraft();
+}
+
+function showFixBanner() {
+  const el = $('fix-banner');
+  if (!el) return;
+  if (!fixing) { el.className = 'fix-banner hidden'; el.innerHTML = ''; return; }
+  const who = 'Match ' + escapeHTML(fixing.matchNumber) + ', Team ' + escapeHTML(fixing.teamNumber);
+  el.className = 'fix-banner' + (fixing.done ? ' fix-done' : '');
+  el.innerHTML = fixing.done
+    ? '<span><strong>✓ Fixed ' + who + '.</strong> ' + escapeHTML(fixing.note || '') + '</span> <button type="button" class="btn btn-gold" data-fix="leave">BACK TO MY MATCH</button>'
+    : '<span><strong>Fixing ' + who + ':</strong> change what is wrong, then send again (SUBMIT TO SHEET or SAVE &amp; NEXT MATCH). The old row is replaced, not doubled.</span> <button type="button" class="btn btn-ghost" data-fix="leave">CANCEL</button>';
+}
+
+function startFix(id) {
+  const m = FIX.findSaved(sessionMatches, id);
+  if (!m) return;
+  if (fixing && fixing.id === id) { closeSessionCard(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  let stash;
+  if (fixing) {
+    if (!confirm('You are already fixing Match ' + fixing.matchNumber + ', Team ' + fixing.teamNumber + '.\n\nStop that fix (its unsent changes are dropped) and fix Match ' + m.matchNumber + ', Team ' + m.teamNumber + ' instead?')) return;
+    stash = fixing.stash;   // your own match in progress stays set aside
+  } else {
+    stash = currentDraftSnapshot();
+    if (FIX.draftHasContent(fields, initialFieldState(), $('transcript').value, confidence) &&
+        !confirm('Your match in progress will be set aside while you fix Match ' + m.matchNumber + ', Team ' + m.teamNumber + '. Nothing is lost: tap BACK TO MY MATCH (or CANCEL) when you are done.\n\nFix that match now?')) return;
   }
-  resetMatch();
+  guidedStop();
+  fields = Object.assign(initialFieldState(), FIX.formValues(m));
+  confidence = {};
+  currentMatchId = m._id;
+  $('transcript').value = '';
+  resetTranscriptBuffer();
+  scoutMode = '1'; gapPlan = null; showAllFields = false; guidedReview = false; choosingMode = false;
+  fixing = { id: m._id, matchNumber: m.matchNumber, teamNumber: m.teamNumber, stash: stash, done: false, note: '' };
+  saveFixState();
+  applyModeUI();
+  renderAllFields();
+  updateProcessButton();
+  updateGenerateButton();
+  // Go straight to the send buttons: the form is already complete.
+  $('generate-row').classList.add('hidden');
+  $('output-section').classList.remove('hidden');
+  showTab(activeTab);
+  const ss = $('submit-status'); if (ss) ss.classList.add('hidden');
+  closeSessionCard();
+  showFixBanner();
+  saveDraft();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// CANCEL, or BACK TO MY MATCH after a fix was sent. Puts the scout's own match back; saved copies are untouched.
+function leaveFix() {
+  if (!fixing) return;
+  if (!fixing.done) {
+    const orig = FIX.findSaved(sessionMatches, fixing.id);
+    const same = orig && JSON.stringify(Object.assign(initialFieldState(), FIX.formValues(orig))) === JSON.stringify(fields);
+    if (!same && !confirm('Cancel this fix? The changes you made here are dropped and the match stays as it was saved.')) return;
+  }
+  const stash = fixing.stash;
+  fixing = null;
+  saveFixState();
+  showFixBanner();
+  restoreDraftSnapshot(stash);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// The fixed copy replaces the saved one (same spot in the list, same id).
+function recordFixedCopy() {
+  const copy = FIX.fixedCopy(fields, fixing.id, Date.now());
+  sessionMatches = FIX.replaceSaved(sessionMatches, copy);
+  saveSessionMatches();
+  updateSessionBar();
+  return copy;
+}
+
+// SAVE & NEXT MATCH while fixing: replace the saved copy, send it again, and go back to the scout's own match.
+function saveFixAndGoBack() {
+  const copy = recordFixedCopy();
+  sendSavedCopy(copy);
+  const stash = fixing.stash;
+  fixing = null;
+  saveFixState();
+  showFixBanner();
+  restoreDraftSnapshot(stash);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// MARK AS A MISTAKE: re-send the same match with the No Show box ticked and a comment saying so.
+function markMistake(id) {
+  const m = FIX.findSaved(sessionMatches, id);
+  if (!m) return;
+  if (fixing && fixing.id === id) { alert('Finish or cancel the fix of this match first.'); return; }
+  if (FIELD_ORDER.indexOf('noShow') === -1 || FIELD_ORDER.indexOf('co') === -1) {
+    alert('This game’s form has no No Show / Comments box, so a mistake cannot be marked from here. Tell your lead which match to remove.');
+    return;
+  }
+  if (isSheetConnected() && !sheetPasscode) {
+    askForPasscode('Type your personal code (or the team password) to mark this match as a mistake.', () => markMistake(id));
+    return;
+  }
+  if (!confirm('Mark Match ' + m.matchNumber + ', Team ' + m.teamNumber + ' as entered by mistake?\n\nIt stays in the Sheet but is marked No Show with the comment "' + FIX.MISTAKE_NOTE + '", so your lead can skip it. If it is only a typo, use FIX instead.')) return;
+  const copy = FIX.mistakeCopy(m, Date.now());
+  sessionMatches = FIX.replaceSaved(sessionMatches, copy);
+  saveSessionMatches();
+  updateSessionBar();
+  sendSavedCopy(copy);
 }
 
 function resetMatch() {
@@ -1751,6 +1937,7 @@ function clearAll() {
   fields = initialFieldState();
   confidence = {};
   currentMatchId = newMatchId();
+  fixing = null; saveFixState(); showFixBanner();   // clearing everything also ends a fix in progress
   $('transcript').value = '';
   resetTranscriptBuffer();
   $('output-section').classList.add('hidden');
@@ -1806,8 +1993,24 @@ function updateSessionBar() {
   list.innerHTML = sessionMatches.map(m => {
     const parts = [`<strong>Match ${escapeHTML(m.matchNumber)}</strong>`, `Team ${escapeHTML(m.teamNumber)}`];
     if (m.alliance) parts.push(escapeHTML(String(m.alliance).toUpperCase()));
-    return `<div class="row">${parts.join(' · ')}</div>`;
+    if (FIX.isMistake(m)) parts.push('<em>marked as a mistake</em>');
+    if (m._id && FIX.isQueued(pendingQueue, m._id)) parts.push('<em>waiting to send</em>');
+    // Copies saved before match ids existed cannot be matched to a Sheet row, so they get no buttons.
+    let btns = '';
+    if (m._id) {
+      const id = escapeHTML(m._id);
+      btns = `<span class="row-actions"><button type="button" class="row-btn" data-fix-id="${id}">FIX</button>` +
+        (FIX.isMistake(m) ? '' : `<button type="button" class="row-btn row-btn-quiet" data-mistake-id="${id}" title="Entered by mistake">MARK AS A MISTAKE</button>`) + '</span>';
+    }
+    return `<div class="row"><span>${parts.join(' · ')}</span>${btns}</div>`;
   }).join('');
+}
+
+function closeSessionCard() {
+  const card = $('session-card');
+  if (card) card.classList.add('hidden');
+  const arrow = $('session-arrow');
+  if (arrow) arrow.textContent = '▼';
 }
 
 function toggleSessionCard() {
@@ -2180,7 +2383,11 @@ async function submitMatch(data) {
   if (!navigator.onLine) { enqueue(payload, sheetEndpoint); return { status: 'queued' }; }
   try {
     const resp = await jsonpSubmit(payload, undefined, sheetEndpoint);
-    if (resp && resp.ok) return { status: 'sent', action: resp.action };
+    if (resp && resp.ok) {
+      // It is in the Sheet now: no older copy of this match may stay waiting to overwrite it.
+      if (FIX.isQueued(pendingQueue, payload._id)) { pendingQueue = FIX.queueWithout(pendingQueue, payload._id); savePendingQueue(); }
+      return { status: 'sent', action: resp.action };
+    }
     return { status: 'rejected', error: (resp && resp.error) || 'rejected' }; // config issue, don't queue
   } catch (e) {
     enqueue(payload, sheetEndpoint); // network/timeout — keep it for auto-retry
@@ -2192,8 +2399,7 @@ async function submitMatch(data) {
 function qid(item) { return (item && item.payload ? item.payload._id : (item ? item._id : undefined)); }
 
 function enqueue(payload, url) {
-  pendingQueue = pendingQueue.filter(p => qid(p) !== payload._id); // de-dupe by match id
-  pendingQueue.push({ url: url || sheetEndpoint, payload: payload });
+  pendingQueue = FIX.queueWith(pendingQueue, payload, url || sheetEndpoint); // one item per match id
   savePendingQueue();
   updateSheetStatus();
 }
@@ -2218,7 +2424,8 @@ async function flushQueue() {
       }
       // Drop on success OR on a server rejection (a config problem won't fix itself by retrying).
       // The local session copy is always kept, so nothing is lost.
-      if (resp) { pendingQueue = pendingQueue.filter(p => qid(p) !== payload._id); savePendingQueue(); }
+      // Remove exactly this item: a fix queued for the same match meanwhile is a different item and stays.
+      if (resp) { pendingQueue = pendingQueue.filter(p => p !== item); savePendingQueue(); }
     } catch (e) {
       break; // still offline — stop, try again on the next 'online' event
     }
@@ -2230,6 +2437,7 @@ function updateSheetStatus() {
   const dot = $('sheet-dot'), label = $('sheet-label');
   if (!dot || !label) return;
   const n = pendingQueue.length;
+  updateSessionBar();   // the saved list says which rows are still waiting to send
   if (!isSheetConnected()) { dot.className = 'sheet-dot dot-off'; label.textContent = 'SHEET'; }
   else if (n > 0) { dot.className = 'sheet-dot dot-queued'; label.textContent = 'SHEET (' + n + ')'; }
   else { dot.className = 'sheet-dot dot-on'; label.textContent = 'SHEET'; }
@@ -2398,7 +2606,19 @@ async function submitCurrentMatch() {
   if (!confirmUnusual()) { showSubmitStatus('Submission paused — adjust the flagged values, or confirm to continue.', 'warn'); return; }
   showSubmitStatus('Sending to Sheet…', 'info');
   const res = await submitMatch(Object.assign({}, fields, { _id: currentMatchId }));
-  if (res.status === 'sent') showSubmitStatus('✓ Saved to your Sheet (' + res.action + '). Tap SAVE & NEXT MATCH to scout your next one.', 'ok');
+  if ((res.status === 'sent' || res.status === 'queued') && fixing) {
+    // The fix is on its way: replace the saved copy too, then offer the way back to the scout's own match.
+    recordFixedCopy();
+    fixing.done = true;
+    fixing.matchNumber = fields.matchNumber; fixing.teamNumber = fields.teamNumber;   // the banner names the corrected match
+    fixing.note = res.status === 'sent'
+      ? 'The Sheet row was ' + (res.action === 'updated' ? 'replaced' : 'saved') + '.'
+      : 'No connection right now, so the fix is queued and replaces the row when you are back online.';
+    saveFixState();
+    showFixBanner();
+    showSubmitStatus(fixing.note, res.status === 'sent' ? 'ok' : 'warn');
+  }
+  else if (res.status === 'sent') showSubmitStatus('✓ Saved to your Sheet (' + res.action + '). Tap SAVE & NEXT MATCH to scout your next one.', 'ok');
   else if (res.status === 'queued') showSubmitStatus('No connection right now — saved on this phone and queued. It sends automatically when you’re back online.', 'warn');
   else if (res.status === 'rejected' && isWrongPasscode(res.error)) {
     forgetPasscode();
@@ -2564,6 +2784,12 @@ function wireUI() {
   $('btn-clear-all').addEventListener('click', clearAll);
   $('btn-generate').addEventListener('click', generateOutput);
   $('btn-save-next').addEventListener('click', saveMatchAndNext);
+  $('session-list').addEventListener('click', (e) => {
+    const f = e.target.closest('[data-fix-id]'), mk = e.target.closest('[data-mistake-id]');
+    if (f) startFix(f.getAttribute('data-fix-id'));
+    else if (mk) markMistake(mk.getAttribute('data-mistake-id'));
+  });
+  $('fix-banner').addEventListener('click', (e) => { if (e.target.closest('[data-fix="leave"]')) leaveFix(); });
   $('btn-reset').addEventListener('click', resetMatch);
   $('btn-export-session').addEventListener('click', exportSession);
   $('btn-clear-session').addEventListener('click', clearSession);
@@ -3951,6 +4177,7 @@ async function init() {
 
   // Restore an in-progress match draft (survives a refresh or crash)
   const draft = loadDraft();
+  loadFixState();   // a fix that was open when the page reloaded
 
   // Match schedule (optional) for team-number auto-fill
   loadCachedSchedule();
@@ -3970,6 +4197,7 @@ async function init() {
   updateProcessButton();
   updateGenerateButton();
   updateSessionBar();
+  showFixBanner();
   updateSheetStatus();
   flushQueue();
   identifyMe();

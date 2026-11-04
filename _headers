@@ -2,6 +2,9 @@
   X-Robots-Tag: noindex, nofollow
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
+  X-Frame-Options: DENY
+  Content-Security-Policy: base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'
+  Permissions-Policy: microphone=(self), camera=(self), geolocation=(), payment=()
 /service-worker.js
   Cache-Control: no-cache
 /config.json

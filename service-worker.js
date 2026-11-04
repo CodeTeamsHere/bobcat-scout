@@ -3,7 +3,7 @@
    stale-while-revalidate (instant from cache, refreshed in the background).
    Cross-origin requests (e.g. the Google Apps Script submit) are left untouched. */
 
-const CACHE = 'bobcat-scout-v31';
+const CACHE = 'bobcat-scout-v33';
 const ASSETS = [
   '.',
   'browser-check.js',
@@ -27,11 +27,13 @@ const ASSETS = [
   'assign-core.js',
   'assign.js',
   'assign.css',
+  'push-ui.js',
   'demo.css',
   'team-config.js',
   'scout-modes.js',
   'scout-lexicon.js',
   'generic-fill.js',
+  'fix-core.js',
   'config.json',
   'assets/field-layout.jpg',
   'vendor/qrcode-generator.js',
@@ -79,5 +81,31 @@ self.addEventListener('fetch', (event) => {
         return cached || network;
       })
     )
+  );
+});
+
+// Shift reminders (push-ui.js turns them on; worker/push.js sends them). The message is JSON:
+// { title, body, tag, url }. The same tag replaces an earlier notification instead of stacking.
+self.addEventListener('push', (event) => {
+  let m = {};
+  try { m = event.data ? event.data.json() : {}; } catch (e) { m = { body: event.data ? event.data.text() : '' }; }
+  event.waitUntil(self.registration.showNotification(String(m.title || 'Bobcat Scout'), {
+    body: String(m.body || ''),
+    tag: m.tag ? String(m.tag) : 'bobcat-scout',
+    icon: 'icon-192.png',
+    badge: 'icon-192.png',
+    data: { url: typeof m.url === 'string' && m.url.charAt(0) === '/' ? m.url : '/' }
+  }));
+});
+
+// Tapping the notification brings the app to the front (or opens it).
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) { if ('focus' in c) return c.focus(); }
+      return self.clients.openWindow ? self.clients.openWindow(target) : undefined;
+    })
   );
 });
